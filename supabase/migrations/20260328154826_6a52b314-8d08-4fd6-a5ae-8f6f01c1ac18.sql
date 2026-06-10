@@ -1,0 +1,1 @@
+ALTER TABLE public.screen_guard_types ADD COLUMN price numeric NOT NULL DEFAULT 0;
