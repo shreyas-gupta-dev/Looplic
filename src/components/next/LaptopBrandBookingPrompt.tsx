@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { notifyLeadSubmission } from "@/src/lib/leads/client";
-import { createClient } from "@/src/lib/supabase/client";
+import { createClient } from "@/src/lib/data-client/client";
 import { formatVisitingCharge, getVisitingChargePolicy } from "@/src/lib/visiting-charge";
 
 const LAPTOP_ISSUES = [

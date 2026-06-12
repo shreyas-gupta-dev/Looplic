@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { createClient } from "@/src/lib/supabase/client";
+import { createClient } from "@/src/lib/data-client/client";
 import { buildThankYouHref, trackGoogleAdsConversion } from "@/src/lib/gtag";
 import { buildCctvBrandSelectionHref, getCctvServiceLabel, isCctvBrandValue, isCctvServiceValue } from "@/src/lib/cctv-booking";
 import { downloadBookingConfirmationPdf } from "@/src/lib/invoice-pdf";

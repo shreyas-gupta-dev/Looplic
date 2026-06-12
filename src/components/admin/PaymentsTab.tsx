@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Input } from "@/src/components/ui/input";
 import { formatBookingServiceType, type BookingRow } from "@/src/lib/bookings";
 import { downloadInvoicePdf } from "@/src/lib/invoice-pdf";
-import { createClient } from "@/src/lib/supabase/client";
+import { createClient } from "@/src/lib/data-client/client";
 import { buildWarrantyFields, formatWarrantyLabel, getWarrantyPreset, WARRANTY_PRESETS, WARRANTY_UNITS } from "@/src/lib/warranty";
 
 type Bill = {

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { withRedisCache } from "@/src/lib/redis";
-import { createPublicClient } from "@/src/lib/supabase/public";
+import { createPublicClient } from "@/src/lib/data-client/public";
 
 const CACHE_SECONDS = 300;
 const CACHE_KEY = "looplic:staff-catalog:v1:repair-options";

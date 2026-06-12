@@ -163,9 +163,13 @@ export function useRoleSession(role: RoleName) {
     if (result.isSignedIn) {
       const currentUser = await getCurrentUser();
       setUser(currentUser);
+      let roleOk = false;
       if (currentUser) {
-        const roleOk = await checkUserRole(currentUser.id, role);
+        roleOk = await checkUserRole(currentUser.id, role);
         setHasRole(roleOk);
+      }
+      if (!roleOk) {
+        return { error: { message: `Signed in, but this account does not have ${role} access.` } };
       }
       return { error: null };
     }

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { useRoleSession } from "@/src/hooks/useRoleSession";
-import { createClient } from "@/src/lib/supabase/client";
+import { createClient } from "@/src/lib/data-client/client";
 import { orderServiceTypes } from "@/src/lib/service-types";
 
 export function TechnicianLoginClient() {

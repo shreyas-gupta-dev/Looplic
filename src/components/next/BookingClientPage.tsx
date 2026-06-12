@@ -18,7 +18,7 @@ import { buildBookingInsert, isMissingBookingCodeColumnError, isValidPhoneNumber
 import { buildThankYouHref, trackGoogleAdsConversion } from "@/src/lib/gtag";
 import { downloadBookingConfirmationPdf } from "@/src/lib/invoice-pdf";
 import { notifyLeadSubmission } from "@/src/lib/leads/client";
-import { createClient } from "@/src/lib/supabase/client";
+import { createClient } from "@/src/lib/data-client/client";
 import { RepairWarrantyTag } from "@/src/components/next/RepairWarrantyTag";
 
 type BookingClientPageProps = {

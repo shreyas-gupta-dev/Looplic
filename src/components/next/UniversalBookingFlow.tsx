@@ -23,7 +23,7 @@ import type {
   ModelScreenGuard, RepairCategory, RepairSubcategory,
 } from "@/src/lib/data/catalog";
 import { notifyLeadSubmission } from "@/src/lib/leads/client";
-import { createClient } from "@/src/lib/supabase/client";
+import { createClient } from "@/src/lib/data-client/client";
 import { RepairWarrantyTag } from "@/src/components/next/RepairWarrantyTag";
 import {
   cctvBrandOptions, cctvServiceOptions, getCctvServiceLabel,

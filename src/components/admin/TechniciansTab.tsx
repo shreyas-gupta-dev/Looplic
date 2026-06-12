@@ -5,7 +5,7 @@ import { Check, Loader2, Search, ShieldCheck, Trash2, UserRoundCheck, X } from "
 import { toast } from "sonner";
 
 import { Input } from "@/src/components/ui/input";
-import { createClient } from "@/src/lib/supabase/client";
+import { createClient } from "@/src/lib/data-client/client";
 import { getServiceTypeLabels } from "@/src/lib/service-types";
 
 type TechnicianApplication = {

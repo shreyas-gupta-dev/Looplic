@@ -2,7 +2,7 @@
 
 import { Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useAdminSession } from "@/src/hooks/useAdminSession";
 import { wipeStaleCognitoTokens } from "@/src/hooks/useRoleSession";
@@ -17,19 +17,25 @@ export function AdminLoginClient() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (loading) return;
-    if (user && isAdmin) {
+    if (!loading && user && isAdmin) {
       router.replace("/admin/dashboard");
-      return;
     }
-    // A session exists but it is NOT a valid admin (stale/half-signed-in state).
-    // Clear it so the next sign-in starts clean instead of throwing
-    // "There is already a signed in user".
+  }, [isAdmin, loading, router, user]);
+
+  // One-time on first mount: if a PRE-EXISTING session is present but is not a
+  // valid admin (a leftover/half-signed-in state from before), clear it so the
+  // first sign-in starts clean. Runs once and never interferes with the
+  // sign-in flow afterwards.
+  const clearedOnMount = useRef(false);
+  useEffect(() => {
+    if (loading || clearedOnMount.current) return;
+    clearedOnMount.current = true;
     if (user && !isAdmin) {
       void signOut().catch(() => undefined);
       wipeStaleCognitoTokens();
     }
-  }, [isAdmin, loading, router, signOut, user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

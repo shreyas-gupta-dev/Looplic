@@ -5,11 +5,11 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
-import { createClient } from "@/src/lib/supabase/client";
-import { hasSupabaseConfig } from "@/src/lib/supabase/config";
+import { createClient } from "@/src/lib/data-client/client";
+import { hasCognitoConfig } from "@/src/lib/auth/config";
 
 export function AuthHeaderActions({ mobile = false }: { mobile?: boolean }) {
-  const supabase = hasSupabaseConfig ? createClient() : null;
+  const supabase = hasCognitoConfig ? createClient() : null;
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();

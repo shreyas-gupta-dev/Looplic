@@ -29,7 +29,7 @@ import { Textarea } from "@/src/components/ui/textarea";
 import { formatCctvBookingSelection, isValidPhoneNumber, isValidPincode, type BookingRow } from "@/src/lib/bookings";
 import { downloadInvoicePdf } from "@/src/lib/invoice-pdf";
 import { buildCustomerProfileInsert, type CustomerProfile } from "@/src/lib/profile";
-import { createClient } from "@/src/lib/supabase/client";
+import { createClient } from "@/src/lib/data-client/client";
 
 type AccountBill = {
   id: string;

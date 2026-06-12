@@ -37,7 +37,7 @@ export async function withRedisCache<T>(key: string, ttlSeconds: number, load: (
   try {
     await redis.set(key, fresh, { ex: ttlSeconds });
   } catch {
-    // Keep serving the fresh Supabase result if Redis writes fail.
+    // Keep serving the fresh database result if Redis writes fail.
   }
 
   return fresh;

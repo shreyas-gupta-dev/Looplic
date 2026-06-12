@@ -6,7 +6,7 @@ import { Input } from "@/src/components/ui/input";
 import { formatBookingServiceType, formatBookingStatus, formatCctvBookingSelection, type BookingRow } from "@/src/lib/bookings";
 import { notifyLeadSubmission } from "@/src/lib/leads/client";
 import { getServiceTypeLabels, orderServiceTypes, technicianSupportsService } from "@/src/lib/service-types";
-import { createClient } from "@/src/lib/supabase/client";
+import { createClient } from "@/src/lib/data-client/client";
 import { buildWarrantyFields, formatWarrantyLabel, WARRANTY_PRESETS, WARRANTY_UNITS } from "@/src/lib/warranty";
 
 type BookingView = BookingRow & {

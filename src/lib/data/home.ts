@@ -2,7 +2,7 @@ import { unstable_cache } from "next/cache";
 
 import { withRedisCache } from "@/src/lib/redis";
 import { slugify } from "@/src/lib/slug";
-import { createPublicClient } from "@/src/lib/supabase/public";
+import { createPublicClient } from "@/src/lib/data-client/public";
 
 export type HomeBrand = {
   id: string;

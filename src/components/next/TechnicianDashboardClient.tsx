@@ -9,7 +9,7 @@ import { Input } from "@/src/components/ui/input";
 import { InstallAppButton } from "@/src/components/next/InstallAppButton";
 import { formatBookingServiceType, formatBookingStatus, formatCctvBookingSelection, type BookingRow } from "@/src/lib/bookings";
 import { downloadInvoicePdf } from "@/src/lib/invoice-pdf";
-import { createClient } from "@/src/lib/supabase/client";
+import { createClient } from "@/src/lib/data-client/client";
 import { useRoleSession } from "@/src/hooks/useRoleSession";
 import { buildWarrantyFields, formatWarrantyLabel, getWarrantyPreset, WARRANTY_PRESETS, WARRANTY_UNITS } from "@/src/lib/warranty";
 
