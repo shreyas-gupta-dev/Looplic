@@ -2,8 +2,6 @@ import { db } from "@/src/lib/db";
 import { and, asc, eq, inArray, ne } from "drizzle-orm";
 import * as schema from "@/src/lib/db/schema";
 
-const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
-
 function camelToSnake(col: string) {
   return col.replace(/([A-Z])/g, "_$1").toLowerCase();
 }
@@ -92,10 +90,6 @@ class PublicQueryBuilder {
   }
 
   private async _run(): Promise<{ data: any; error: any }> {
-    if (isBuildPhase) {
-      return { data: this._isSingle || this._isMaybeSingle ? null : [], error: null };
-    }
-
     try {
       const tbl = TABLE_MAP[this._table];
       if (!tbl) return { data: null, error: { message: `Unknown table: ${this._table}` } };
