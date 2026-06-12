@@ -104,6 +104,8 @@ export function useRoleSession(role: RoleName) {
   async function signInFn(email: string, password: string) {
     if (!hasCognitoConfig) throw new Error("Missing Cognito configuration.");
     ensureAmplify();
+    // Clear any stale session before signing in
+    try { await signOut(); } catch { /* no active session, ignore */ }
     const result = await signIn({
       username: email.trim().toLowerCase(),
       password: password.trim(),
