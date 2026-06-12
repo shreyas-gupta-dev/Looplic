@@ -12,7 +12,7 @@ import { getAllModelsForBrand, getSeriesForBrand } from "@/src/lib/data/catalog"
 import { resolveBrandPageData } from "@/src/lib/data/catalog-page";
 import { buildPageMetadata } from "@/src/lib/metadata";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 type PageProps = {
   params: Promise<{

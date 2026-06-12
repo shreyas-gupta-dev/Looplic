@@ -225,91 +225,60 @@ export const getBrandsForListing = unstable_cache(async (serviceType: "mobile" |
   tags: ["catalog", "catalog-brands"],
 });
 
-export const getBrandBySlug = unstable_cache(
-  async (brandSlug: string, serviceType?: "mobile" | "laptop"): Promise<CatalogBrand | null> => {
-    try {
-      const resolvedServiceType = serviceType ?? "mobile";
-      const normalizedBrandSlug = normalizeBrandSlug(brandSlug);
-      const databaseBrandSlug = normalizedBrandSlug === "mi" ? "xiaomi" : normalizedBrandSlug;
-      const supabase = createPublicClient();
-      const directMatch = await supabase
-        .from("brands")
-        .select("id, name, slug, letter, gradient, image_url, service_type")
-        .eq("service_type", resolvedServiceType)
-        .eq("slug", databaseBrandSlug)
-        .maybeSingle();
+export async function getBrandBySlug(brandSlug: string, serviceType?: "mobile" | "laptop"): Promise<CatalogBrand | null> {
+  try {
+    const resolvedServiceType = serviceType ?? "mobile";
+    const normalizedBrandSlug = normalizeBrandSlug(brandSlug);
+    const databaseBrandSlug = normalizedBrandSlug === "mi" ? "xiaomi" : normalizedBrandSlug;
+    const supabase = createPublicClient();
+    const directMatch = await supabase
+      .from("brands")
+      .select("id, name, slug, letter, gradient, image_url, service_type")
+      .eq("service_type", resolvedServiceType)
+      .eq("slug", databaseBrandSlug)
+      .maybeSingle();
 
-      if (!directMatch.error && directMatch.data) {
-        const slug = normalizeBrandSlug(directMatch.data.slug || slugify(directMatch.data.name) || directMatch.data.id);
-
-        return {
-          ...directMatch.data,
-          name: normalizeBrandName(directMatch.data.name, slug),
-          slug,
-        };
-      }
-
-      const list = await getBrandsForListing(serviceType ?? "mobile");
-      const listDirectMatch = list.find((brand) => brand.slug === normalizedBrandSlug);
-
-      if (listDirectMatch) {
-        return listDirectMatch;
-      }
-
-      const fallbackMatch = list.find((brand) => normalizeBrandSlug(slugify(brand.name)) === normalizedBrandSlug);
-      return fallbackMatch ?? null;
-    } catch {
-      return null;
+    if (!directMatch.error && directMatch.data) {
+      const slug = normalizeBrandSlug(directMatch.data.slug || slugify(directMatch.data.name) || directMatch.data.id);
+      return {
+        ...directMatch.data,
+        name: normalizeBrandName(directMatch.data.name, slug),
+        slug,
+      };
     }
-  },
-  ["catalog-brand-by-slug"],
-  {
-    revalidate: CATALOG_REVALIDATE_SECONDS,
-    tags: ["catalog", "catalog-brands"],
-  },
-);
 
-export const getSeriesForBrand = unstable_cache(async (brandId: string): Promise<CatalogSeries[]> => {
-  return withRedisCache(`${CATALOG_REDIS_PREFIX}:series:${brandId}`, CATALOG_REVALIDATE_SECONDS, async () => {
-    try {
-      const supabase = createPublicClient();
-      const withSlug = await supabase
-        .from("series")
-        .select("id, brand_id, name, slug, image_url")
-        .eq("brand_id", brandId)
-        .order("name");
+    const list = await getBrandsForListing(serviceType ?? "mobile");
+    const listDirectMatch = list.find((brand) => brand.slug === normalizedBrandSlug);
+    if (listDirectMatch) return listDirectMatch;
+    const fallbackMatch = list.find((brand) => normalizeBrandSlug(slugify(brand.name)) === normalizedBrandSlug);
+    return fallbackMatch ?? null;
+  } catch {
+    return null;
+  }
+}
 
-      if (!withSlug.error && withSlug.data) {
-        return withSlug.data.map((series) => ({
-          ...series,
-          slug: series.slug || slugify(series.name) || series.id,
-        }));
-      }
+export async function getSeriesForBrand(brandId: string): Promise<CatalogSeries[]> {
+  try {
+    const supabase = createPublicClient();
+    const result = await supabase
+      .from("series")
+      .select("id, brand_id, name, slug, image_url")
+      .eq("brand_id", brandId)
+      .order("name");
 
-      const withoutSlug = await supabase
-        .from("series")
-        .select("id, brand_id, name, image_url")
-        .eq("brand_id", brandId)
-        .order("name");
-
-      if (!withoutSlug.error && withoutSlug.data) {
-        return withoutSlug.data.map((series) => ({
-          ...series,
-          slug: slugify(series.name) || series.id,
-        }));
-      }
-
-      return [];
-    } catch {
-      return [];
+    if (!result.error && result.data) {
+      return result.data.map((series) => ({
+        ...series,
+        slug: series.slug || slugify(series.name) || series.id,
+      }));
     }
-  });
-}, ["catalog-series"], {
-  revalidate: CATALOG_REVALIDATE_SECONDS,
-  tags: ["catalog", "catalog-series"],
-});
+    return [];
+  } catch {
+    return [];
+  }
+}
 
-export const getSeriesBySlug = unstable_cache(async (brandId: string, seriesSlug: string): Promise<CatalogSeries | null> => {
+export async function getSeriesBySlug(brandId: string, seriesSlug: string): Promise<CatalogSeries | null> {
   try {
     const supabase = createPublicClient();
     const directMatch = await supabase
@@ -328,74 +297,45 @@ export const getSeriesBySlug = unstable_cache(async (brandId: string, seriesSlug
 
     const list = await getSeriesForBrand(brandId);
     const listDirectMatch = list.find((series) => series.slug === seriesSlug);
-
-    if (listDirectMatch) {
-      return listDirectMatch;
-    }
-
-    const fallbackMatch = list.find((series) => slugify(series.name) === seriesSlug);
-    return fallbackMatch ?? null;
+    if (listDirectMatch) return listDirectMatch;
+    return list.find((series) => slugify(series.name) === seriesSlug) ?? null;
   } catch {
     return null;
   }
-}, ["catalog-series-by-slug"], {
-  revalidate: CATALOG_REVALIDATE_SECONDS,
-  tags: ["catalog", "catalog-series"],
-});
+}
 
-export const getModelsForSeries = unstable_cache(async (seriesId: string): Promise<CatalogModel[]> => {
-  return withRedisCache(`${CATALOG_REDIS_PREFIX}:models:${seriesId}`, CATALOG_REVALIDATE_SECONDS, async () => {
-    try {
-      const supabase = createPublicClient();
-      const withSlug = await supabase
-        .from("models")
-        .select("id, series_id, name, slug, image_url")
-        .eq("series_id", seriesId)
-        .order("name");
+export async function getModelsForSeries(seriesId: string): Promise<CatalogModel[]> {
+  try {
+    const supabase = createPublicClient();
+    const result = await supabase
+      .from("models")
+      .select("id, series_id, name, slug, image_url")
+      .eq("series_id", seriesId)
+      .order("name");
 
-      if (!withSlug.error && withSlug.data) {
-        return withSlug.data.map((model) => ({
-          ...model,
-          slug: model.slug || slugify(model.name) || model.id,
-        }));
-      }
-
-      const withoutSlug = await supabase
-        .from("models")
-        .select("id, series_id, name, image_url")
-        .eq("series_id", seriesId)
-        .order("name");
-
-      if (!withoutSlug.error && withoutSlug.data) {
-        return withoutSlug.data.map((model) => ({
-          ...model,
-          slug: slugify(model.name) || model.id,
-        }));
-      }
-
-      return [];
-    } catch {
-      return [];
+    if (!result.error && result.data) {
+      return result.data.map((model) => ({
+        ...model,
+        slug: model.slug || slugify(model.name) || model.id,
+      }));
     }
-  });
-}, ["catalog-models"], {
-  revalidate: CATALOG_REVALIDATE_SECONDS,
-  tags: ["catalog", "catalog-models"],
-});
+    return [];
+  } catch {
+    return [];
+  }
+}
 
-export const getAllModelsForBrand = unstable_cache(
-  async (brandId: string): Promise<CatalogModelWithSeries[]> => {
-    return withRedisCache(`${CATALOG_REDIS_PREFIX}:allmodels:${brandId}`, CATALOG_REVALIDATE_SECONDS, async () => {
-      try {
-        const supabase = createPublicClient();
+export async function getAllModelsForBrand(brandId: string): Promise<CatalogModelWithSeries[]> {
+  try {
+    const supabase = createPublicClient();
 
-        const seriesData = await supabase
-          .from("series")
-          .select("id, name, slug")
-          .eq("brand_id", brandId)
-          .order("name");
+    const seriesData = await supabase
+      .from("series")
+      .select("id, name, slug")
+      .eq("brand_id", brandId)
+      .order("name");
 
-        if (seriesData.error || !seriesData.data?.length) return [];
+    if (seriesData.error || !seriesData.data?.length) return [];
 
         const seriesList = seriesData.data.map((s: any) => ({
           id: s.id as string,
@@ -429,19 +369,12 @@ export const getAllModelsForBrand = unstable_cache(
             } satisfies CatalogModelWithSeries;
           })
           .filter((m): m is CatalogModelWithSeries => m !== null);
-      } catch {
-        return [];
-      }
-    });
-  },
-  ["catalog-all-models-for-brand"],
-  {
-    revalidate: CATALOG_REVALIDATE_SECONDS,
-    tags: ["catalog", "catalog-models"],
-  },
-);
+  } catch {
+    return [];
+  }
+}
 
-export const getModelBySlug = unstable_cache(async (seriesId: string, modelSlug: string): Promise<CatalogModel | null> => {
+export async function getModelBySlug(seriesId: string, modelSlug: string): Promise<CatalogModel | null> {
   try {
     const supabase = createPublicClient();
     const directMatch = await supabase
@@ -470,10 +403,7 @@ export const getModelBySlug = unstable_cache(async (seriesId: string, modelSlug:
   } catch {
     return null;
   }
-}, ["catalog-model-by-slug"], {
-  revalidate: CATALOG_REVALIDATE_SECONDS,
-  tags: ["catalog", "catalog-models"],
-});
+}
 
 export const getModelScreenGuards = unstable_cache(async (modelId: string): Promise<ModelScreenGuard[]> => {
   return withRedisCache(`${CATALOG_REDIS_PREFIX}:screen-guards:${modelId}`, CATALOG_REVALIDATE_SECONDS, async () => {
