@@ -6,11 +6,14 @@ import { CatalogServiceTabs } from "@/src/components/next/CatalogServiceTabs";
 import { CrawlableInternalLinks } from "@/src/components/next/CrawlableInternalLinks";
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { ModelsCatalogPage } from "@/src/components/next/ModelsCatalogPage";
-import { getModelsForSeries, getSeriesForBrand } from "@/src/lib/data/catalog";
+import { getBrandsForListing, getModelsForSeries, getSeriesForBrand } from "@/src/lib/data/catalog";
 import { resolveSeriesPageData } from "@/src/lib/data/catalog-page";
 import { buildPageMetadata } from "@/src/lib/metadata";
 
-export const dynamic = "force-dynamic";
+// Pre-render at build time + ISR instead of force-dynamic, so series/model lists
+// are baked from the database at build and never render empty when the runtime
+// cannot reach the database.
+export const revalidate = 300;
 
 type PageProps = {
   params: Promise<{
@@ -34,6 +37,20 @@ const serviceMap = {
     pathPrefix: "/service/laptop-repair/brands",
   },
 };
+
+export async function generateStaticParams() {
+  const params: { serviceType: string; brandSlug: string; seriesSlug: string }[] = [];
+  for (const [serviceType, config] of Object.entries(serviceMap)) {
+    const brands = await getBrandsForListing(config.listingType);
+    for (const brand of brands) {
+      const seriesList = await getSeriesForBrand(brand.id);
+      for (const series of seriesList) {
+        params.push({ serviceType, brandSlug: brand.slug, seriesSlug: series.slug });
+      }
+    }
+  }
+  return params;
+}
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { serviceType, brandSlug, seriesSlug } = await params;

@@ -8,11 +8,14 @@ import { CrawlableInternalLinks } from "@/src/components/next/CrawlableInternalL
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { LaptopBrandBookingPrompt } from "@/src/components/next/LaptopBrandBookingPrompt";
 import { SeriesCatalogPage } from "@/src/components/next/SeriesCatalogPage";
-import { getAllModelsForBrand, getSeriesForBrand } from "@/src/lib/data/catalog";
+import { getAllModelsForBrand, getBrandsForListing, getSeriesForBrand } from "@/src/lib/data/catalog";
 import { resolveBrandPageData } from "@/src/lib/data/catalog-page";
 import { buildPageMetadata } from "@/src/lib/metadata";
 
-export const dynamic = "force-dynamic";
+// Pre-render these pages at build time and serve them via ISR (revalidate below)
+// instead of querying the database on every request. force-dynamic caused empty
+// "0 models available" pages whenever the runtime could not reach the database.
+export const revalidate = 300;
 
 type PageProps = {
   params: Promise<{
@@ -35,6 +38,17 @@ const serviceMap = {
     pathPrefix: "/service/laptop-repair/brands",
   },
 };
+
+export async function generateStaticParams() {
+  const params: { serviceType: string; brandSlug: string }[] = [];
+  for (const [serviceType, config] of Object.entries(serviceMap)) {
+    const brands = await getBrandsForListing(config.listingType);
+    for (const brand of brands) {
+      params.push({ serviceType, brandSlug: brand.slug });
+    }
+  }
+  return params;
+}
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { serviceType, brandSlug } = await params;

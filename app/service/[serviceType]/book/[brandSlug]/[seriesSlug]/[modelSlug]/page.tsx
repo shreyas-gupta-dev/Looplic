@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import { BookingPageShell } from "@/src/components/next/BookingPageShell";
 import { CrawlableInternalLinks } from "@/src/components/next/CrawlableInternalLinks";
-import { getModelsForSeries } from "@/src/lib/data/catalog";
+import { getAllModelsForBrand, getBrandsForListing, getModelsForSeries } from "@/src/lib/data/catalog";
 import { getRepairCatalogData, resolveModelPageData } from "@/src/lib/data/catalog-page";
 import { buildPageMetadata } from "@/src/lib/metadata";
 
@@ -32,6 +32,20 @@ const serviceMap = {
     pathPrefix: "/service/laptop-repair/book",
   },
 };
+
+export async function generateStaticParams() {
+  const params: { serviceType: string; brandSlug: string; seriesSlug: string; modelSlug: string }[] = [];
+  for (const [serviceType, config] of Object.entries(serviceMap)) {
+    const brands = await getBrandsForListing(config.listingType);
+    for (const brand of brands) {
+      const models = await getAllModelsForBrand(brand.id);
+      for (const model of models) {
+        params.push({ serviceType, brandSlug: brand.slug, seriesSlug: model.series_slug, modelSlug: model.slug });
+      }
+    }
+  }
+  return params;
+}
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { serviceType, brandSlug, seriesSlug, modelSlug } = await params;
