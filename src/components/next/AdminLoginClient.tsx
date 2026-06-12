@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { useAdminSession } from "@/src/hooks/useAdminSession";
+import { wipeStaleCognitoTokens } from "@/src/hooks/useRoleSession";
 
 export function AdminLoginClient() {
   const router = useRouter();
-  const { signIn, isAdmin, loading, user } = useAdminSession();
+  const { signIn, signOut, isAdmin, loading, user } = useAdminSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -16,10 +17,19 @@ export function AdminLoginClient() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!loading && user && isAdmin) {
+    if (loading) return;
+    if (user && isAdmin) {
       router.replace("/admin/dashboard");
+      return;
     }
-  }, [isAdmin, loading, router, user]);
+    // A session exists but it is NOT a valid admin (stale/half-signed-in state).
+    // Clear it so the next sign-in starts clean instead of throwing
+    // "There is already a signed in user".
+    if (user && !isAdmin) {
+      void signOut().catch(() => undefined);
+      wipeStaleCognitoTokens();
+    }
+  }, [isAdmin, loading, router, signOut, user]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

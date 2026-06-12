@@ -26,7 +26,7 @@ function ensureAmplify() {
 // Older deployments stored tokens in localStorage; the current SSR config uses
 // cookies, so a normal signOut() can leave the other store's tokens behind,
 // which makes signIn() throw "There is already a signed in user".
-function wipeStaleCognitoTokens() {
+export function wipeStaleCognitoTokens() {
   if (typeof window === "undefined") return;
   try {
     for (const key of Object.keys(window.localStorage)) {
@@ -149,8 +149,11 @@ export function useRoleSession(role: RoleName) {
       // Amplify throws this when a stale session lingers despite the signOut above.
       // Force a global sign-out to wipe cookies/localStorage, then retry once.
       if (msg.includes("already a signed in user") || err?.name === "UserAlreadyAuthenticatedException") {
-        try { await signOut({ global: true }); } catch { /* ignore */ }
+        // Local sign-out (no network needed) + storage wipe clears both the
+        // in-memory token provider and any persisted tokens, then retry.
+        try { await signOut(); } catch { /* ignore */ }
         wipeStaleCognitoTokens();
+        try { await signOut(); } catch { /* ignore */ }
         result = await attemptSignIn();
       } else {
         throw err;
