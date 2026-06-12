@@ -21,14 +21,22 @@ SET row_security = off;
 -- Data for Name: app_settings; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+SET SESSION AUTHORIZATION DEFAULT;
+
+ALTER TABLE public.app_settings DISABLE TRIGGER ALL;
+
 COPY public.app_settings (key, value, created_at, updated_at) FROM stdin;
 repair_subcategory_prices	{"visible": true}	2026-06-09 10:15:56.297539+00	2026-06-09 10:15:56.297539+00
 \.
 
 
+ALTER TABLE public.app_settings ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: brands; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.brands DISABLE TRIGGER ALL;
 
 COPY public.brands (id, name, letter, gradient, sort_order, created_at, image_url, service_type, slug) FROM stdin;
 9a761194-a942-4745-aa48-31b61067129d	Dell	D	from-sky-500 to-blue-600	1	2026-06-09 10:15:54.567905+00	\N	laptop	dell
@@ -57,9 +65,13 @@ e93c44ab-7374-402c-a00f-836b0363c724	Chuwi	C	from-cyan-500 to-blue-600	23	2026-0
 \.
 
 
+ALTER TABLE public.brands ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: series; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.series DISABLE TRIGGER ALL;
 
 COPY public.series (id, brand_id, name, created_at, image_url, slug) FROM stdin;
 26975e52-c253-4dcd-94aa-af4d95cb973f	b2c3f4a4-5ea6-4b90-b7e5-112c88363c38	Aspire	2026-06-09 10:15:57.10802+00	\N	aspire
@@ -159,9 +171,13 @@ ef344ad5-ce52-4a58-88c0-bb71c5b833a1	ecb448d7-f7d6-4615-8c0f-abe679cc88b7	FH	202
 \.
 
 
+ALTER TABLE public.series ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: models; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.models DISABLE TRIGGER ALL;
 
 COPY public.models (id, series_id, name, created_at, image_url, slug) FROM stdin;
 be7a582a-2f13-40cb-b8b7-2b87b43e662c	26975e52-c253-4dcd-94aa-af4d95cb973f	Aspire 3	2026-06-09 10:15:57.10802+00	\N	aspire-3
@@ -403,9 +419,13 @@ a7284ae5-f3c5-4a62-b57a-ca166167e7c5	099b53c4-b01b-4ac4-ad5f-602fbf2ac700	Xiaomi
 \.
 
 
+ALTER TABLE public.models ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: repair_categories; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.repair_categories DISABLE TRIGGER ALL;
 
 COPY public.repair_categories (id, name, service_type, created_at, image_url, sort_order) FROM stdin;
 7a169609-0554-48fc-82a9-9c088bc41f1e	Battery Replacement	laptop	2026-06-09 10:15:50.207614+00	\N	1
@@ -431,9 +451,13 @@ c130ee5d-eabb-4b8c-92ce-5ae2a6c4e14a	Speaker Repair	mobile	2026-06-09 10:15:50.2
 \.
 
 
+ALTER TABLE public.repair_categories ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: repair_subcategories; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.repair_subcategories DISABLE TRIGGER ALL;
 
 COPY public.repair_subcategories (id, category_id, name, image_url, price, created_at, sort_order) FROM stdin;
 eeee700f-0d87-4ffe-b751-70226ed41434	a46f9cf5-c005-48c3-8672-3d097587e6fb	Back Glass Replacement	\N	199	2026-06-09 10:15:55.177511+00	1
@@ -445,85 +469,140 @@ a55f00fe-1686-425d-88b3-07c18622569c	d6a53ed0-b18c-46e4-8382-e6320f0a13b8	Batter
 \.
 
 
+ALTER TABLE public.repair_subcategories ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: bookings; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.bookings DISABLE TRIGGER ALL;
 
 COPY public.bookings (id, customer_name, customer_phone, model_id, guard_type, status, notes, created_at, location, pincode, service_type, repair_category_id, user_id, repair_subcategory_id, scheduled_date, time_slot, booking_code, assigned_rider, assignment_notes, assigned_at, inspect_latitude, inspect_longitude, manual_order, order_source, created_by, warranty_duration_value, warranty_duration_unit, warranty_label, cctv_service, cctv_brand) FROM stdin;
 \.
 
 
+ALTER TABLE public.bookings ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: booking_inspections; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.booking_inspections DISABLE TRIGGER ALL;
 
 COPY public.booking_inspections (id, booking_id, technician_id, technician_name, device_brand, device_model, reported_issue, repair_category_id, repair_subcategory_id, issue_severity, device_condition, accessories_received, customer_approval, pickup_required, pickup_notes, quote_amount, quote_notes, status, created_at, updated_at, warranty_duration_value, warranty_duration_unit, warranty_label) FROM stdin;
 \.
 
 
+ALTER TABLE public.booking_inspections ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: customer_profiles; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.customer_profiles DISABLE TRIGGER ALL;
 
 COPY public.customer_profiles (user_id, full_name, phone, address, city, pincode, created_at, updated_at, inspect_latitude, inspect_longitude) FROM stdin;
 \.
 
 
+ALTER TABLE public.customer_profiles ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: model_repair_services; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.model_repair_services DISABLE TRIGGER ALL;
 
 COPY public.model_repair_services (id, model_id, repair_category_id, price, created_at) FROM stdin;
 \.
 
 
+ALTER TABLE public.model_repair_services ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: model_repair_subcategory_prices; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.model_repair_subcategory_prices DISABLE TRIGGER ALL;
 
 COPY public.model_repair_subcategory_prices (id, model_id, repair_subcategory_id, price, created_at, updated_at) FROM stdin;
 \.
 
 
+ALTER TABLE public.model_repair_subcategory_prices ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: model_screen_guards; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.model_screen_guards DISABLE TRIGGER ALL;
 
 COPY public.model_screen_guards (id, model_id, guard_type, price, created_at, image_url) FROM stdin;
 \.
 
 
+ALTER TABLE public.model_screen_guards ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: screen_guard_categories; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.screen_guard_categories DISABLE TRIGGER ALL;
 
 COPY public.screen_guard_categories (id, name, created_at) FROM stdin;
 \.
 
 
+ALTER TABLE public.screen_guard_categories ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: screen_guard_types; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.screen_guard_types DISABLE TRIGGER ALL;
 
 COPY public.screen_guard_types (id, category_id, name, created_at, image_url, price) FROM stdin;
 \.
 
 
+ALTER TABLE public.screen_guard_types ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: service_bills; Type: TABLE DATA; Schema: public; Owner: -
 --
+
+ALTER TABLE public.service_bills DISABLE TRIGGER ALL;
 
 COPY public.service_bills (id, booking_id, invoice_number, customer_name, customer_phone, service_type, repair_category_id, repair_subcategory_id, description, amount, discount, tax, payment_status, payment_mode, notes, created_by, created_at, updated_at, warranty_duration_value, warranty_duration_unit, warranty_label) FROM stdin;
 \.
 
 
+ALTER TABLE public.service_bills ENABLE TRIGGER ALL;
+
 --
 -- Data for Name: technician_applications; Type: TABLE DATA; Schema: public; Owner: -
 --
 
+ALTER TABLE public.technician_applications DISABLE TRIGGER ALL;
+
 COPY public.technician_applications (id, user_id, email, full_name, phone, city, vehicle_type, experience, status, review_notes, reviewed_by, reviewed_at, created_at, updated_at, service_types) FROM stdin;
 \.
 
+
+ALTER TABLE public.technician_applications ENABLE TRIGGER ALL;
+
+--
+-- Data for Name: user_roles; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+ALTER TABLE public.user_roles DISABLE TRIGGER ALL;
+
+COPY public.user_roles (id, user_id, role) FROM stdin;
+7dbe8116-65c3-4dde-a956-e5b7b7279bc4	72686150-2075-4d1b-b9ec-9c52df3ad833	admin
+\.
+
+
+ALTER TABLE public.user_roles ENABLE TRIGGER ALL;
 
 --
 -- PostgreSQL database dump complete
