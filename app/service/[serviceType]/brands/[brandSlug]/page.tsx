@@ -8,7 +8,7 @@ import { CrawlableInternalLinks } from "@/src/components/next/CrawlableInternalL
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { LaptopBrandBookingPrompt } from "@/src/components/next/LaptopBrandBookingPrompt";
 import { SeriesCatalogPage } from "@/src/components/next/SeriesCatalogPage";
-import { getAllModelsForBrand, getBrandsForListing, getSeriesForBrand } from "@/src/lib/data/catalog";
+import { getAllModelsForBrand, getSeriesForBrand } from "@/src/lib/data/catalog";
 import { resolveBrandPageData } from "@/src/lib/data/catalog-page";
 import { buildPageMetadata } from "@/src/lib/metadata";
 
@@ -35,20 +35,6 @@ const serviceMap = {
     pathPrefix: "/service/laptop-repair/brands",
   },
 };
-
-export async function generateStaticParams() {
-  const params = await Promise.all(
-    Object.entries(serviceMap).map(async ([serviceType, config]) => {
-      const brands = await getBrandsForListing(config.listingType);
-      return brands.map((brand) => ({
-        serviceType,
-        brandSlug: brand.slug,
-      }));
-    }),
-  );
-
-  return params.flat();
-}
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { serviceType, brandSlug } = await params;

@@ -6,7 +6,7 @@ import { CatalogServiceTabs } from "@/src/components/next/CatalogServiceTabs";
 import { CrawlableInternalLinks } from "@/src/components/next/CrawlableInternalLinks";
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { ModelsCatalogPage } from "@/src/components/next/ModelsCatalogPage";
-import { getBrandsForListing, getModelsForSeries, getSeriesForBrand } from "@/src/lib/data/catalog";
+import { getModelsForSeries, getSeriesForBrand } from "@/src/lib/data/catalog";
 import { resolveSeriesPageData } from "@/src/lib/data/catalog-page";
 import { buildPageMetadata } from "@/src/lib/metadata";
 
@@ -34,28 +34,6 @@ const serviceMap = {
     pathPrefix: "/service/laptop-repair/brands",
   },
 };
-
-export async function generateStaticParams() {
-  const params = await Promise.all(
-    Object.entries(serviceMap).map(async ([serviceType, config]) => {
-      const brands = await getBrandsForListing(config.listingType);
-      const brandSeries = await Promise.all(
-        brands.map(async (brand) => {
-          const seriesList = await getSeriesForBrand(brand.id);
-          return seriesList.map((series) => ({
-            serviceType,
-            brandSlug: brand.slug,
-            seriesSlug: series.slug,
-          }));
-        }),
-      );
-
-      return brandSeries.flat();
-    }),
-  );
-
-  return params.flat();
-}
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { serviceType, brandSlug, seriesSlug } = await params;
