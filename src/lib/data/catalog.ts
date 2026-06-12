@@ -143,8 +143,8 @@ export const CATALOG_REVALIDATE_SECONDS = 300;
 const CATALOG_REDIS_PREFIX = "looplic:catalog:v1";
 
 async function getScreenGuardTypeImageMap() {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
+  const dataClient = createPublicClient();
+  const { data, error } = await dataClient
     .from("screen_guard_types")
     .select("name, image_url");
 
@@ -161,7 +161,7 @@ async function getScreenGuardTypeImageMap() {
 
 
 async function queryBrands(serviceType: "mobile" | "laptop") {
-  const supabase = createPublicClient();
+  const dataClient = createPublicClient();
   const selectFieldsWithSlug = "id, name, slug, letter, gradient, image_url, service_type";
   const selectFieldsWithoutSlug = "id, name, letter, gradient, image_url, service_type";
 
@@ -187,7 +187,7 @@ async function queryBrands(serviceType: "mobile" | "laptop") {
 
   const fallback = () => fallbackBrands.filter((brand) => brand.service_type === serviceType);
 
-  const filteredBrands = await supabase
+  const filteredBrands = await dataClient
     .from("brands")
     .select(selectFieldsWithSlug)
     .eq("service_type", serviceType)
@@ -198,7 +198,7 @@ async function queryBrands(serviceType: "mobile" | "laptop") {
     return filteredBrands.data.map(mapBrandWithSlug);
   }
 
-  const filteredBrandsWithoutSlug = await supabase
+  const filteredBrandsWithoutSlug = await dataClient
     .from("brands")
     .select(selectFieldsWithoutSlug)
     .eq("service_type", serviceType)
@@ -230,8 +230,8 @@ export async function getBrandBySlug(brandSlug: string, serviceType?: "mobile" |
     const resolvedServiceType = serviceType ?? "mobile";
     const normalizedBrandSlug = normalizeBrandSlug(brandSlug);
     const databaseBrandSlug = normalizedBrandSlug === "mi" ? "xiaomi" : normalizedBrandSlug;
-    const supabase = createPublicClient();
-    const directMatch = await supabase
+    const dataClient = createPublicClient();
+    const directMatch = await dataClient
       .from("brands")
       .select("id, name, slug, letter, gradient, image_url, service_type")
       .eq("service_type", resolvedServiceType)
@@ -259,8 +259,8 @@ export async function getBrandBySlug(brandSlug: string, serviceType?: "mobile" |
 
 export async function getSeriesForBrand(brandId: string): Promise<CatalogSeries[]> {
   try {
-    const supabase = createPublicClient();
-    const result = await supabase
+    const dataClient = createPublicClient();
+    const result = await dataClient
       .from("series")
       .select("id, brand_id, name, slug, image_url")
       .eq("brand_id", brandId)
@@ -280,8 +280,8 @@ export async function getSeriesForBrand(brandId: string): Promise<CatalogSeries[
 
 export async function getSeriesBySlug(brandId: string, seriesSlug: string): Promise<CatalogSeries | null> {
   try {
-    const supabase = createPublicClient();
-    const directMatch = await supabase
+    const dataClient = createPublicClient();
+    const directMatch = await dataClient
       .from("series")
       .select("id, brand_id, name, slug, image_url")
       .eq("brand_id", brandId)
@@ -306,8 +306,8 @@ export async function getSeriesBySlug(brandId: string, seriesSlug: string): Prom
 
 export async function getModelsForSeries(seriesId: string): Promise<CatalogModel[]> {
   try {
-    const supabase = createPublicClient();
-    const result = await supabase
+    const dataClient = createPublicClient();
+    const result = await dataClient
       .from("models")
       .select("id, series_id, name, slug, image_url")
       .eq("series_id", seriesId)
@@ -327,9 +327,9 @@ export async function getModelsForSeries(seriesId: string): Promise<CatalogModel
 
 export async function getAllModelsForBrand(brandId: string): Promise<CatalogModelWithSeries[]> {
   try {
-    const supabase = createPublicClient();
+    const dataClient = createPublicClient();
 
-    const seriesData = await supabase
+    const seriesData = await dataClient
       .from("series")
       .select("id, name, slug")
       .eq("brand_id", brandId)
@@ -344,7 +344,7 @@ export async function getAllModelsForBrand(brandId: string): Promise<CatalogMode
         }));
 
         const seriesIds = seriesList.map((s) => s.id);
-        const modelsData = await supabase
+        const modelsData = await dataClient
           .from("models")
           .select("id, series_id, name, slug, image_url")
           .in("series_id", seriesIds)
@@ -376,8 +376,8 @@ export async function getAllModelsForBrand(brandId: string): Promise<CatalogMode
 
 export async function getModelBySlug(seriesId: string, modelSlug: string): Promise<CatalogModel | null> {
   try {
-    const supabase = createPublicClient();
-    const directMatch = await supabase
+    const dataClient = createPublicClient();
+    const directMatch = await dataClient
       .from("models")
       .select("id, series_id, name, slug, image_url")
       .eq("series_id", seriesId)
@@ -408,9 +408,9 @@ export async function getModelBySlug(seriesId: string, modelSlug: string): Promi
 export const getModelScreenGuards = unstable_cache(async (modelId: string): Promise<ModelScreenGuard[]> => {
   return withRedisCache(`${CATALOG_REDIS_PREFIX}:screen-guards:${modelId}`, CATALOG_REVALIDATE_SECONDS, async () => {
     try {
-      const supabase = createPublicClient();
+      const dataClient = createPublicClient();
       const typeImageMap = await getScreenGuardTypeImageMap();
-      const primaryQuery = await supabase
+      const primaryQuery = await dataClient
         .from("model_screen_guards")
         .select("id, guard_type, image_url, price")
         .eq("model_id", modelId)
@@ -431,7 +431,7 @@ export const getModelScreenGuards = unstable_cache(async (modelId: string): Prom
         return [];
       }
 
-      const fallbackQuery = await supabase
+      const fallbackQuery = await dataClient
         .from("model_screen_guards")
         .select("id, guard_type, price")
         .eq("model_id", modelId)
@@ -459,8 +459,8 @@ export const getRepairCategories = unstable_cache(async (serviceType: "mobile" |
     const fallback = () => fallbackRepairCategories.filter((category) => category.service_type === serviceType);
 
     try {
-      const supabase = createPublicClient();
-      const { data, error } = await supabase
+      const dataClient = createPublicClient();
+      const { data, error } = await dataClient
         .from("repair_categories")
         .select("id, name, image_url, service_type, sort_order")
         .eq("service_type", serviceType)
@@ -483,8 +483,8 @@ export const getRepairCategories = unstable_cache(async (serviceType: "mobile" |
 
 async function getRepairSubcategoryPriceVisibility() {
   try {
-    const supabase = createPublicClient();
-    const { data, error } = await supabase
+    const dataClient = createPublicClient();
+    const { data, error } = await dataClient
       .from("app_settings")
       .select("value")
       .eq("key", "repair_subcategory_prices")
@@ -513,8 +513,8 @@ export const getRepairSubcategories = unstable_cache(async (categoryIds: string[
     const fallback = () => fallbackRepairSubcategories.filter((subcategory) => categoryIds.includes(subcategory.category_id));
 
     try {
-      const supabase = createPublicClient();
-      const { data, error } = await supabase
+      const dataClient = createPublicClient();
+      const { data, error } = await dataClient
         .from("repair_subcategories")
         .select("id, category_id, name, image_url, price, sort_order")
         .in("category_id", categoryIds)
@@ -535,7 +535,7 @@ export const getRepairSubcategories = unstable_cache(async (categoryIds: string[
         return data.map((subcategory) => ({ ...subcategory, price_visible: pricesVisible }));
       }
 
-      const { data: modelPrices, error: modelPriceError } = await supabase
+      const { data: modelPrices, error: modelPriceError } = await dataClient
         .from("model_repair_subcategory_prices")
         .select("id, repair_subcategory_id, price")
         .eq("model_id", modelId)
@@ -577,11 +577,11 @@ export const getCatalogSearchIndex = unstable_cache(async (serviceType: "mobile"
         return { brands: [], series: [], models: [] };
       }
 
-      const supabase = createPublicClient();
+      const dataClient = createPublicClient();
       const brandIds = brands.map((brand) => brand.id);
       const brandMap = new Map(brands.map((brand) => [brand.id, brand]));
 
-      const seriesWithSlug = await supabase
+      const seriesWithSlug = await dataClient
         .from("series")
         .select("id, brand_id, name, slug")
         .in("brand_id", brandIds)
@@ -591,7 +591,7 @@ export const getCatalogSearchIndex = unstable_cache(async (serviceType: "mobile"
         !seriesWithSlug.error && seriesWithSlug.data
           ? seriesWithSlug.data
           : (
-              await supabase
+              await dataClient
                 .from("series")
                 .select("id, brand_id, name")
                 .in("brand_id", brandIds)
@@ -623,7 +623,7 @@ export const getCatalogSearchIndex = unstable_cache(async (serviceType: "mobile"
       const seriesIds = series.map((seriesItem) => seriesItem.id);
       const seriesMap = new Map(series.map((seriesItem) => [seriesItem.id, seriesItem]));
 
-      const modelsWithSlug = await supabase
+      const modelsWithSlug = await dataClient
         .from("models")
         .select("id, series_id, name, slug")
         .in("series_id", seriesIds)
@@ -633,7 +633,7 @@ export const getCatalogSearchIndex = unstable_cache(async (serviceType: "mobile"
         !modelsWithSlug.error && modelsWithSlug.data
           ? modelsWithSlug.data
           : (
-              await supabase
+              await dataClient
                 .from("models")
                 .select("id, series_id, name")
                 .in("series_id", seriesIds)

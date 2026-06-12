@@ -297,7 +297,7 @@ function writeLocalStorage(key: string, value: string) {
 
 export function TechnicianDashboardClient() {
   const router = useRouter();
-  const supabase = createClient() as any;
+  const dataClient = createClient() as any;
   const { user, hasRole, loading, signOut } = useRoleSession("technician");
   const [bookings, setBookings] = useState<TechBooking[]>([]);
   const [inspections, setInspections] = useState<Inspection[]>([]);
@@ -571,22 +571,22 @@ export function TechnicianDashboardClient() {
       setLoadingData(true);
     }
     const [bookingResult, catalogResult, inspectionResult, billResult] = await Promise.all([
-      supabase.from("bookings").select("*").order("created_at", { ascending: false }),
+      dataClient.from("bookings").select("*").order("created_at", { ascending: false }),
       fetch("/api/catalog/repair-options").then((response) => response.ok ? response.json() : { categories: [], subcategories: [] }).catch(() => ({ categories: [], subcategories: [] })),
-      supabase.from("booking_inspections").select("*").order("created_at", { ascending: false }),
-      supabase.from("service_bills").select("*").order("created_at", { ascending: false }),
+      dataClient.from("booking_inspections").select("*").order("created_at", { ascending: false }),
+      dataClient.from("service_bills").select("*").order("created_at", { ascending: false }),
     ]);
 
     const rawRows = (bookingResult.data || []) as TechBooking[];
     const rows = rawRows.filter((booking) => isBookingAssignedToTechnician(booking, user.email));
     const modelIds = [...new Set(rows.map((booking) => booking.model_id).filter(Boolean))] as string[];
-    const { data: models } = modelIds.length ? await supabase.from("models").select("id, name, series_id").in("id", modelIds) : { data: [] };
+    const { data: models } = modelIds.length ? await dataClient.from("models").select("id, name, series_id").in("id", modelIds) : { data: [] };
     const typedModels = (models || []) as ModelLookup[];
     const seriesIds = [...new Set(typedModels.map((model) => model.series_id).filter(Boolean))];
-    const { data: seriesRows } = seriesIds.length ? await supabase.from("series").select("id, brand_id").in("id", seriesIds) : { data: [] };
+    const { data: seriesRows } = seriesIds.length ? await dataClient.from("series").select("id, brand_id").in("id", seriesIds) : { data: [] };
     const typedSeriesRows = (seriesRows || []) as SeriesLookup[];
     const brandIds = [...new Set(typedSeriesRows.map((series) => series.brand_id).filter(Boolean))];
-    const { data: brandRows } = brandIds.length ? await supabase.from("brands").select("id, name").in("id", brandIds) : { data: [] };
+    const { data: brandRows } = brandIds.length ? await dataClient.from("brands").select("id, name").in("id", brandIds) : { data: [] };
 
     const typedBrandRows = (brandRows || []) as NamedLookup[];
     const modelMap = new Map<string, ModelLookup>(typedModels.map((model) => [model.id, model]));
@@ -757,7 +757,7 @@ export function TechnicianDashboardClient() {
   useEffect(() => {
     if (!user || !hasRole) return;
 
-    const channel = supabase
+    const channel = dataClient
       .channel(`technician-assignment-alerts-${user.id}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "bookings" }, () => {
         void loadData({ silent: true });
@@ -890,8 +890,8 @@ export function TechnicianDashboardClient() {
   }
 
   async function acceptOrder(booking: TechBooking) {
-    await supabase.from("bookings").update({ status: "confirmed" }).eq("id", booking.id);
-    await supabase.from("booking_inspections").insert({
+    await dataClient.from("bookings").update({ status: "confirmed" }).eq("id", booking.id);
+    await dataClient.from("booking_inspections").insert({
       booking_id: booking.id,
       technician_id: user?.id,
       technician_name: user?.email,
@@ -1205,10 +1205,10 @@ export function TechnicianDashboardClient() {
     };
 
     const result = existing
-      ? await supabase.from("booking_inspections").update(payload).eq("id", existing.id)
-      : await supabase.from("booking_inspections").insert(payload);
+      ? await dataClient.from("booking_inspections").update(payload).eq("id", existing.id)
+      : await dataClient.from("booking_inspections").insert(payload);
     if (!result.error) {
-      await supabase.from("bookings").update({ status: "in_progress", repair_category_id: categoryId || null, repair_subcategory_id: subcategoryId || null, ...warrantyFields }).eq("id", inspectTarget.id);
+      await dataClient.from("bookings").update({ status: "in_progress", repair_category_id: categoryId || null, repair_subcategory_id: subcategoryId || null, ...warrantyFields }).eq("id", inspectTarget.id);
     }
     setSaving(false);
     if (result.error) {
@@ -1250,8 +1250,8 @@ export function TechnicianDashboardClient() {
     };
 
     const inspectionResult = existingInspection
-      ? await supabase.from("booking_inspections").update(inspectionPayload).eq("id", existingInspection.id)
-      : await supabase.from("booking_inspections").insert(inspectionPayload);
+      ? await dataClient.from("booking_inspections").update(inspectionPayload).eq("id", existingInspection.id)
+      : await dataClient.from("booking_inspections").insert(inspectionPayload);
 
     if (inspectionResult.error) {
       setSaving(false);
@@ -1303,13 +1303,13 @@ export function TechnicianDashboardClient() {
       created_by: user?.id || null,
     };
     const bill = existingBill?.id
-      ? await supabase.from("service_bills").update(billPayload).eq("id", existingBill.id)
-      : await supabase.from("service_bills").insert({ ...billPayload, invoice_number: "" });
+      ? await dataClient.from("service_bills").update(billPayload).eq("id", existingBill.id)
+      : await dataClient.from("service_bills").insert({ ...billPayload, invoice_number: "" });
     if (!bill.error) {
       if (inspection) {
-        await supabase.from("booking_inspections").update({ status: "fixed", quote_amount: finalAmount, quote_notes: description || null, ...warrantyFields }).eq("id", inspection.id);
+        await dataClient.from("booking_inspections").update({ status: "fixed", quote_amount: finalAmount, quote_notes: description || null, ...warrantyFields }).eq("id", inspection.id);
       }
-      await supabase.from("bookings").update({ status: "completed", ...warrantyFields }).eq("id", quoteTarget.id);
+      await dataClient.from("bookings").update({ status: "completed", ...warrantyFields }).eq("id", quoteTarget.id);
     }
     setSaving(false);
     if (bill.error) {

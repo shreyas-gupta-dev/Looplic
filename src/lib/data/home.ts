@@ -30,8 +30,8 @@ const fallbackBrands: HomeBrand[] = [
 export const getHomepageBrands = unstable_cache(async (): Promise<HomeBrand[]> => {
   return withRedisCache("looplic:home:v1:brands", HOME_REVALIDATE_SECONDS, async () => {
     try {
-      const supabase = createPublicClient();
-      const withSlug = await supabase
+      const dataClient = createPublicClient();
+      const withSlug = await dataClient
         .from("brands")
         .select("id, slug, name, letter, gradient, image_url")
         .eq("service_type", "mobile")
@@ -53,7 +53,7 @@ export const getHomepageBrands = unstable_cache(async (): Promise<HomeBrand[]> =
         }));
       }
 
-      const withoutSlug = await supabase
+      const withoutSlug = await dataClient
         .from("brands")
         .select("id, name, letter, gradient, image_url")
         .eq("service_type", "mobile")

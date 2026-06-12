@@ -138,7 +138,7 @@ export function UniversalBookingFlow({
   repairCategories = [],
   repairSubcategories = [],
 }: UniversalBookingFlowProps) {
-  const supabase = useMemo(() => createClient(), []);
+  const dataClient = useMemo(() => createClient(), []);
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -304,14 +304,14 @@ export function UniversalBookingFlow({
 
   useEffect(() => {
     let ignore = false;
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    dataClient.auth.getSession().then(({ data: { session } }) => {
       if (!ignore) { setUser(session?.user ?? null); setAuthLoading(false); }
     });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = dataClient.auth.onAuthStateChange((_event, session) => {
       if (!ignore) { setUser(session?.user ?? null); setAuthLoading(false); }
     });
     return () => { ignore = true; subscription.unsubscribe(); };
-  }, [supabase.auth]);
+  }, [dataClient.auth]);
 
   useEffect(() => {
     let ignore = false;
@@ -328,8 +328,8 @@ export function UniversalBookingFlow({
           setCity(p.city || "");
           setPincode(p.pincode || "");
         }
-        // 2. Supabase customer_profiles (authoritative)
-        const { data: profileData } = await supabase
+        // 2. customer_profiles (authoritative)
+        const { data: profileData } = await dataClient
           .from("customer_profiles")
           .select("full_name, phone, address, city, pincode, inspect_latitude, inspect_longitude")
           .eq("user_id", user.id)
@@ -346,7 +346,7 @@ export function UniversalBookingFlow({
           if (p.inspect_latitude && p.inspect_longitude) shouldCenterMapRef.current = true;
         } else if (!ignore) {
           // 3. Fall back to last booking
-          const { data: lastBooking } = await supabase
+          const { data: lastBooking } = await dataClient
             .from("bookings")
             .select("customer_name, customer_phone, location, pincode, inspect_latitude, inspect_longitude")
             .eq("user_id", user.id)
@@ -372,7 +372,7 @@ export function UniversalBookingFlow({
     }
     hydrateProfile();
     return () => { ignore = true; };
-  }, [user, profileLoaded, supabase]);
+  }, [user, profileLoaded, dataClient]);
 
   useEffect(() => {
     if (!GOOGLE_MAPS_API_KEY || typeof window === "undefined") return;
@@ -452,7 +452,7 @@ export function UniversalBookingFlow({
       userId: user.id, fullName: name, phone, address, city, pincode,
       inspectLatitude: latitude, inspectLongitude: longitude,
     });
-    return supabase.from("customer_profiles").upsert(payload as any, { onConflict: "user_id" }).select("user_id").single();
+    return dataClient.from("customer_profiles").upsert(payload as any, { onConflict: "user_id" }).select("user_id").single();
   }
 
   function persistProfileLocally() {
@@ -524,10 +524,10 @@ export function UniversalBookingFlow({
         inspectLatitude: latitude, inspectLongitude: longitude,
         notes: bookingNotes,
       });
-      const result = await supabase.from("bookings").insert(insertData as any).select("booking_code").single();
+      const result = await dataClient.from("bookings").insert(insertData as any).select("booking_code").single();
       bookingCode = result.data?.booking_code || "";
       if (result.error && isMissingBookingCodeColumnError(result.error)) {
-        const fallback = await supabase.from("bookings").insert(insertData as any);
+        const fallback = await dataClient.from("bookings").insert(insertData as any);
         bookingError = fallback.error;
       } else {
         bookingError = result.error;
@@ -544,10 +544,10 @@ export function UniversalBookingFlow({
         cctv_brand: isCctv ? (selectedCctvBrand || null) : null,
         inspect_latitude: latitude, inspect_longitude: longitude,
       };
-      const result = await supabase.from("bookings").insert(payload as any).select("booking_code").single();
+      const result = await dataClient.from("bookings").insert(payload as any).select("booking_code").single();
       bookingCode = (result.data as any)?.booking_code || "";
       if (result.error && isMissingBookingCodeColumnError(result.error)) {
-        const fallback = await supabase.from("bookings").insert(payload as any);
+        const fallback = await dataClient.from("bookings").insert(payload as any);
         bookingError = fallback.error;
       } else {
         bookingError = result.error;

@@ -31,7 +31,7 @@ const statusStyles: Record<string, string> = {
 };
 
 export default function TechniciansTab() {
-  const supabase = createClient() as any;
+  const dataClient = createClient() as any;
   const [applications, setApplications] = useState<TechnicianApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -44,7 +44,7 @@ export default function TechniciansTab() {
   async function fetchApplications() {
     setLoading(true);
     setErrorMessage("");
-    const { data, error } = await supabase
+    const { data, error } = await dataClient
       .from("technician_applications")
       .select("*")
       .order("created_at", { ascending: false });
@@ -88,7 +88,7 @@ export default function TechniciansTab() {
     }
 
     setBusyId(application.id);
-    const roleResult = await supabase.from("user_roles").insert({
+    const roleResult = await dataClient.from("user_roles").insert({
       user_id: application.user_id,
       role: "technician",
     });
@@ -99,8 +99,8 @@ export default function TechniciansTab() {
       return;
     }
 
-    const { data: userData } = await supabase.auth.getUser();
-    const updateResult = await supabase
+    const { data: userData } = await dataClient.auth.getUser();
+    const updateResult = await dataClient
       .from("technician_applications")
       .update({
         status: "approved",
@@ -124,8 +124,8 @@ export default function TechniciansTab() {
 
   async function reject(application: TechnicianApplication) {
     setBusyId(application.id);
-    const { data: userData } = await supabase.auth.getUser();
-    const { error } = await supabase
+    const { data: userData } = await dataClient.auth.getUser();
+    const { error } = await dataClient
       .from("technician_applications")
       .update({
         status: "rejected",
@@ -150,9 +150,9 @@ export default function TechniciansTab() {
   async function removeApplication(application: TechnicianApplication) {
     setBusyId(application.id);
     if (application.user_id) {
-      await supabase.from("user_roles").delete().eq("user_id", application.user_id).eq("role", "technician");
+      await dataClient.from("user_roles").delete().eq("user_id", application.user_id).eq("role", "technician");
     }
-    const { error } = await supabase.from("technician_applications").delete().eq("id", application.id);
+    const { error } = await dataClient.from("technician_applications").delete().eq("id", application.id);
     setBusyId("");
 
     if (error) {

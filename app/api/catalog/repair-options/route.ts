@@ -8,10 +8,10 @@ const CACHE_KEY = "looplic:staff-catalog:v1:repair-options";
 
 export async function GET() {
   const data = await withRedisCache(CACHE_KEY, CACHE_SECONDS, async () => {
-    const supabase = createPublicClient();
+    const dataClient = createPublicClient();
     const [categoryResult, subcategoryResult] = await Promise.all([
-      supabase.from("repair_categories").select("id, name, service_type").order("name"),
-      supabase.from("repair_subcategories").select("id, category_id, name, price").order("name"),
+      dataClient.from("repair_categories").select("id, name, service_type").order("name"),
+      dataClient.from("repair_subcategories").select("id, category_id, name, price").order("name"),
     ]);
 
     return {

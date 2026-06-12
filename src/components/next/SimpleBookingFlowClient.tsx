@@ -50,7 +50,7 @@ const SERVICE_DESCRIPTIONS: Record<string, string> = {
 };
 
 export function SimpleBookingFlowClient({ serviceSlug }: { serviceSlug: string }) {
-  const supabase = createClient();
+  const dataClient = createClient();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -102,21 +102,21 @@ export function SimpleBookingFlowClient({ serviceSlug }: { serviceSlug: string }
   useEffect(() => {
     let ignore = false;
     async function loadUser() {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await dataClient.auth.getSession();
       if (!ignore) {
         setUser(session?.user ?? null);
         setAuthLoading(false);
       }
     }
     loadUser();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = dataClient.auth.onAuthStateChange((_event, session) => {
       if (!ignore) {
         setUser(session?.user ?? null);
         setAuthLoading(false);
       }
     });
     return () => { ignore = true; subscription.unsubscribe(); };
-  }, [supabase.auth]);
+  }, [dataClient.auth]);
 
   // Hydrate profile from DB
   useEffect(() => {
@@ -124,7 +124,7 @@ export function SimpleBookingFlowClient({ serviceSlug }: { serviceSlug: string }
     async function hydrateProfile() {
       if (!user || profileLoaded) return;
       try {
-        const { data: profileData } = await supabase
+        const { data: profileData } = await dataClient
           .from("customer_profiles")
           .select("full_name, phone, address, city, pincode, inspect_latitude, inspect_longitude")
           .eq("user_id", user.id)
@@ -157,7 +157,7 @@ export function SimpleBookingFlowClient({ serviceSlug }: { serviceSlug: string }
     }
     hydrateProfile();
     return () => { ignore = true; };
-  }, [user, profileLoaded, supabase]);
+  }, [user, profileLoaded, dataClient]);
 
   function useCurrentLocation() {
     if (!navigator.geolocation) {
@@ -190,7 +190,7 @@ export function SimpleBookingFlowClient({ serviceSlug }: { serviceSlug: string }
       toast.error("Please fill in all required fields with a valid phone and 6-digit pincode.");
       return;
     }
-    const { error } = await supabase.from("customer_profiles").upsert(
+    const { error } = await dataClient.from("customer_profiles").upsert(
       buildCustomerProfileInsert({ userId: user.id, fullName: name, phone, address, city, pincode, inspectLatitude: latitude, inspectLongitude: longitude }) as any,
     );
     if (error) { toast.error(error.message); return; }
@@ -211,7 +211,7 @@ export function SimpleBookingFlowClient({ serviceSlug }: { serviceSlug: string }
     setSubmitting(true);
 
     // Upsert profile
-    await supabase.from("customer_profiles").upsert(
+    await dataClient.from("customer_profiles").upsert(
       buildCustomerProfileInsert({ userId: user.id, fullName: name, phone, address, city, pincode, inspectLatitude: latitude, inspectLongitude: longitude }) as any,
     );
 
@@ -225,7 +225,7 @@ export function SimpleBookingFlowClient({ serviceSlug }: { serviceSlug: string }
       visitingChargePolicy,
       notes.trim(),
     ].filter(Boolean).join("\n\n") || null;
-    const { data: bookingData, error } = await supabase
+    const { data: bookingData, error } = await dataClient
       .from("bookings")
       .insert({
         customer_name: name.trim(),
@@ -248,7 +248,7 @@ export function SimpleBookingFlowClient({ serviceSlug }: { serviceSlug: string }
 
     if (error) {
       // Fallback: insert without booking_code select if column missing
-      const { error: fallbackError } = await supabase.from("bookings").insert({
+      const { error: fallbackError } = await dataClient.from("bookings").insert({
         customer_name: name.trim(),
         customer_phone: phone.trim(),
         model_id: null,

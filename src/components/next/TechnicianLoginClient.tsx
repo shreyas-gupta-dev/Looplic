@@ -11,7 +11,7 @@ import { orderServiceTypes } from "@/src/lib/service-types";
 
 export function TechnicianLoginClient() {
   const router = useRouter();
-  const supabase = createClient() as any;
+  const dataClient = createClient() as any;
   const { signIn, hasRole, loading, user } = useRoleSession("technician");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -66,7 +66,7 @@ export function TechnicianLoginClient() {
     }
 
     setApplying(true);
-    const signUpResult = await supabase.auth.signUp({
+    const signUpResult = await dataClient.auth.signUp({
       email: email.trim(),
       password,
       options: {
@@ -96,11 +96,11 @@ export function TechnicianLoginClient() {
       service_types: selectedServiceTypes,
       status: "pending",
     };
-    let { error: applicationError } = await supabase.from("technician_applications").insert(applicationPayload);
+    let { error: applicationError } = await dataClient.from("technician_applications").insert(applicationPayload);
 
     if (applicationError && String(applicationError.message || "").includes("service_types")) {
       const { service_types: _serviceTypes, ...fallbackPayload } = applicationPayload;
-      const fallbackResult = await supabase.from("technician_applications").insert(fallbackPayload);
+      const fallbackResult = await dataClient.from("technician_applications").insert(fallbackPayload);
       applicationError = fallbackResult.error;
     }
 

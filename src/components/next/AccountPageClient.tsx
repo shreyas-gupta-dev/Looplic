@@ -1,6 +1,6 @@
 "use client";
 
-import type { AppUser as SupabaseUser } from "@/src/hooks/useRoleSession";
+import type { AppUser } from "@/src/hooks/useRoleSession";
 import {
   CalendarCheck,
   CheckCircle2,
@@ -101,7 +101,7 @@ type ProfileFormState = {
   pincode: string;
 };
 
-function createProfileForm(profile: CustomerProfile | null, user: SupabaseUser | null): ProfileFormState {
+function createProfileForm(profile: CustomerProfile | null, user: AppUser | null): ProfileFormState {
   return {
     fullName: profile?.full_name || user?.user_metadata?.full_name || "",
     phone: profile?.phone || "",
@@ -166,8 +166,8 @@ function canDownloadInvoice(booking: AccountBooking) {
 
 export function AccountPageClient() {
   const router = useRouter();
-  const supabase = createClient();
-  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const dataClient = createClient();
+  const [user, setUser] = useState<AppUser | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [bookings, setBookings] = useState<AccountBooking[]>([]);
   const [profile, setProfile] = useState<CustomerProfile | null>(null);
@@ -188,7 +188,7 @@ export function AccountPageClient() {
     async function loadUser() {
       const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } = await dataClient.auth.getSession();
       const currentUser = session?.user ?? null;
 
       if (ignore) {
@@ -208,7 +208,7 @@ export function AccountPageClient() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = dataClient.auth.onAuthStateChange((_event, session) => {
       if (ignore) {
         return;
       }
@@ -227,7 +227,7 @@ export function AccountPageClient() {
       ignore = true;
       subscription.unsubscribe();
     };
-  }, [router, supabase.auth]);
+  }, [router, dataClient.auth]);
 
   useEffect(() => {
     let ignore = false;
@@ -239,8 +239,8 @@ export function AccountPageClient() {
 
       setLoadingBookings(true);
       const [{ data }, { data: profileData }] = await Promise.all([
-        supabase.from("bookings").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
-        supabase.from("customer_profiles").select("*").eq("user_id", user.id).maybeSingle(),
+        dataClient.from("bookings").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
+        dataClient.from("customer_profiles").select("*").eq("user_id", user.id).maybeSingle(),
       ]);
 
       if (ignore) {
@@ -266,16 +266,16 @@ export function AccountPageClient() {
 
       const [{ data: models }, { data: repairCategories }, { data: repairSubcategories }, { data: billRows }] = await Promise.all([
         modelIds.length
-          ? supabase.from("models").select("id, name, series_id").in("id", modelIds)
+          ? dataClient.from("models").select("id, name, series_id").in("id", modelIds)
           : Promise.resolve({ data: [] as Array<{ id: string; name: string; series_id: string }> }),
         repairCategoryIds.length
-          ? supabase.from("repair_categories").select("id, name").in("id", repairCategoryIds)
+          ? dataClient.from("repair_categories").select("id, name").in("id", repairCategoryIds)
           : Promise.resolve({ data: [] as Array<{ id: string; name: string }> }),
         repairSubcategoryIds.length
-          ? supabase.from("repair_subcategories").select("id, name").in("id", repairSubcategoryIds)
+          ? dataClient.from("repair_subcategories").select("id, name").in("id", repairSubcategoryIds)
           : Promise.resolve({ data: [] as Array<{ id: string; name: string }> }),
         bookingIds.length
-          ? (supabase as any)
+          ? (dataClient as any)
               .from("service_bills")
               .select("id, booking_id, invoice_number, customer_name, customer_phone, service_type, description, amount, discount, tax, total_amount, payment_status, payment_mode, notes, warranty_duration_value, warranty_duration_unit, warranty_label, created_at")
               .in("booking_id", bookingIds)
@@ -289,12 +289,12 @@ export function AccountPageClient() {
       const modelMap = new Map<string, { id: string; name: string; series_id: string }>(typedModels.map((model) => [model.id, model]));
       const seriesIds = [...new Set(typedModels.map((model) => model.series_id).filter(Boolean))];
       const { data: seriesRows } =
-        seriesIds.length ? await supabase.from("series").select("id, brand_id").in("id", seriesIds) : { data: [] as Array<{ id: string; brand_id: string }> };
+        seriesIds.length ? await dataClient.from("series").select("id, brand_id").in("id", seriesIds) : { data: [] as Array<{ id: string; brand_id: string }> };
       const typedSeriesRows = (seriesRows || []) as Array<{ id: string; brand_id: string }>;
       const seriesMap = new Map<string, { id: string; brand_id: string }>(typedSeriesRows.map((series) => [series.id, series]));
       const brandIds = [...new Set(typedSeriesRows.map((series) => series.brand_id).filter(Boolean))];
       const { data: brandRows } =
-        brandIds.length ? await supabase.from("brands").select("id, name").in("id", brandIds) : { data: [] as Array<{ id: string; name: string }> };
+        brandIds.length ? await dataClient.from("brands").select("id, name").in("id", brandIds) : { data: [] as Array<{ id: string; name: string }> };
       const typedBrandRows = (brandRows || []) as Array<{ id: string; name: string }>;
       const brandMap = new Map<string, { id: string; name: string }>(typedBrandRows.map((brand) => [brand.id, brand]));
       const repairCategoryMap = new Map<string, string>(typedRepairCategories.map((category) => [category.id, category.name]));
@@ -335,12 +335,12 @@ export function AccountPageClient() {
 
     loadBookings();
 
-    const bookingsChannel = supabase
+    const bookingsChannel = dataClient
       .channel(`account-bookings-${user.id}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "bookings", filter: `user_id=eq.${user.id}` }, loadBookings)
       .subscribe();
 
-    const profilesChannel = supabase
+    const profilesChannel = dataClient
       .channel(`account-profiles-${user.id}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "customer_profiles", filter: `user_id=eq.${user.id}` }, loadBookings)
       .subscribe();
@@ -350,7 +350,7 @@ export function AccountPageClient() {
       void bookingsChannel.unsubscribe();
       void profilesChannel.unsubscribe();
     };
-  }, [editingProfile, supabase, user]);
+  }, [editingProfile, dataClient, user]);
 
   const filteredBookings = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -405,7 +405,7 @@ export function AccountPageClient() {
   );
 
   async function handleSignOut() {
-    await supabase.auth.signOut();
+    await dataClient.auth.signOut();
     router.replace("/");
     router.refresh();
   }
@@ -462,8 +462,8 @@ export function AccountPageClient() {
     });
 
     const [{ error: profileSaveError }, { error: authUpdateError }] = await Promise.all([
-      supabase.from("customer_profiles").upsert(payload as any, { onConflict: "user_id" }),
-      supabase.auth.updateUser({ data: { full_name: trimmed.fullName } }),
+      dataClient.from("customer_profiles").upsert(payload as any, { onConflict: "user_id" }),
+      dataClient.auth.updateUser({ data: { full_name: trimmed.fullName } }),
     ]);
 
     if (profileSaveError || authUpdateError) {
@@ -501,7 +501,7 @@ export function AccountPageClient() {
     setBookingActionError("");
     setCancelingBookingId(bookingId);
 
-    const { error } = await supabase
+    const { error } = await dataClient
       .from("bookings")
       .update({ status: "cancelled" } as never)
       .eq("id", bookingId)

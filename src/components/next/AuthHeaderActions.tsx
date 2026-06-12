@@ -9,7 +9,7 @@ import { createClient } from "@/src/lib/data-client/client";
 import { hasCognitoConfig } from "@/src/lib/auth/config";
 
 export function AuthHeaderActions({ mobile = false }: { mobile?: boolean }) {
-  const supabase = hasCognitoConfig ? createClient() : null;
+  const dataClient = hasCognitoConfig ? createClient() : null;
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -22,14 +22,14 @@ export function AuthHeaderActions({ mobile = false }: { mobile?: boolean }) {
   }, [pathname, searchParams]);
 
   useEffect(() => {
-    if (!supabase) {
+    if (!dataClient) {
       setUser(null);
       return;
     }
 
     let ignore = false;
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    dataClient.auth.getSession().then(({ data: { session } }) => {
       if (!ignore) {
         setUser(session?.user ?? null);
       }
@@ -37,7 +37,7 @@ export function AuthHeaderActions({ mobile = false }: { mobile?: boolean }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = dataClient.auth.onAuthStateChange((_event, session) => {
       if (!ignore) {
         setUser(session?.user ?? null);
       }
@@ -47,14 +47,14 @@ export function AuthHeaderActions({ mobile = false }: { mobile?: boolean }) {
       ignore = true;
       subscription.unsubscribe();
     };
-  }, [supabase]);
+  }, [dataClient]);
 
   async function handleSignOut() {
-    if (!supabase) {
+    if (!dataClient) {
       return;
     }
 
-    await supabase.auth.signOut();
+    await dataClient.auth.signOut();
     router.replace("/");
     router.refresh();
   }

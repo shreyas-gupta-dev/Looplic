@@ -133,27 +133,24 @@ export function useRoleSession(role: RoleName) {
     const username = email.trim().toLowerCase();
     const pwd = password.trim();
 
-    // Clear any stale session before signing in
-    try { await signOut(); } catch { /* no active session, ignore */ }
-    wipeStaleCognitoTokens();
-
     async function attemptSignIn() {
       return signIn({ username, password: pwd });
     }
 
+    // IMPORTANT: do NOT call signOut() on the happy path. The app has Cognito
+    // OAuth (hosted UI) configured for Google login, and Amplify's signOut() can
+    // redirect the browser to the Cognito logout URL, silently swallowing the
+    // sign-in. Instead, sign in directly; only if Amplify reports an existing
+    // session do we wipe tokens from storage (no redirect) and retry.
     let result;
     try {
       result = await attemptSignIn();
     } catch (err: any) {
       const msg = String(err?.message || "");
-      // Amplify throws this when a stale session lingers despite the signOut above.
-      // Force a global sign-out to wipe cookies/localStorage, then retry once.
       if (msg.includes("already a signed in user") || err?.name === "UserAlreadyAuthenticatedException") {
-        // Local sign-out (no network needed) + storage wipe clears both the
-        // in-memory token provider and any persisted tokens, then retry.
-        try { await signOut(); } catch { /* ignore */ }
+        // Storage wipe clears persisted tokens without any network call or
+        // OAuth redirect, so the retry sees no existing session.
         wipeStaleCognitoTokens();
-        try { await signOut(); } catch { /* ignore */ }
         result = await attemptSignIn();
       } else {
         throw err;

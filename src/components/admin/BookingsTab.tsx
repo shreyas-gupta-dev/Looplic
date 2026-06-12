@@ -123,7 +123,7 @@ type BookingsTabProps = {
 };
 
 const BookingsTab = ({ role = "operation" }: BookingsTabProps) => {
-  const supabase = createClient();
+  const dataClient = createClient();
   const canDeleteOrders = role === "admin";
   const [bookings, setBookings] = useState<BookingView[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
@@ -152,7 +152,7 @@ const BookingsTab = ({ role = "operation" }: BookingsTabProps) => {
   const [catalogSubcategories, setCatalogSubcategories] = useState<RepairSubcategoryLookup[]>([]);
 
   async function fetchApprovedTechnicians() {
-    const withServices = await (supabase as any)
+    const withServices = await (dataClient as any)
       .from("technician_applications")
       .select("id, full_name, email, phone, city, service_types")
       .eq("status", "approved")
@@ -166,7 +166,7 @@ const BookingsTab = ({ role = "operation" }: BookingsTabProps) => {
       return [];
     }
 
-    const fallback = await (supabase as any)
+    const fallback = await (dataClient as any)
       .from("technician_applications")
       .select("id, full_name, email, phone, city")
       .eq("status", "approved")
@@ -178,14 +178,14 @@ const BookingsTab = ({ role = "operation" }: BookingsTabProps) => {
   async function fetchBookings() {
     setErrorMessage("");
 
-    const { data, error } = await supabase.from("bookings").select("*").order("created_at", { ascending: false });
+    const { data, error } = await dataClient.from("bookings").select("*").order("created_at", { ascending: false });
     const [{ data: billRows }, { data: inspectionRows }, technicianRows, { data: brandRowsForCreate }, { data: seriesRowsForCreate }, { data: modelRowsForCreate }, catalogResult] = await Promise.all([
-      (supabase as any).from("service_bills").select("booking_id, total_amount, payment_status, created_at"),
-      (supabase as any).from("booking_inspections").select("booking_id, status, reported_issue, device_condition, accessories_received, customer_approval, pickup_required, pickup_notes, quote_amount, quote_notes, warranty_label").order("created_at", { ascending: false }),
+      (dataClient as any).from("service_bills").select("booking_id, total_amount, payment_status, created_at"),
+      (dataClient as any).from("booking_inspections").select("booking_id, status, reported_issue, device_condition, accessories_received, customer_approval, pickup_required, pickup_notes, quote_amount, quote_notes, warranty_label").order("created_at", { ascending: false }),
       fetchApprovedTechnicians(),
-      supabase.from("brands").select("id, name, service_type").order("name"),
-      supabase.from("series").select("id, name, brand_id").order("name"),
-      supabase.from("models").select("id, name, series_id").order("name"),
+      dataClient.from("brands").select("id, name, service_type").order("name"),
+      dataClient.from("series").select("id, name, brand_id").order("name"),
+      dataClient.from("models").select("id, name, series_id").order("name"),
       fetch("/api/catalog/repair-options").then((response) => response.ok ? response.json() : { categories: [], subcategories: [] }).catch(() => ({ categories: [], subcategories: [] })),
     ]);
     setBills((billRows || []) as BillSummary[]);
@@ -214,13 +214,13 @@ const BookingsTab = ({ role = "operation" }: BookingsTabProps) => {
 
     const [{ data: models }, { data: repairCategories }, { data: repairSubcategories }] = await Promise.all([
       modelIds.length
-        ? supabase.from("models").select("id, name, series_id").in("id", modelIds)
+        ? dataClient.from("models").select("id, name, series_id").in("id", modelIds)
         : Promise.resolve({ data: [] as Array<{ id: string; name: string; series_id: string }> }),
       repairCategoryIds.length
-        ? supabase.from("repair_categories").select("id, name").in("id", repairCategoryIds)
+        ? dataClient.from("repair_categories").select("id, name").in("id", repairCategoryIds)
         : Promise.resolve({ data: [] as Array<{ id: string; name: string }> }),
       repairSubcategoryIds.length
-        ? supabase.from("repair_subcategories").select("id, name").in("id", repairSubcategoryIds)
+        ? dataClient.from("repair_subcategories").select("id, name").in("id", repairSubcategoryIds)
         : Promise.resolve({ data: [] as Array<{ id: string; name: string }> }),
     ]);
 
@@ -230,13 +230,13 @@ const BookingsTab = ({ role = "operation" }: BookingsTabProps) => {
     const modelMap = new Map<string, ModelLookup>(typedModels.map((model) => [model.id, model]));
     const seriesIds = [...new Set(typedModels.map((model) => model.series_id).filter(Boolean))];
     const { data: seriesRows } = seriesIds.length
-      ? await supabase.from("series").select("id, brand_id").in("id", seriesIds)
+      ? await dataClient.from("series").select("id, brand_id").in("id", seriesIds)
       : { data: [] as Array<{ id: string; brand_id: string }> };
     const typedSeriesRows = (seriesRows || []) as SeriesLookup[];
     const seriesMap = new Map<string, SeriesLookup>(typedSeriesRows.map((series) => [series.id, series]));
     const brandIds = [...new Set(typedSeriesRows.map((series) => series.brand_id).filter(Boolean))];
     const { data: brandRows } = brandIds.length
-      ? await supabase.from("brands").select("id, name").in("id", brandIds)
+      ? await dataClient.from("brands").select("id, name").in("id", brandIds)
       : { data: [] as Array<{ id: string; name: string }> };
 
     const typedBrandRows = (brandRows || []) as NamedLookup[];
@@ -261,7 +261,7 @@ const BookingsTab = ({ role = "operation" }: BookingsTabProps) => {
 
   useEffect(() => {
     fetchBookings();
-    const channel = supabase
+    const channel = dataClient
       .channel("admin-bookings")
       .on("postgres_changes", { event: "*", schema: "public", table: "bookings" }, fetchBookings)
       .subscribe();
@@ -297,7 +297,7 @@ const BookingsTab = ({ role = "operation" }: BookingsTabProps) => {
   async function updateStatus(id: string, status: string) {
     setBookings((current) => current.map((booking) => (booking.id === id ? { ...booking, status } : booking)));
     setDetail((current) => (current && current.id === id ? { ...current, status } : current));
-    const { error } = await supabase.from("bookings").update({ status } as never).eq("id", id);
+    const { error } = await dataClient.from("bookings").update({ status } as never).eq("id", id);
     if (error) {
       toast.error(error.message || "Failed to update booking status.");
       fetchBookings();
@@ -311,7 +311,7 @@ const BookingsTab = ({ role = "operation" }: BookingsTabProps) => {
     const previousDetail = detail;
     setBookings((current) => current.filter((booking) => booking.id !== id));
     setDetail((current) => (current?.id === id ? null : current));
-    const { error } = await supabase.from("bookings").delete().eq("id", id);
+    const { error } = await dataClient.from("bookings").delete().eq("id", id);
     if (error) {
       toast.error(error.message || "Failed to delete booking.");
       setBookings(previousBookings);
@@ -356,7 +356,7 @@ const BookingsTab = ({ role = "operation" }: BookingsTabProps) => {
     };
     setBookings((current) => current.map((booking) => (booking.id === assignTarget.id ? { ...booking, ...updates } : booking)));
     setDetail((current) => (current?.id === assignTarget.id ? { ...current, ...updates } : current));
-    const { error } = await (supabase as any).from("bookings").update(updates).eq("id", assignTarget.id);
+    const { error } = await (dataClient as any).from("bookings").update(updates).eq("id", assignTarget.id);
     setAssigning(false);
 
     if (error) {
@@ -423,7 +423,7 @@ const BookingsTab = ({ role = "operation" }: BookingsTabProps) => {
     }
 
     setCreatingOrder(true);
-    const { data: userData } = await supabase.auth.getUser();
+    const { data: userData } = await dataClient.auth.getUser();
     const selectedTechnician = technicians.find((technician) => technician.email === createOrder.assignedRider);
     if (selectedTechnician && !technicianSupportsService(selectedTechnician.service_types, createOrder.serviceType)) {
       setCreatingOrder(false);
@@ -454,11 +454,11 @@ const BookingsTab = ({ role = "operation" }: BookingsTabProps) => {
       created_by: userData?.user?.id || null,
     };
 
-    const insertResult = await (supabase as any).from("bookings").insert(payload).select("id, booking_code").single();
+    const insertResult = await (dataClient as any).from("bookings").insert(payload).select("id, booking_code").single();
     const bookingCode = insertResult.data?.booking_code || "";
 
     if (insertResult.error && String(insertResult.error.message || "").includes("booking_code")) {
-      const fallbackResult = await (supabase as any).from("bookings").insert(payload).select("id").single();
+      const fallbackResult = await (dataClient as any).from("bookings").insert(payload).select("id").single();
       if (fallbackResult.error) {
         setCreatingOrder(false);
         toast.error(fallbackResult.error.message || "Unable to create order.");

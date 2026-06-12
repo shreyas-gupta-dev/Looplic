@@ -117,7 +117,7 @@ export function BookingStepFlow({
   repairCategories,
   repairSubcategories,
 }: BookingStepFlowProps) {
-  const supabase = createClient();
+  const dataClient = createClient();
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -260,7 +260,7 @@ export function BookingStepFlow({
       inspectLatitude: latitude,
       inspectLongitude: longitude,
     });
-    return supabase.from("customer_profiles").upsert(profilePayload as any, { onConflict: "user_id" }).select("user_id").single();
+    return dataClient.from("customer_profiles").upsert(profilePayload as any, { onConflict: "user_id" }).select("user_id").single();
   }
 
   function useCurrentLocation() {
@@ -393,7 +393,7 @@ export function BookingStepFlow({
     async function loadUser() {
       const {
         data: { session },
-      } = await supabase.auth.getSession();
+      } = await dataClient.auth.getSession();
       const currentUser = session?.user ?? null;
 
       if (!ignore) {
@@ -406,7 +406,7 @@ export function BookingStepFlow({
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = dataClient.auth.onAuthStateChange((_event, session) => {
       if (!ignore) {
         setUser(session?.user ?? null);
         setAuthLoading(false);
@@ -417,7 +417,7 @@ export function BookingStepFlow({
       ignore = true;
       subscription.unsubscribe();
     };
-  }, [supabase.auth]);
+  }, [dataClient.auth]);
 
   useEffect(() => {
     let ignore = false;
@@ -428,7 +428,7 @@ export function BookingStepFlow({
       }
 
       try {
-        const { data: profileData } = await supabase
+        const { data: profileData } = await dataClient
           .from("customer_profiles")
           .select("full_name, phone, address, city, pincode, inspect_latitude, inspect_longitude")
           .eq("user_id", user.id)
@@ -459,7 +459,7 @@ export function BookingStepFlow({
           }
         }
 
-        const { data } = await supabase
+        const { data } = await dataClient
           .from("bookings")
           .select("customer_name, customer_phone, location, pincode, inspect_latitude, inspect_longitude")
           .eq("user_id", user.id)
@@ -503,7 +503,7 @@ export function BookingStepFlow({
     return () => {
       ignore = true;
     };
-  }, [profileLoaded, supabase, user]);
+  }, [profileLoaded, dataClient, user]);
 
   useEffect(() => {
     if (currentStep === "repair" && !selectedCategoryId) {
@@ -588,11 +588,11 @@ export function BookingStepFlow({
         inspectLongitude: longitude,
         notes: visitingChargePolicy,
       }) as BookingInsert;
-    const bookingInsert = await supabase.from("bookings").insert(insertData as any).select("booking_code").single();
+    const bookingInsert = await dataClient.from("bookings").insert(insertData as any).select("booking_code").single();
     const bookingCode = bookingInsert.data?.booking_code || "";
 
     if (bookingInsert.error && isMissingBookingCodeColumnError(bookingInsert.error)) {
-      const fallbackInsert = await supabase.from("bookings").insert(insertData as any);
+      const fallbackInsert = await dataClient.from("bookings").insert(insertData as any);
       if (fallbackInsert.error) {
         toast.error(fallbackInsert.error.message || "Booking failed. Please try again.");
         setSubmitting(false);

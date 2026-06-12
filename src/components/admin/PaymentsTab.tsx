@@ -52,7 +52,7 @@ function isMissingServiceBillsTable(error: { message?: string } | null | undefin
 }
 
 export default function PaymentsTab({ role = "operation" }: PaymentsTabProps) {
-  const supabase = createClient() as any;
+  const dataClient = createClient() as any;
   const canDeleteBills = role === "admin";
   const [bills, setBills] = useState<Bill[]>([]);
   const [bookings, setBookings] = useState<BookingRow[]>([]);
@@ -86,15 +86,15 @@ export default function PaymentsTab({ role = "operation" }: PaymentsTabProps) {
     setErrorMessage("");
 
     const [billResult, bookingResult, catalogResult] = await Promise.all([
-      supabase.from("service_bills").select("*").order("created_at", { ascending: false }),
-      supabase.from("bookings").select("*").order("created_at", { ascending: false }).limit(200),
+      dataClient.from("service_bills").select("*").order("created_at", { ascending: false }),
+      dataClient.from("bookings").select("*").order("created_at", { ascending: false }).limit(200),
       fetch("/api/catalog/repair-options").then((response) => response.ok ? response.json() : { categories: [], subcategories: [] }).catch(() => ({ categories: [], subcategories: [] })),
     ]);
 
     if (billResult.error) {
       setErrorMessage(
         isMissingServiceBillsTable(billResult.error)
-          ? "Billing is not set up yet. Apply the Supabase migration 20260515120000_add_operations_billing_workflow.sql, then refresh the schema cache."
+          ? "Billing is not set up yet. Apply the database migration 20260515120000_add_operations_billing_workflow.sql, then refresh the schema cache."
           : billResult.error.message || "Unable to load billing table.",
       );
       setBills([]);
@@ -202,7 +202,7 @@ export default function PaymentsTab({ role = "operation" }: PaymentsTabProps) {
     }
 
     setSaving(true);
-    const { data: userData } = await supabase.auth.getUser();
+    const { data: userData } = await dataClient.auth.getUser();
     const existingBill = bookingId ? bills.find((bill) => bill.booking_id === bookingId) : null;
     const warrantyFields = buildWarrantyFields({ preset: warrantyPreset, value: warrantyValue, unit: warrantyUnit });
     const billPayload = {
@@ -222,8 +222,8 @@ export default function PaymentsTab({ role = "operation" }: PaymentsTabProps) {
       created_by: userData?.user?.id || null,
     };
     const { error } = existingBill
-      ? await supabase.from("service_bills").update(billPayload).eq("id", existingBill.id)
-      : await supabase.from("service_bills").insert({ ...billPayload, invoice_number: "" });
+      ? await dataClient.from("service_bills").update(billPayload).eq("id", existingBill.id)
+      : await dataClient.from("service_bills").insert({ ...billPayload, invoice_number: "" });
 
     setSaving(false);
     if (error) {
@@ -239,7 +239,7 @@ export default function PaymentsTab({ role = "operation" }: PaymentsTabProps) {
 
   async function updatePaymentStatus(bill: Bill, nextStatus: string) {
     setBills((current) => current.map((item) => (item.id === bill.id ? { ...item, payment_status: nextStatus } : item)));
-    const { error } = await supabase.from("service_bills").update({ payment_status: nextStatus }).eq("id", bill.id);
+    const { error } = await dataClient.from("service_bills").update({ payment_status: nextStatus }).eq("id", bill.id);
     if (error) {
       toast.error(error.message || "Unable to update payment.");
       fetchData();
@@ -257,7 +257,7 @@ export default function PaymentsTab({ role = "operation" }: PaymentsTabProps) {
 
     const previousBills = bills;
     setBills((current) => current.filter((item) => item.id !== bill.id));
-    const { error } = await supabase.from("service_bills").delete().eq("id", bill.id);
+    const { error } = await dataClient.from("service_bills").delete().eq("id", bill.id);
     if (error) {
       setBills(previousBills);
       toast.error(error.message || "Unable to delete bill.");

@@ -71,7 +71,7 @@ export function BookingClientPage({
   const [submitting, setSubmitting] = useState(false);
   const [booked, setBooked] = useState(false);
 
-  const supabase = createClient();
+  const dataClient = createClient();
 
   const visibleSubcategories = selectedCategoryId
     ? repairSubcategories.filter((subcategory) => subcategory.category_id === selectedCategoryId)
@@ -109,7 +109,7 @@ export function BookingClientPage({
 
     const {
       data: { user },
-    } = await supabase.auth.getUser();
+    } = await dataClient.auth.getUser();
 
     const insertData = buildBookingInsert({
       customerName: name,
@@ -125,11 +125,11 @@ export function BookingClientPage({
       guardType: !isRepair ? selectedGuard?.guard_type ?? null : null,
     });
 
-    const bookingInsert = await supabase.from("bookings").insert(insertData).select("booking_code").single();
+    const bookingInsert = await dataClient.from("bookings").insert(insertData).select("booking_code").single();
     const bookingCode = bookingInsert.data?.booking_code || "";
 
     if (bookingInsert.error && isMissingBookingCodeColumnError(bookingInsert.error)) {
-      const fallbackInsert = await supabase.from("bookings").insert(insertData);
+      const fallbackInsert = await dataClient.from("bookings").insert(insertData);
       if (fallbackInsert.error) {
         toast.error("Booking failed. Please try again.");
         setSubmitting(false);

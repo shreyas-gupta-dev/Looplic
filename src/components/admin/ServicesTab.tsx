@@ -10,7 +10,7 @@ import { slugify } from "@/src/lib/slug";
 import { convertFileToWebp } from "@/src/lib/images/webp";
 import ImageUpload from "./ImageUpload";
 
-const supabase = new Proxy({} as any, {
+const dataClient = new Proxy({} as any, {
   get(_target, property) {
     return (createClient() as any)[property];
   },
@@ -107,13 +107,13 @@ const Modal = ({ open, onClose, title, children }: { open: boolean; onClose: () 
 const uploadServiceImage = async (bucket: string, id: string, file: File) => {
   const optimizedFile = await convertFileToWebp(file);
   const path = `${id}.webp`;
-  const { error } = await supabase.storage.from(bucket).upload(path, optimizedFile, {
+  const { error } = await dataClient.storage.from(bucket).upload(path, optimizedFile, {
     upsert: true,
     contentType: "image/webp",
     cacheControl: "31536000",
   });
   if (error) return null;
-  const publicUrl = supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
+  const publicUrl = dataClient.storage.from(bucket).getPublicUrl(path).data.publicUrl;
   return publicUrl;
 };
 
@@ -126,42 +126,42 @@ const stripSlugField = <T extends Record<string, unknown>>(payload: T) => {
 };
 
 const insertWithOptionalSlug = async (table: "brands" | "series" | "models", payload: Record<string, unknown>) => {
-  const primaryAttempt = await (supabase.from(table) as any).insert(payload).select().single();
+  const primaryAttempt = await (dataClient.from(table) as any).insert(payload).select().single();
   if (!hasMissingSlugColumnError(primaryAttempt.error, table)) {
     return primaryAttempt;
   }
 
-  return (supabase.from(table) as any).insert(stripSlugField(payload)).select().single();
+  return (dataClient.from(table) as any).insert(stripSlugField(payload)).select().single();
 };
 
 const updateWithOptionalSlug = async (table: "brands" | "series" | "models", id: string, payload: Record<string, unknown>) => {
-  const primaryAttempt = await (supabase.from(table) as any).update(payload).eq("id", id);
+  const primaryAttempt = await (dataClient.from(table) as any).update(payload).eq("id", id);
   if (!hasMissingSlugColumnError(primaryAttempt.error, table)) {
     return primaryAttempt;
   }
 
-  return (supabase.from(table) as any).update(stripSlugField(payload)).eq("id", id);
+  return (dataClient.from(table) as any).update(stripSlugField(payload)).eq("id", id);
 };
 
 const fetchRepairCategoriesForAdmin = async (serviceType: string) =>
-  (supabase.from("repair_categories") as any)
+  (dataClient.from("repair_categories") as any)
     .select("*")
     .eq("service_type", serviceType)
     .order("sort_order")
     .order("name");
 
 const fetchRepairSubcategoriesForAdmin = async (categoryId: string) =>
-  (supabase.from("repair_subcategories") as any)
+  (dataClient.from("repair_subcategories") as any)
     .select("*")
     .eq("category_id", categoryId)
     .order("sort_order")
     .order("name");
 
 const insertRepairCatalogRow = async (table: "repair_categories" | "repair_subcategories", payload: Record<string, unknown>) =>
-  (supabase.from(table) as any).insert(payload).select().single();
+  (dataClient.from(table) as any).insert(payload).select().single();
 
 const getBrandByIdWithOptionalSlug = async (brandId: string) => {
-  const withSlug = await (supabase.from("brands") as any)
+  const withSlug = await (dataClient.from("brands") as any)
     .select("id, name, slug")
     .eq("id", brandId)
     .maybeSingle();
@@ -170,7 +170,7 @@ const getBrandByIdWithOptionalSlug = async (brandId: string) => {
     return withSlug;
   }
 
-  const withoutSlug = await (supabase.from("brands") as any)
+  const withoutSlug = await (dataClient.from("brands") as any)
     .select("id, name")
     .eq("id", brandId)
     .maybeSingle();
@@ -189,7 +189,7 @@ const getBrandByIdWithOptionalSlug = async (brandId: string) => {
 };
 
 const getSeriesRevalidationPaths = async (seriesId: string, serviceType: string) => {
-  const { data: series } = await (supabase.from("series") as any)
+  const { data: series } = await (dataClient.from("series") as any)
     .select("id, name, slug, brand_id")
     .eq("id", seriesId)
     .maybeSingle();
@@ -216,7 +216,7 @@ const getSeriesRevalidationPaths = async (seriesId: string, serviceType: string)
 };
 
 const getModelRevalidationPaths = async (modelId: string, serviceType: string) => {
-  const { data: model } = await (supabase.from("models") as any)
+  const { data: model } = await (dataClient.from("models") as any)
     .select("id, name, slug, series_id")
     .eq("id", modelId)
     .maybeSingle();
@@ -225,7 +225,7 @@ const getModelRevalidationPaths = async (modelId: string, serviceType: string) =
     return [];
   }
 
-  const { data: series } = await (supabase.from("series") as any)
+  const { data: series } = await (dataClient.from("series") as any)
     .select("id, name, slug, brand_id")
     .eq("id", model.series_id)
     .maybeSingle();
@@ -362,7 +362,7 @@ const BrandsTab = ({ serviceType = "mobile" }: { serviceType?: CatalogServiceTyp
   const [moveSaving, setMoveSaving] = useState(false);
 
   const fetch = async () => {
-    const { data } = await supabase.from("brands").select("*").eq("service_type", serviceType).order("sort_order").order("name");
+    const { data } = await dataClient.from("brands").select("*").eq("service_type", serviceType).order("sort_order").order("name");
     if (data) setBrands(data as Brand[]);
   };
   useEffect(() => { fetch(); }, [serviceType]);
@@ -381,7 +381,7 @@ const BrandsTab = ({ serviceType = "mobile" }: { serviceType?: CatalogServiceTyp
     if (!error && data) {
       let finalUrl = imageUrl;
       if (image) finalUrl = await uploadServiceImage("brand-images", data.id, image);
-      if (finalUrl) await supabase.from("brands").update({ image_url: finalUrl }).eq("id", data.id);
+      if (finalUrl) await dataClient.from("brands").update({ image_url: finalUrl }).eq("id", data.id);
       setBrands((current) =>
         sortBrandsForAdmin([
           ...current,
@@ -432,7 +432,7 @@ const BrandsTab = ({ serviceType = "mobile" }: { serviceType?: CatalogServiceTyp
   };
 
   const handleDelete = async (id: string) => {
-    await (supabase.from("brands" as any) as any).delete().eq("id", id);
+    await (dataClient.from("brands" as any) as any).delete().eq("id", id);
     await revalidateBrandPages(serviceType);
     setBrands((current) => current.filter((brand) => brand.id !== id)); toast.success("Deleted");
   };
@@ -467,7 +467,7 @@ const BrandsTab = ({ serviceType = "mobile" }: { serviceType?: CatalogServiceTyp
     setMoveSaving(true);
 
     const updates = reorderedBrands.map((brand, index) =>
-      (supabase.from("brands") as any).update({ sort_order: index + 1 }).eq("id", brand.id),
+      (dataClient.from("brands") as any).update({ sort_order: index + 1 }).eq("id", brand.id),
     );
 
     const results = await Promise.all(updates);
@@ -602,10 +602,10 @@ const SeriesTab = ({ serviceType = "mobile" }: { serviceType?: CatalogServiceTyp
   const [editImageUrl, setEditImageUrl] = useState<string | null>(null);
   const [editSaving, setEditSaving] = useState(false);
 
-  useEffect(() => { supabase.from("brands").select("*").eq("service_type", serviceType).order("name").then(({ data }) => { if (data) setBrands(data as Brand[]); }); }, [serviceType]);
+  useEffect(() => { dataClient.from("brands").select("*").eq("service_type", serviceType).order("name").then(({ data }) => { if (data) setBrands(data as Brand[]); }); }, [serviceType]);
 
   const fetchSeries = async (brandId: string) => {
-    const { data } = await supabase.from("series").select("*").eq("brand_id", brandId).order("name");
+    const { data } = await dataClient.from("series").select("*").eq("brand_id", brandId).order("name");
     if (data) setSeriesList(data as any);
   };
 
@@ -621,7 +621,7 @@ const SeriesTab = ({ serviceType = "mobile" }: { serviceType?: CatalogServiceTyp
     let finalUrl = addImageUrl;
     if (!error && data && addImage) {
       finalUrl = await uploadServiceImage("service-images", `series-${data.id}`, addImage);
-      if (finalUrl) await (supabase.from("series") as any).update({ image_url: finalUrl }).eq("id", data.id);
+      if (finalUrl) await (dataClient.from("series") as any).update({ image_url: finalUrl }).eq("id", data.id);
     }
     if (error) toast.error(error.message); else {
       setSeriesList((current) => sortByName([...current, { ...(data as Series), image_url: finalUrl ?? (data as Series).image_url ?? null }]));
@@ -658,7 +658,7 @@ const SeriesTab = ({ serviceType = "mobile" }: { serviceType?: CatalogServiceTyp
   };
 
   const handleDelete = async (id: string) => {
-    await (supabase.from("series" as any) as any).delete().eq("id", id);
+    await (dataClient.from("series" as any) as any).delete().eq("id", id);
     await revalidateCatalogMutation(serviceType);
     setSeriesList((current) => current.filter((series) => series.id !== id)); toast.success("Deleted");
   };
@@ -755,11 +755,11 @@ const ModelsTab = ({ serviceType = "mobile" }: { serviceType?: CatalogServiceTyp
   const [importing, setImporting] = useState(false);
   const importInputRef = useRef<HTMLInputElement | null>(null);
 
-  useEffect(() => { supabase.from("brands").select("*").eq("service_type", serviceType).order("name").then(({ data }) => { if (data) setBrands(data as Brand[]); }); }, [serviceType]);
-  useEffect(() => { if (selectedBrand) { supabase.from("series").select("*").eq("brand_id", selectedBrand).order("name").then(({ data }) => { if (data) setSeriesList(data as any); }); } else { setSeriesList([]); } setSelectedSeries(""); setModelSearch(""); }, [selectedBrand]);
+  useEffect(() => { dataClient.from("brands").select("*").eq("service_type", serviceType).order("name").then(({ data }) => { if (data) setBrands(data as Brand[]); }); }, [serviceType]);
+  useEffect(() => { if (selectedBrand) { dataClient.from("series").select("*").eq("brand_id", selectedBrand).order("name").then(({ data }) => { if (data) setSeriesList(data as any); }); } else { setSeriesList([]); } setSelectedSeries(""); setModelSearch(""); }, [selectedBrand]);
 
   const fetchModels = async (seriesId: string) => {
-    const { data } = await supabase.from("models").select("*").eq("series_id", seriesId).order("name");
+    const { data } = await dataClient.from("models").select("*").eq("series_id", seriesId).order("name");
     if (data) setModels(data as any);
   };
 
@@ -786,7 +786,7 @@ const ModelsTab = ({ serviceType = "mobile" }: { serviceType?: CatalogServiceTyp
     let finalUrl = addImageUrl;
     if (!error && data && addImage) {
       finalUrl = await uploadServiceImage("service-images", `model-${data.id}`, addImage);
-      if (finalUrl) await (supabase.from("models") as any).update({ image_url: finalUrl }).eq("id", data.id);
+      if (finalUrl) await (dataClient.from("models") as any).update({ image_url: finalUrl }).eq("id", data.id);
     }
     if (error) toast.error(error.message); else {
       setModels((current) => sortByName([...current, { ...(data as Model), image_url: finalUrl ?? (data as Model).image_url ?? null }]));
@@ -823,7 +823,7 @@ const ModelsTab = ({ serviceType = "mobile" }: { serviceType?: CatalogServiceTyp
   };
 
   const handleDelete = async (id: string) => {
-    await (supabase.from("models" as any) as any).delete().eq("id", id);
+    await (dataClient.from("models" as any) as any).delete().eq("id", id);
     await revalidateCatalogMutation(serviceType);
     setModels((current) => current.filter((model) => model.id !== id)); toast.success("Deleted");
   };
@@ -846,7 +846,7 @@ const ModelsTab = ({ serviceType = "mobile" }: { serviceType?: CatalogServiceTyp
         return;
       }
 
-      const { data: serviceSeries, error: seriesError } = await supabase
+      const { data: serviceSeries, error: seriesError } = await dataClient
         .from("series")
         .select("id")
         .in("brand_id", serviceBrandIds);
@@ -861,7 +861,7 @@ const ModelsTab = ({ serviceType = "mobile" }: { serviceType?: CatalogServiceTyp
         return;
       }
 
-      const { data: allModels, error: modelsError } = await supabase.from("models").select("id, name, series_id").in("series_id", serviceSeriesIds);
+      const { data: allModels, error: modelsError } = await dataClient.from("models").select("id, name, series_id").in("series_id", serviceSeriesIds);
       if (modelsError || !allModels) {
         toast.error(modelsError?.message || "Unable to load models for import.");
         return;
@@ -900,7 +900,7 @@ const ModelsTab = ({ serviceType = "mobile" }: { serviceType?: CatalogServiceTyp
         }
 
         const model = scopedMatches[0];
-        const { error } = await (supabase.from("models") as any).update({ image_url: row.imageUrl }).eq("id", model.id);
+        const { error } = await (dataClient.from("models") as any).update({ image_url: row.imageUrl }).eq("id", model.id);
         if (error) {
           skipped.push(`Row ${index + 2}: ${error.message}`);
           continue;
@@ -1104,13 +1104,13 @@ const DeviceGuardsManageTab = () => {
 
   const fetchCategories = async () => {
     setLoading(true);
-    const { data } = await supabase.from("screen_guard_categories").select("*").order("name");
+    const { data } = await dataClient.from("screen_guard_categories").select("*").order("name");
     if (data) setCategories(data);
     setLoading(false);
   };
 
   const fetchTypes = async (catId: string) => {
-    const { data } = await supabase.from("screen_guard_types").select("*").eq("category_id", catId).order("name");
+    const { data } = await dataClient.from("screen_guard_types").select("*").eq("category_id", catId).order("name");
     if (data) setTypes(data as GuardType[]);
   };
 
@@ -1120,17 +1120,17 @@ const DeviceGuardsManageTab = () => {
   const uploadTypeImage = async (id: string, file: File) => {
     const optimizedFile = await convertFileToWebp(file);
     const path = `${id}.webp`;
-    const { error } = await supabase.storage.from("guard-type-images").upload(path, optimizedFile, {
+    const { error } = await dataClient.storage.from("guard-type-images").upload(path, optimizedFile, {
       upsert: true,
       contentType: "image/webp",
       cacheControl: "31536000",
     });
     if (error) return null;
-    return supabase.storage.from("guard-type-images").getPublicUrl(path).data.publicUrl;
+    return dataClient.storage.from("guard-type-images").getPublicUrl(path).data.publicUrl;
   };
 
   const getAssignedModelIdsForGuardType = async (guardType: string) => {
-    const { data } = await (supabase.from("model_screen_guards") as any)
+    const { data } = await (dataClient.from("model_screen_guards") as any)
       .select("model_id")
       .eq("guard_type", guardType);
 
@@ -1146,7 +1146,7 @@ const DeviceGuardsManageTab = () => {
   };
 
   const syncAssignedGuardType = async (previousName: string, updates: { name: string; price: number; image_url?: string | null }) => {
-    const { data: rowsToUpdate, error: fetchError } = await (supabase.from("model_screen_guards") as any)
+    const { data: rowsToUpdate, error: fetchError } = await (dataClient.from("model_screen_guards") as any)
       .select("id, model_id")
       .eq("guard_type", previousName);
 
@@ -1169,7 +1169,7 @@ const DeviceGuardsManageTab = () => {
       assignedUpdates.image_url = updates.image_url ?? null;
     }
 
-    let { error } = await (supabase.from("model_screen_guards") as any)
+    let { error } = await (dataClient.from("model_screen_guards") as any)
       .update(assignedUpdates)
       .in("id", rowIds);
 
@@ -1178,7 +1178,7 @@ const DeviceGuardsManageTab = () => {
       error.message.includes("model_screen_guards");
 
     if (missingImageUrlColumn) {
-      const fallbackResult = await (supabase.from("model_screen_guards") as any)
+      const fallbackResult = await (dataClient.from("model_screen_guards") as any)
         .update({ guard_type: updates.name, price: updates.price })
         .in("id", rowIds);
       error = fallbackResult.error;
@@ -1196,14 +1196,14 @@ const DeviceGuardsManageTab = () => {
     const existingTypeNames = types.map((type) => type.name).filter(Boolean);
     if (existingTypeNames.length === 0) return;
 
-    const { data: categoryAssignments } = await (supabase.from("model_screen_guards") as any)
+    const { data: categoryAssignments } = await (dataClient.from("model_screen_guards") as any)
       .select("model_id")
       .in("guard_type", existingTypeNames);
 
     const modelIds = Array.from(new Set((categoryAssignments || []).map((row: { model_id: string }) => row.model_id).filter(Boolean)));
     if (modelIds.length === 0) return;
 
-    const { data: existingNewAssignments } = await (supabase.from("model_screen_guards") as any)
+    const { data: existingNewAssignments } = await (dataClient.from("model_screen_guards") as any)
       .select("model_id")
       .eq("guard_type", guardType.name)
       .in("model_id", modelIds);
@@ -1220,14 +1220,14 @@ const DeviceGuardsManageTab = () => {
 
     if (inserts.length === 0) return;
 
-    let { error } = await (supabase.from("model_screen_guards") as any).insert(inserts);
+    let { error } = await (dataClient.from("model_screen_guards") as any).insert(inserts);
 
     const missingImageUrlColumn =
       error?.message?.includes("image_url") &&
       error.message.includes("model_screen_guards");
 
     if (missingImageUrlColumn) {
-      const fallbackResult = await (supabase.from("model_screen_guards") as any).insert(
+      const fallbackResult = await (dataClient.from("model_screen_guards") as any).insert(
         inserts.map(({ image_url, ...insert }) => insert),
       );
       error = fallbackResult.error;
@@ -1240,19 +1240,19 @@ const DeviceGuardsManageTab = () => {
   const handleAddCat = async () => {
     if (!catName.trim()) return;
     setSaving(true);
-    const { error } = await supabase.from("screen_guard_categories").insert({ name: catName.trim() });
+    const { error } = await dataClient.from("screen_guard_categories").insert({ name: catName.trim() });
     if (error) toast.error(error.message); else { toast.success("Category added"); setShowAddCat(false); setCatName(""); fetchCategories(); }
     setSaving(false);
   };
 
   const handleEditCat = async (id: string) => {
     if (!editCatName.trim()) return;
-    await (supabase.from("screen_guard_categories" as any) as any).update({ name: editCatName.trim() }).eq("id", id);
+    await (dataClient.from("screen_guard_categories" as any) as any).update({ name: editCatName.trim() }).eq("id", id);
     setEditCatId(null); fetchCategories(); toast.success("Updated");
   };
 
   const handleDeleteCat = async (id: string) => {
-    await (supabase.from("screen_guard_categories" as any) as any).delete().eq("id", id);
+    await (dataClient.from("screen_guard_categories" as any) as any).delete().eq("id", id);
     if (selectedCat === id) { setSelectedCat(""); setTypes([]); }
     fetchCategories(); toast.success("Deleted");
   };
@@ -1262,12 +1262,12 @@ const DeviceGuardsManageTab = () => {
     setSaving(true);
     const insertData: any = { category_id: selectedCat, name: typeName.trim(), price: typePrice ? parseFloat(typePrice) : 0 };
     if (typeImageUrl) insertData.image_url = typeImageUrl;
-    const { data, error } = await (supabase.from("screen_guard_types") as any).insert(insertData).select().single();
+    const { data, error } = await (dataClient.from("screen_guard_types") as any).insert(insertData).select().single();
     let savedType = data as GuardType | null;
     if (!error && data && typeImage) {
       const url = await uploadTypeImage(data.id, typeImage);
       if (url) {
-        await (supabase.from("screen_guard_types" as any) as any).update({ image_url: url }).eq("id", data.id);
+        await (dataClient.from("screen_guard_types" as any) as any).update({ image_url: url }).eq("id", data.id);
         savedType = { ...(data as GuardType), image_url: url };
       }
     }
@@ -1291,9 +1291,9 @@ const DeviceGuardsManageTab = () => {
   const handleDeleteType = async (id: string) => {
     const typeToDelete = types.find((type) => type.id === id);
     const modelIds = typeToDelete ? await getAssignedModelIdsForGuardType(typeToDelete.name) : [];
-    await (supabase.from("screen_guard_types" as any) as any).delete().eq("id", id);
+    await (dataClient.from("screen_guard_types" as any) as any).delete().eq("id", id);
     if (typeToDelete) {
-      await (supabase.from("model_screen_guards" as any) as any).delete().eq("guard_type", typeToDelete.name);
+      await (dataClient.from("model_screen_guards" as any) as any).delete().eq("guard_type", typeToDelete.name);
       await revalidateAssignedGuardModels(modelIds as string[]);
     }
     fetchTypes(selectedCat); toast.success("Deleted");
@@ -1314,7 +1314,7 @@ const DeviceGuardsManageTab = () => {
       const url = await uploadTypeImage(editTypeId, editTypeImage);
       if (url) updates.image_url = url;
     }
-    const { error } = await (supabase.from("screen_guard_types" as any) as any).update(updates).eq("id", editTypeId);
+    const { error } = await (dataClient.from("screen_guard_types" as any) as any).update(updates).eq("id", editTypeId);
     if (error) {
       toast.error(error.message);
       setEditSaving(false);
@@ -1464,13 +1464,13 @@ const ModelGuardsTab = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { supabase.from("brands").select("*").eq("service_type", "mobile").order("name").then(({ data }) => { if (data) setBrands(data as Brand[]); }); }, []);
-  useEffect(() => { supabase.from("screen_guard_categories").select("*").order("name").then(({ data }) => { if (data) setCategories(data); }); }, []);
-  useEffect(() => { if (selectedBrand) { supabase.from("series").select("*").eq("brand_id", selectedBrand).order("name").then(({ data }) => { if (data) setSeriesList(data as any); }); } else setSeriesList([]); setSelectedSeries(""); }, [selectedBrand]);
-  useEffect(() => { if (selectedSeries) { supabase.from("models").select("*").eq("series_id", selectedSeries).order("name").then(({ data }) => { if (data) setModels(data as any); }); } else setModels([]); setSelectedModel(""); }, [selectedSeries]);
+  useEffect(() => { dataClient.from("brands").select("*").eq("service_type", "mobile").order("name").then(({ data }) => { if (data) setBrands(data as Brand[]); }); }, []);
+  useEffect(() => { dataClient.from("screen_guard_categories").select("*").order("name").then(({ data }) => { if (data) setCategories(data); }); }, []);
+  useEffect(() => { if (selectedBrand) { dataClient.from("series").select("*").eq("brand_id", selectedBrand).order("name").then(({ data }) => { if (data) setSeriesList(data as any); }); } else setSeriesList([]); setSelectedSeries(""); }, [selectedBrand]);
+  useEffect(() => { if (selectedSeries) { dataClient.from("models").select("*").eq("series_id", selectedSeries).order("name").then(({ data }) => { if (data) setModels(data as any); }); } else setModels([]); setSelectedModel(""); }, [selectedSeries]);
 
   const loadTypeImageMap = async () => {
-    const { data, error } = await supabase
+    const { data, error } = await dataClient
       .from("screen_guard_types")
       .select("name, image_url");
 
@@ -1488,7 +1488,7 @@ const ModelGuardsTab = () => {
   const fetchGuards = async (modelId: string) => {
     setLoading(true);
     const typeImageMap = await loadTypeImageMap();
-    const primaryQuery = await supabase
+    const primaryQuery = await dataClient
       .from("model_screen_guards")
       .select("*")
       .eq("model_id", modelId)
@@ -1506,7 +1506,7 @@ const ModelGuardsTab = () => {
         })),
       );
     } else if (missingImageUrlColumn) {
-      const fallbackQuery = await (supabase.from("model_screen_guards") as any)
+      const fallbackQuery = await (dataClient.from("model_screen_guards") as any)
         .select("id, model_id, guard_type, price, created_at")
         .eq("model_id", modelId)
         .order("guard_type");
@@ -1533,10 +1533,10 @@ const ModelGuardsTab = () => {
   const handleAssignCategory = async () => {
     if (!selectedModel || !selectedCategory) return;
     setSaving(true);
-    const { data: guardTypes } = await supabase.from("screen_guard_types").select("*").eq("category_id", selectedCategory).order("name");
+    const { data: guardTypes } = await dataClient.from("screen_guard_types").select("*").eq("category_id", selectedCategory).order("name");
     if (!guardTypes || guardTypes.length === 0) { toast.error("No guard types in this category"); setSaving(false); return; }
     const inserts = (guardTypes as GuardType[]).map(t => ({ model_id: selectedModel, guard_type: t.name, image_url: t.image_url, price: t.price }));
-    let { error } = await supabase.from("model_screen_guards").insert(inserts);
+    let { error } = await dataClient.from("model_screen_guards").insert(inserts);
 
     const missingImageUrlColumn =
       error?.message?.includes("image_url") &&
@@ -1549,7 +1549,7 @@ const ModelGuardsTab = () => {
         price: t.price,
       }));
 
-      const fallbackResult = await (supabase.from("model_screen_guards") as any).insert(fallbackInserts);
+      const fallbackResult = await (dataClient.from("model_screen_guards") as any).insert(fallbackInserts);
       error = fallbackResult.error;
     }
 
@@ -1558,7 +1558,7 @@ const ModelGuardsTab = () => {
   };
 
   const handleDelete = async (id: string) => {
-    await (supabase.from("model_screen_guards" as any) as any).delete().eq("id", id);
+    await (dataClient.from("model_screen_guards" as any) as any).delete().eq("id", id);
     await revalidateCatalogMutation("mobile", { exactPaths: await getModelRevalidationPaths(selectedModel, "mobile") });
     fetchGuards(selectedModel); toast.success("Deleted");
   };
@@ -1677,7 +1677,7 @@ const RepairCategoriesTab = ({ serviceType }: { serviceType: string }) => {
     const { data, error } = await insertRepairCatalogRow("repair_categories", insertData);
     if (!error && data && addImage) {
       const url = await uploadServiceImage("service-images", `repair-${data.id}`, addImage);
-      if (url) await (supabase.from("repair_categories") as any).update({ image_url: url }).eq("id", data.id);
+      if (url) await (dataClient.from("repair_categories") as any).update({ image_url: url }).eq("id", data.id);
     }
     if (error) toast.error(error.message); else { toast.success("Category added"); setShowAdd(false); setName(""); setAddImage(null); setAddImagePreview(null); setAddImageUrl(null); fetchCats(); }
     setSaving(false);
@@ -1696,13 +1696,13 @@ const RepairCategoriesTab = ({ serviceType }: { serviceType: string }) => {
       const url = await uploadServiceImage("service-images", `repair-${editItem.id}`, editImage);
       if (url) updates.image_url = url;
     }
-    await (supabase.from("repair_categories") as any).update(updates).eq("id", editItem.id);
+    await (dataClient.from("repair_categories") as any).update(updates).eq("id", editItem.id);
     toast.success("Updated"); setEditItem(null); fetchCats();
     setEditSaving(false);
   };
 
   const handleDelete = async (id: string) => {
-    await (supabase.from("repair_categories" as any) as any).delete().eq("id", id);
+    await (dataClient.from("repair_categories" as any) as any).delete().eq("id", id);
     fetchCats(); toast.success("Deleted");
   };
 
@@ -1741,7 +1741,7 @@ const RepairCategoriesTab = ({ serviceType }: { serviceType: string }) => {
 
     setMoveSaving(true);
     const updates = await Promise.all(nextItems.map((category, index) =>
-      (supabase.from("repair_categories") as any).update({ sort_order: index + 1 }).eq("id", category.id),
+      (dataClient.from("repair_categories") as any).update({ sort_order: index + 1 }).eq("id", category.id),
     ));
     const failed = updates.find((result: any) => result.error);
 
@@ -1853,18 +1853,18 @@ const AssignRepairTab = ({ serviceType }: { serviceType: string }) => {
 
   const brandServiceType = serviceType === "laptop" ? "laptop" : "mobile";
 
-  useEffect(() => { supabase.from("brands").select("*").eq("service_type", brandServiceType).order("name").then(({ data }) => { if (data) setBrands(data as Brand[]); }); }, [brandServiceType]);
+  useEffect(() => { dataClient.from("brands").select("*").eq("service_type", brandServiceType).order("name").then(({ data }) => { if (data) setBrands(data as Brand[]); }); }, [brandServiceType]);
   useEffect(() => {
     fetchRepairCategoriesForAdmin(serviceType).then(({ data }: any) => {
       if (data) setCategories(sortByPositionThenName(data));
     });
   }, [serviceType]);
-  useEffect(() => { if (selectedBrand) { supabase.from("series").select("*").eq("brand_id", selectedBrand).order("name").then(({ data }) => { if (data) setSeriesList(data as any); }); } else setSeriesList([]); setSelectedSeries(""); }, [selectedBrand]);
-  useEffect(() => { if (selectedSeries) { supabase.from("models").select("*").eq("series_id", selectedSeries).order("name").then(({ data }) => { if (data) setModels(data as any); }); } else setModels([]); setSelectedModel(""); }, [selectedSeries]);
+  useEffect(() => { if (selectedBrand) { dataClient.from("series").select("*").eq("brand_id", selectedBrand).order("name").then(({ data }) => { if (data) setSeriesList(data as any); }); } else setSeriesList([]); setSelectedSeries(""); }, [selectedBrand]);
+  useEffect(() => { if (selectedSeries) { dataClient.from("models").select("*").eq("series_id", selectedSeries).order("name").then(({ data }) => { if (data) setModels(data as any); }); } else setModels([]); setSelectedModel(""); }, [selectedSeries]);
 
   const fetchAssigned = async (modelId: string) => {
     setLoading(true);
-    const { data } = await (supabase.from("model_repair_services") as any).select("*, repair_categories(name)").eq("model_id", modelId);
+    const { data } = await (dataClient.from("model_repair_services") as any).select("*, repair_categories(name)").eq("model_id", modelId);
     if (data) setAssigned(data);
     setLoading(false);
   };
@@ -1874,7 +1874,7 @@ const AssignRepairTab = ({ serviceType }: { serviceType: string }) => {
   const handleAssign = async () => {
     if (!selectedModel || !selectedCat || !price) return;
     setSaving(true);
-    const { error } = await (supabase.from("model_repair_services") as any).insert({
+    const { error } = await (dataClient.from("model_repair_services") as any).insert({
       model_id: selectedModel, repair_category_id: selectedCat, price: parseFloat(price),
     });
     if (error) toast.error(error.message); else { toast.success("Repair service assigned"); setShowAdd(false); setSelectedCat(""); setPrice(""); fetchAssigned(selectedModel); }
@@ -1882,7 +1882,7 @@ const AssignRepairTab = ({ serviceType }: { serviceType: string }) => {
   };
 
   const handleDelete = async (id: string) => {
-    await (supabase.from("model_repair_services" as any) as any).delete().eq("id", id);
+    await (dataClient.from("model_repair_services" as any) as any).delete().eq("id", id);
     fetchAssigned(selectedModel); toast.success("Deleted");
   };
 
@@ -2011,7 +2011,7 @@ const RepairSubcategoriesTab = ({ serviceType }: { serviceType: string }) => {
     const { data, error } = await insertRepairCatalogRow("repair_subcategories", insertData);
     if (!error && data && addImage) {
       const url = await uploadServiceImage("service-images", `subsvc-${data.id}`, addImage);
-      if (url) await (supabase.from("repair_subcategories") as any).update({ image_url: url }).eq("id", data.id);
+      if (url) await (dataClient.from("repair_subcategories") as any).update({ image_url: url }).eq("id", data.id);
     }
     if (error) toast.error(error.message); else { toast.success("Subcategory added"); setShowAdd(false); setName(""); setPrice(""); setAddImage(null); setAddImagePreview(null); setAddImageUrl(null); fetchSubs(selectedCat); }
     setSaving(false);
@@ -2030,13 +2030,13 @@ const RepairSubcategoriesTab = ({ serviceType }: { serviceType: string }) => {
       const url = await uploadServiceImage("service-images", `subsvc-${editItem.id}`, editImage);
       if (url) updates.image_url = url;
     }
-    await (supabase.from("repair_subcategories") as any).update(updates).eq("id", editItem.id);
+    await (dataClient.from("repair_subcategories") as any).update(updates).eq("id", editItem.id);
     toast.success("Updated"); setEditItem(null); fetchSubs(selectedCat);
     setEditSaving(false);
   };
 
   const handleDelete = async (id: string) => {
-    await (supabase.from("repair_subcategories") as any).delete().eq("id", id);
+    await (dataClient.from("repair_subcategories") as any).delete().eq("id", id);
     fetchSubs(selectedCat); toast.success("Deleted");
   };
 
@@ -2075,7 +2075,7 @@ const RepairSubcategoriesTab = ({ serviceType }: { serviceType: string }) => {
 
     setMoveSaving(true);
     const updates = await Promise.all(nextItems.map((subcategory, index) =>
-      (supabase.from("repair_subcategories") as any).update({ sort_order: index + 1 }).eq("id", subcategory.id),
+      (dataClient.from("repair_subcategories") as any).update({ sort_order: index + 1 }).eq("id", subcategory.id),
     ));
     const failed = updates.find((result: any) => result.error);
 
@@ -2209,21 +2209,21 @@ export const RepairPricingMatrixTab = ({ serviceType }: { serviceType: CatalogSe
   const [settingSaving, setSettingSaving] = useState(false);
   const copy = serviceCopy[serviceType];
 
-  useEffect(() => { supabase.from("brands").select("*").eq("service_type", serviceType).order("name").then(({ data }) => { if (data) setBrands(data as Brand[]); }); }, [serviceType]);
+  useEffect(() => { dataClient.from("brands").select("*").eq("service_type", serviceType).order("name").then(({ data }) => { if (data) setBrands(data as Brand[]); }); }, [serviceType]);
   useEffect(() => {
     fetchRepairCategoriesForAdmin(serviceType).then(({ data }: any) => {
       if (data) setCategories(sortByPositionThenName(data));
     });
   }, [serviceType]);
-  useEffect(() => { if (selectedBrand) { supabase.from("series").select("*").eq("brand_id", selectedBrand).order("name").then(({ data }) => { if (data) setSeriesList(data as any); }); } else setSeriesList([]); setSelectedSeries(""); }, [selectedBrand]);
-  useEffect(() => { if (selectedSeries) { supabase.from("models").select("*").eq("series_id", selectedSeries).order("name").then(({ data }) => { if (data) setModels(data as any); }); } else setModels([]); setSelectedModel(""); }, [selectedSeries]);
+  useEffect(() => { if (selectedBrand) { dataClient.from("series").select("*").eq("brand_id", selectedBrand).order("name").then(({ data }) => { if (data) setSeriesList(data as any); }); } else setSeriesList([]); setSelectedSeries(""); }, [selectedBrand]);
+  useEffect(() => { if (selectedSeries) { dataClient.from("models").select("*").eq("series_id", selectedSeries).order("name").then(({ data }) => { if (data) setModels(data as any); }); } else setModels([]); setSelectedModel(""); }, [selectedSeries]);
 
   useEffect(() => {
     let ignore = false;
 
     async function fetchPriceDisplaySetting() {
       setSettingLoading(true);
-      const { data, error } = await (supabase.from("app_settings") as any)
+      const { data, error } = await (dataClient.from("app_settings") as any)
         .select("value")
         .eq("key", "repair_subcategory_prices")
         .maybeSingle();
@@ -2255,7 +2255,7 @@ export const RepairPricingMatrixTab = ({ serviceType }: { serviceType: CatalogSe
     setLoading(true);
     const [subcategoryResult, priceResult] = await Promise.all([
       fetchRepairSubcategoriesForAdmin(catId),
-      (supabase.from("model_repair_subcategory_prices") as any)
+      (dataClient.from("model_repair_subcategory_prices") as any)
         .select("id, model_id, repair_subcategory_id, price")
         .eq("model_id", modelId),
     ]);
@@ -2264,7 +2264,7 @@ export const RepairPricingMatrixTab = ({ serviceType }: { serviceType: CatalogSe
     const nextPrices = missingPricingTable ? [] : ((priceResult.data || []) as ModelRepairSubcategoryPrice[]);
     const nextPriceMap = new Map(nextPrices.map((item) => [item.repair_subcategory_id, item]));
 
-    setSetupError(missingPricingTable ? "Apply the model repair pricing Supabase migration, then refresh the schema cache." : "");
+    setSetupError(missingPricingTable ? "Apply the model repair pricing database migration, then refresh the schema cache." : "");
     setSubs(nextSubs);
     setPrices(nextPrices);
     setDraftPrices(
@@ -2300,7 +2300,7 @@ export const RepairPricingMatrixTab = ({ serviceType }: { serviceType: CatalogSe
     }
 
     setSavingId(subcategory.id);
-    const { error } = await (supabase.from("model_repair_subcategory_prices") as any).upsert(
+    const { error } = await (dataClient.from("model_repair_subcategory_prices") as any).upsert(
       { model_id: selectedModel, repair_subcategory_id: subcategory.id, price: nextPrice },
       { onConflict: "model_id,repair_subcategory_id" },
     );
@@ -2324,7 +2324,7 @@ export const RepairPricingMatrixTab = ({ serviceType }: { serviceType: CatalogSe
     }
 
     setSavingId(subcategoryId);
-    const { error } = await (supabase.from("model_repair_subcategory_prices" as any) as any).delete().eq("id", existing.id);
+    const { error } = await (dataClient.from("model_repair_subcategory_prices" as any) as any).delete().eq("id", existing.id);
 
     if (error) {
       toast.error(error.message);
@@ -2349,7 +2349,7 @@ export const RepairPricingMatrixTab = ({ serviceType }: { serviceType: CatalogSe
     const nextEnabled = !priceDisplayEnabled;
 
     setSettingSaving(true);
-    const { error } = await (supabase.from("app_settings") as any).upsert(
+    const { error } = await (dataClient.from("app_settings") as any).upsert(
       { key: "repair_subcategory_prices", value: { visible: nextEnabled } },
       { onConflict: "key" },
     );

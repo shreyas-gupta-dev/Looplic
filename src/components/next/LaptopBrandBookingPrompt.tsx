@@ -62,7 +62,7 @@ function getTodayDateString() {
 }
 
 export function LaptopBrandBookingPrompt({ brandName = "", initialOpen = false, showFloatingButton = true }: LaptopBrandBookingPromptProps) {
-  const supabase = useMemo(() => createClient(), []);
+  const dataClient = useMemo(() => createClient(), []);
   const [open, setOpen] = useState(initialOpen);
   const [step, setStep] = useState<"details" | "repair" | "schedule">("details");
   const [name, setName] = useState("");
@@ -166,7 +166,7 @@ export function LaptopBrandBookingPrompt({ brandName = "", initialOpen = false, 
       latitude && longitude ? `Pinned location: ${latitude}, ${longitude}` : "",
     ].filter(Boolean).join("\n");
 
-    const { data, error } = await supabase
+    const { data, error } = await dataClient
       .from("bookings")
       .insert({
         customer_name: name.trim(),
