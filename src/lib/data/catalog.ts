@@ -30,6 +30,11 @@ export type CatalogModel = {
   image_url: string | null;
 };
 
+export type CatalogModelWithSeries = CatalogModel & {
+  series_slug: string;
+  series_name: string;
+};
+
 export type ModelScreenGuard = {
   id: string;
   guard_type: string;
@@ -377,6 +382,64 @@ export const getModelsForSeries = unstable_cache(async (seriesId: string): Promi
   revalidate: CATALOG_REVALIDATE_SECONDS,
   tags: ["catalog", "catalog-models"],
 });
+
+export const getAllModelsForBrand = unstable_cache(
+  async (brandId: string): Promise<CatalogModelWithSeries[]> => {
+    return withRedisCache(`${CATALOG_REDIS_PREFIX}:allmodels:${brandId}`, CATALOG_REVALIDATE_SECONDS, async () => {
+      try {
+        const supabase = createPublicClient();
+
+        const seriesData = await supabase
+          .from("series")
+          .select("id, name, slug")
+          .eq("brand_id", brandId)
+          .order("name");
+
+        if (seriesData.error || !seriesData.data?.length) return [];
+
+        const seriesList = seriesData.data.map((s: any) => ({
+          id: s.id as string,
+          name: s.name as string,
+          slug: (s.slug || slugify(s.name) || s.id) as string,
+        }));
+
+        const seriesIds = seriesList.map((s) => s.id);
+        const modelsData = await supabase
+          .from("models")
+          .select("id, series_id, name, slug, image_url")
+          .in("series_id", seriesIds)
+          .order("name");
+
+        if (modelsData.error || !modelsData.data) return [];
+
+        const seriesMap = new Map(seriesList.map((s) => [s.id, s]));
+
+        return (modelsData.data as any[])
+          .map((model) => {
+            const series = seriesMap.get(model.series_id);
+            if (!series) return null;
+            return {
+              id: model.id as string,
+              series_id: model.series_id as string,
+              name: model.name as string,
+              slug: (model.slug || slugify(model.name) || model.id) as string,
+              image_url: (model.image_url ?? null) as string | null,
+              series_slug: series.slug,
+              series_name: series.name,
+            } satisfies CatalogModelWithSeries;
+          })
+          .filter((m): m is CatalogModelWithSeries => m !== null);
+      } catch {
+        return [];
+      }
+    });
+  },
+  ["catalog-all-models-for-brand"],
+  {
+    revalidate: CATALOG_REVALIDATE_SECONDS,
+    tags: ["catalog", "catalog-models"],
+  },
+);
 
 export const getModelBySlug = unstable_cache(async (seriesId: string, modelSlug: string): Promise<CatalogModel | null> => {
   try {
