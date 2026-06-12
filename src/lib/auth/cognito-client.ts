@@ -16,7 +16,7 @@ let configured = false;
 
 function ensureConfigured() {
   if (!configured && hasCognitoConfig) {
-    Amplify.configure(amplifyConfig);
+    Amplify.configure(amplifyConfig, { ssr: true });
     configured = true;
   }
 }

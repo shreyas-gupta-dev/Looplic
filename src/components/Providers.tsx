@@ -13,7 +13,7 @@ import { RouteLoadingIndicator } from "@/src/components/next/RouteLoadingIndicat
 import { GoogleAdsNavigationTracker } from "@/src/components/next/GoogleAdsNavigationTracker";
 
 if (hasCognitoConfig) {
-  Amplify.configure(amplifyConfig);
+  Amplify.configure(amplifyConfig, { ssr: true });
 }
 
 function AuthRedirectHandler() {
