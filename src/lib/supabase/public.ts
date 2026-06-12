@@ -1,5 +1,5 @@
 import { db } from "@/src/lib/db";
-import { eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray, ne } from "drizzle-orm";
 import * as schema from "@/src/lib/db/schema";
 
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
@@ -102,14 +102,35 @@ class PublicQueryBuilder {
 
       let query = db.select().from(tbl) as any;
 
+      const conditions: any[] = [];
+
       for (const [col, val] of this._filters) {
         const colDef = tbl[snakeToCamel(col)];
-        if (colDef !== undefined) query = query.where(eq(colDef, val));
+        if (colDef !== undefined) conditions.push(eq(colDef, val));
+      }
+
+      for (const [col, val] of this._neqFilters) {
+        const colDef = tbl[snakeToCamel(col)];
+        if (colDef !== undefined) conditions.push(ne(colDef, val));
       }
 
       for (const [col, vals] of this._inFilters) {
         const colDef = tbl[snakeToCamel(col)];
-        if (colDef !== undefined && vals.length > 0) query = query.where(inArray(colDef, vals));
+        if (colDef !== undefined && vals.length > 0) conditions.push(inArray(colDef, vals));
+      }
+
+      if (conditions.length === 1) {
+        query = query.where(conditions[0]);
+      } else if (conditions.length > 1) {
+        query = query.where(and(...conditions));
+      }
+
+      if (this._orderCols.length > 0) {
+        const orderExprs = this._orderCols
+          .map((col) => tbl[snakeToCamel(col)])
+          .filter(Boolean)
+          .map((colDef: any) => asc(colDef));
+        if (orderExprs.length > 0) query = query.orderBy(...orderExprs);
       }
 
       if (this._limitN) query = query.limit(this._limitN);

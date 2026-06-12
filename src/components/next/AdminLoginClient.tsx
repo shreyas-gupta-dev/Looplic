@@ -26,12 +26,13 @@ export function AdminLoginClient() {
     setError("");
     setSubmitting(true);
 
-    const { error: signInError } = await signIn(email, password);
-
-    if (signInError) {
-      setError(signInError.message);
-      setSubmitting(false);
-      return;
+    try {
+      const { error: signInError } = await signIn(email, password);
+      if (signInError) {
+        setError(signInError.message);
+      }
+    } catch (err: any) {
+      setError(err?.message || "Sign in failed. Check your credentials and try again.");
     }
 
     setSubmitting(false);

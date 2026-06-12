@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/src/lib/db";
 import * as schema from "@/src/lib/db/schema";
-import { eq, inArray, ne } from "drizzle-orm";
+import { and, eq, inArray, ne } from "drizzle-orm";
 import { getServerSession } from "@/src/lib/auth/cognito-server";
 
 const TABLE_MAP: Record<string, any> = {
@@ -41,16 +41,19 @@ function camelToSnake(s: string) {
 }
 
 function applyFilters(query: any, tbl: any, filters: Array<[string, string, any]>, inFilters: Array<[string, any[]]>) {
+  const conditions: any[] = [];
   for (const [type, col, val] of (filters || [])) {
     const colDef = tbl[snakeToCamel(col)];
     if (!colDef) continue;
-    if (type === "eq") query = query.where(eq(colDef, val));
-    else if (type === "neq") query = query.where(ne(colDef, val));
+    if (type === "eq") conditions.push(eq(colDef, val));
+    else if (type === "neq") conditions.push(ne(colDef, val));
   }
   for (const [col, vals] of (inFilters || [])) {
     const colDef = tbl[snakeToCamel(col)];
-    if (colDef && vals?.length > 0) query = query.where(inArray(colDef, vals));
+    if (colDef && vals?.length > 0) conditions.push(inArray(colDef, vals));
   }
+  if (conditions.length === 1) return query.where(conditions[0]);
+  if (conditions.length > 1) return query.where(and(...conditions));
   return query;
 }
 
