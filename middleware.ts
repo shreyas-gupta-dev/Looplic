@@ -20,11 +20,31 @@ function decodeRedirectCookie(value: string) {
   }
 }
 
+function isLooplicHost(host: string) {
+  return host === APEX_HOST || host === CANONICAL_HOST;
+}
+
+function isLocalHost(host: string) {
+  const hostname = host.split(":")[0];
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]";
+}
+
 export function middleware(request: NextRequest) {
   const { nextUrl } = request;
   const host = request.headers.get("host")?.toLowerCase();
   const forwardedProto = request.headers.get("x-forwarded-proto");
   const code = nextUrl.searchParams.get("code");
+
+  // Only looplic.com may serve the site. Any other host (the *.amplifyapp.com
+  // default domain, Amplify preview URLs, raw CloudFront, etc.) redirects to the
+  // canonical domain so it is never "the website" on its own.
+  if (host && !isLooplicHost(host) && !isLocalHost(host)) {
+    const canonicalUrl = nextUrl.clone();
+    canonicalUrl.protocol = "https:";
+    canonicalUrl.host = CANONICAL_HOST;
+
+    return NextResponse.redirect(canonicalUrl, 308);
+  }
 
   if (host === APEX_HOST || (host === CANONICAL_HOST && forwardedProto === "http")) {
     const canonicalUrl = nextUrl.clone();
