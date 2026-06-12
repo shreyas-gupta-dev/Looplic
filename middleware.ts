@@ -42,6 +42,7 @@ export function middleware(request: NextRequest) {
     const canonicalUrl = nextUrl.clone();
     canonicalUrl.protocol = "https:";
     canonicalUrl.host = CANONICAL_HOST;
+    canonicalUrl.port = "";
 
     return NextResponse.redirect(canonicalUrl, 308);
   }
@@ -50,6 +51,7 @@ export function middleware(request: NextRequest) {
     const canonicalUrl = nextUrl.clone();
     canonicalUrl.protocol = "https:";
     canonicalUrl.host = CANONICAL_HOST;
+    canonicalUrl.port = "";
 
     return NextResponse.redirect(canonicalUrl, 308);
   }
