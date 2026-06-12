@@ -29,10 +29,8 @@ export async function getServerSession(): Promise<{ user: ServerCognitoUser | nu
   if (!hasCognitoConfig) return { user: null };
 
   try {
-    const cookieStore = await cookies();
-
     return await runWithAmplifyServerContext({
-      nextServerContext: { cookies: () => cookieStore },
+      nextServerContext: { cookies },
       operation: async (contextSpec) => {
         try {
           const { tokens } = await fetchAuthSession(contextSpec);
@@ -59,8 +57,8 @@ export async function getServerSession(): Promise<{ user: ServerCognitoUser | nu
 const adminClient = new CognitoIdentityProviderClient({
   region: cognitoRegion,
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "",
+    accessKeyId: process.env.APP_AWS_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID || "",
+    secretAccessKey: process.env.APP_AWS_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY || "",
   },
 });
 
