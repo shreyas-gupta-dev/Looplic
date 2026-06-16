@@ -102,7 +102,19 @@ class DbQueryBuilder {
     return this._mutate("delete", null);
   }
 
-  private async _mutate(op: string, payload: any): Promise<{ data: any; error: any }> {
+  upsert(rows: any | any[], opts?: { onConflict?: string }) {
+    const execute = () => this._mutate("upsert", rows, opts?.onConflict);
+    return {
+      select(_fields: string) { return this; },
+      single() { return execute(); },
+      maybeSingle() { return execute(); },
+      then(resolve: (v: any) => any, reject?: (e: any) => any) {
+        return execute().then(resolve, reject);
+      },
+    };
+  }
+
+  private async _mutate(op: string, payload: any, onConflict?: string): Promise<{ data: any; error: any }> {
     try {
       const token = await fetch("/api/auth-token").then((r) => r.json()).then((r) => r.token).catch(() => null);
       const res = await fetch(`/api/db-proxy`, {
@@ -118,6 +130,7 @@ class DbQueryBuilder {
           filters: this._filters,
           inFilters: this._inFilters,
           select: this._select,
+          ...(onConflict ? { onConflict } : {}),
         }),
       });
 

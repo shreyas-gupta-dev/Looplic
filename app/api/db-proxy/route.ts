@@ -76,7 +76,7 @@ function mapRowIn(row: any) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { table, op, payload, filters, inFilters, select, single } = body;
+    const { table, op, payload, filters, inFilters, select, single, onConflict } = body;
 
     const tbl = TABLE_MAP[table];
     if (!tbl) {
@@ -128,6 +128,24 @@ export async function POST(req: NextRequest) {
       query = applyFilters(query, tbl, filters, inFilters);
       await query;
       return NextResponse.json({ data: null });
+    }
+
+    if (op === "upsert") {
+      const rows = Array.isArray(payload) ? payload.map(mapRowIn) : [mapRowIn(payload)];
+      const onConflictKey = onConflict ? snakeToCamel(onConflict) : null;
+      const conflictTarget = onConflictKey ? tbl[onConflictKey] : null;
+      let insertQuery: any = db.insert(tbl).values(rows);
+      if (conflictTarget && rows.length > 0) {
+        const setClause: any = {};
+        for (const [key, value] of Object.entries(rows[0])) {
+          if (key !== onConflictKey) setClause[key] = value;
+        }
+        insertQuery = insertQuery.onConflictDoUpdate({ target: conflictTarget, set: setClause });
+      } else {
+        insertQuery = insertQuery.onConflictDoNothing();
+      }
+      const upserted = await insertQuery.returning();
+      return NextResponse.json({ data: upserted.map(mapRowOut) });
     }
 
     return NextResponse.json({ error: { message: "Unknown operation" } }, { status: 400 });
