@@ -147,6 +147,12 @@ export function createClient() {
     auth: supabase.auth,
     // Data still comes from RDS via the proxy, not from Supabase.
     from: (table: string) => new DbQueryBuilder(table),
+    // Realtime is not wired to RDS; return a no-op channel so callers don't crash.
+    channel: (_name: string) => ({
+      on: function (this: any) { return this; },
+      subscribe: () => ({ unsubscribe: () => {} }),
+      unsubscribe: () => Promise.resolve("ok" as const),
+    }),
     // Image storage on Amazon S3 (bucket name becomes the S3 key folder).
     storage: {
       from: (bucket: string) => ({
