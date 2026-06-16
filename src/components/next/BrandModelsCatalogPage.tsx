@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronRight, Search, Smartphone } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -101,8 +102,19 @@ export function BrandModelsCatalogPage({
                 className="group flex items-center rounded-2xl border border-border bg-card p-4 shadow-card-brand transition-all hover:border-primary/30 hover:shadow-elevated-brand active:scale-[0.98]"
               >
                 <div className="flex min-w-0 items-center gap-3">
-                  <div className="flex size-10 flex-shrink-0 items-center justify-center rounded-xl bg-secondary">
-                    <Smartphone className="size-5 text-primary" />
+                  <div className="flex size-10 flex-shrink-0 items-center justify-center rounded-xl bg-secondary overflow-hidden">
+                    {model.image_url ? (
+                      <Image
+                        src={model.image_url}
+                        alt={model.name}
+                        width={40}
+                        height={40}
+                        className="size-10 object-contain"
+                        unoptimized
+                      />
+                    ) : (
+                      <Smartphone className="size-5 text-primary" />
+                    )}
                   </div>
                   <span className="whitespace-normal break-words text-sm font-bold leading-tight text-foreground">
                     {model.name}
