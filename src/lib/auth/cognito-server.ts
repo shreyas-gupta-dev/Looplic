@@ -1,19 +1,8 @@
 import "server-only";
 
-import { createServerRunner } from "@aws-amplify/adapter-nextjs";
-import { fetchAuthSession, getCurrentUser } from "aws-amplify/auth/server";
-import { cookies } from "next/headers";
-import { amplifyConfig, cognitoRegion, cognitoUserPoolId, hasCognitoConfig } from "./config";
-import {
-  CognitoIdentityProviderClient,
-  AdminCreateUserCommand,
-  AdminSetUserPasswordCommand,
-  AdminUpdateUserAttributesCommand,
-  AdminGetUserCommand,
-  ListUsersCommand,
-  AdminDeleteUserCommand,
-  AdminAddUserToGroupCommand,
-} from "@aws-sdk/client-cognito-identity-provider";
+// NOTE: file name kept for import stability — auth now runs on Supabase, not Cognito.
+import { getAdminSupabase, getServerSupabase, hasServiceRole } from "@/src/lib/supabase/server";
+import { hasSupabaseConfig } from "./config";
 
 export type ServerCognitoUser = {
   id: string;
@@ -21,110 +10,40 @@ export type ServerCognitoUser = {
   name: string | undefined;
 };
 
-export const { runWithAmplifyServerContext } = createServerRunner({
-  config: amplifyConfig,
-});
-
 export async function getServerSession(): Promise<{ user: ServerCognitoUser | null }> {
-  if (!hasCognitoConfig) return { user: null };
+  if (!hasSupabaseConfig) return { user: null };
 
   try {
-    return await runWithAmplifyServerContext({
-      nextServerContext: { cookies },
-      operation: async (contextSpec) => {
-        try {
-          const { tokens } = await fetchAuthSession(contextSpec);
-          if (!tokens?.idToken) return { user: null };
+    const supabase = await getServerSupabase();
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data.user) return { user: null };
 
-          const payload = tokens.idToken.payload;
-          return {
-            user: {
-              id: String(payload.sub || ""),
-              email: String(payload.email || ""),
-              name: String(payload.name || payload["cognito:username"] || ""),
-            },
-          };
-        } catch {
-          return { user: null };
-        }
+    const user = data.user;
+    return {
+      user: {
+        id: user.id,
+        email: user.email ?? undefined,
+        name:
+          (user.user_metadata?.full_name as string) ||
+          (user.user_metadata?.name as string) ||
+          undefined,
       },
-    });
+    };
   } catch {
     return { user: null };
   }
 }
 
-const adminClient = new CognitoIdentityProviderClient({
-  region: cognitoRegion,
-  credentials: {
-    accessKeyId: process.env.APP_AWS_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID || "",
-    secretAccessKey: process.env.APP_AWS_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY || "",
-  },
-});
-
-export async function adminGetUser(email: string) {
+// Look up a user by their Supabase auth id (service-role only). Returns the
+// Supabase user object, or null if unavailable.
+export async function adminGetUser(userId: string) {
+  if (!hasServiceRole) return null;
   try {
-    const response = await adminClient.send(
-      new AdminGetUserCommand({
-        UserPoolId: cognitoUserPoolId,
-        Username: email.toLowerCase(),
-      }),
-    );
-    return response;
+    const admin = getAdminSupabase();
+    const { data, error } = await admin.auth.admin.getUserById(userId);
+    if (error) return null;
+    return data.user ?? null;
   } catch {
     return null;
   }
-}
-
-export async function adminListUsers(filter?: string) {
-  try {
-    const response = await adminClient.send(
-      new ListUsersCommand({
-        UserPoolId: cognitoUserPoolId,
-        Filter: filter,
-        Limit: 60,
-      }),
-    );
-    return response.Users || [];
-  } catch {
-    return [];
-  }
-}
-
-export async function adminCreateUser(email: string, name: string, tempPassword: string) {
-  const response = await adminClient.send(
-    new AdminCreateUserCommand({
-      UserPoolId: cognitoUserPoolId,
-      Username: email.toLowerCase(),
-      UserAttributes: [
-        { Name: "email", Value: email.toLowerCase() },
-        { Name: "name", Value: name },
-        { Name: "email_verified", Value: "true" },
-      ],
-      TemporaryPassword: tempPassword,
-      MessageAction: "SUPPRESS",
-    }),
-  );
-
-  if (response.User?.Username) {
-    await adminClient.send(
-      new AdminSetUserPasswordCommand({
-        UserPoolId: cognitoUserPoolId,
-        Username: email.toLowerCase(),
-        Password: tempPassword,
-        Permanent: true,
-      }),
-    );
-  }
-
-  return response.User;
-}
-
-export async function adminDeleteUser(email: string) {
-  await adminClient.send(
-    new AdminDeleteUserCommand({
-      UserPoolId: cognitoUserPoolId,
-      Username: email.toLowerCase(),
-    }),
-  );
 }

@@ -1,146 +1,9 @@
 "use client";
 
-import { Amplify } from "aws-amplify";
-import {
-  fetchAuthSession,
-  signIn,
-  signInWithRedirect,
-  signOut,
-  signUp,
-  type AuthUser,
-} from "aws-amplify/auth";
-import { amplifyConfig, hasCognitoConfig } from "@/src/lib/auth/config";
+import { getBrowserSupabase } from "@/src/lib/supabase/browser";
 
-let amplifyConfigured = false;
-
-function ensureAmplify() {
-  if (!amplifyConfigured && hasCognitoConfig) {
-    Amplify.configure(amplifyConfig, { ssr: true });
-    amplifyConfigured = true;
-  }
-}
-
-type Listener = (event: string, session: any) => void;
-const listeners: Listener[] = [];
-let currentSession: any = null;
-
-async function resolveSession() {
-  ensureAmplify();
-  try {
-    const { tokens } = await fetchAuthSession();
-    if (!tokens?.idToken) return null;
-    const payload = tokens.idToken.payload;
-    return {
-      user: {
-        id: String(payload.sub || ""),
-        email: String(payload.email || ""),
-        user_metadata: { full_name: String(payload.name || "") },
-      },
-    };
-  } catch {
-    return null;
-  }
-}
-
-function createAuthObject() {
-  return {
-    async getSession() {
-      const session = await resolveSession();
-      return { data: { session } };
-    },
-
-    async getUser() {
-      const session = await resolveSession();
-      return { data: { user: session?.user ?? null } };
-    },
-
-    onAuthStateChange(callback: Listener) {
-      listeners.push(callback);
-      resolveSession().then((session) => {
-        currentSession = session;
-        callback("INITIAL_SESSION", session);
-      });
-      const subscription = {
-        unsubscribe() {
-          const idx = listeners.indexOf(callback);
-          if (idx >= 0) listeners.splice(idx, 1);
-        },
-      };
-      return { data: { subscription } };
-    },
-
-    async signInWithPassword({ email, password }: { email: string; password: string }) {
-      ensureAmplify();
-      try {
-        const result = await signIn({ username: email.trim().toLowerCase(), password: password.trim() });
-        if (result.isSignedIn) {
-          const session = await resolveSession();
-          currentSession = session;
-          listeners.forEach((fn) => fn("SIGNED_IN", session));
-          return { data: { session }, error: null };
-        }
-        return { data: { session: null }, error: { message: "Sign in incomplete" } };
-      } catch (err: any) {
-        return { data: { session: null }, error: { message: err.message || "Sign in failed" } };
-      }
-    },
-
-    async signUp({ email, password, options }: { email: string; password: string; options?: any }) {
-      ensureAmplify();
-      try {
-        const name = options?.data?.full_name || "";
-        const result = await signUp({
-          username: email.trim().toLowerCase(),
-          password,
-          options: {
-            userAttributes: { email: email.trim().toLowerCase(), name },
-          },
-        });
-        if (result.isSignUpComplete) {
-          const session = await resolveSession();
-          return { data: { user: session?.user ?? null, session }, error: null };
-        }
-        return { data: { user: null, session: null }, error: null };
-      } catch (err: any) {
-        return { data: { user: null, session: null }, error: { message: err.message || "Sign up failed" } };
-      }
-    },
-
-    async signInWithOAuth({ provider, options }: { provider: string; options?: any }) {
-      ensureAmplify();
-      try {
-        const redirectTo = options?.redirectTo;
-        const customState = redirectTo ? JSON.stringify({ redirectTo }) : undefined;
-        await signInWithRedirect({ provider: "Google" as any, customState });
-        return { error: null };
-      } catch (err: any) {
-        return { error: { message: err.message || "OAuth failed" } };
-      }
-    },
-
-    async signOut() {
-      ensureAmplify();
-      await signOut();
-      currentSession = null;
-      listeners.forEach((fn) => fn("SIGNED_OUT", null));
-    },
-
-    async exchangeCodeForSession(_code: string) {
-      const session = await resolveSession();
-      currentSession = session;
-      listeners.forEach((fn) => fn("SIGNED_IN", session));
-      return { data: { session }, error: null };
-    },
-  };
-}
-
-function createDbProxy() {
-  return {
-    from(table: string) {
-      return new DbQueryBuilder(table);
-    },
-  };
-}
+// Auth runs on Supabase; the application data still lives on Amazon RDS and is
+// reached through the /api/db-proxy route via DbQueryBuilder below.
 
 class DbQueryBuilder {
   private _table: string;
@@ -275,13 +138,37 @@ let cachedClient: any = null;
 export function createClient() {
   if (cachedClient) return cachedClient;
 
+  const supabase = getBrowserSupabase();
+
   cachedClient = {
-    auth: createAuthObject(),
+    // Real Supabase auth — its API (getSession, onAuthStateChange,
+    // signInWithPassword, signUp, signInWithOAuth, signOut, updateUser, …) is
+    // exactly what the app already calls.
+    auth: supabase.auth,
+    // Data still comes from RDS via the proxy, not from Supabase.
     from: (table: string) => new DbQueryBuilder(table),
+    // Image storage on Amazon S3 (bucket name becomes the S3 key folder).
     storage: {
-      from: (_bucket: string) => ({
-        upload: async (_path: string, _file: any) => ({ data: null, error: { message: "Use S3 upload instead" } }),
-        getPublicUrl: (_path: string) => ({ data: { publicUrl: "" } }),
+      from: (bucket: string) => ({
+        async upload(path: string, file: Blob | File, _opts?: any) {
+          try {
+            const form = new FormData();
+            form.append("file", file);
+            form.append("folder", bucket);
+            form.append("path", path);
+            const res = await fetch("/api/upload", { method: "POST", body: form });
+            const json = await res.json().catch(() => ({}));
+            if (!res.ok) return { data: null, error: json.error ?? { message: `Upload failed: ${res.status}` } };
+            return { data: { path }, error: null };
+          } catch (err: any) {
+            return { data: null, error: { message: err.message } };
+          }
+        },
+        getPublicUrl(path: string) {
+          const region = process.env.NEXT_PUBLIC_S3_REGION || "ap-south-1";
+          const s3Bucket = process.env.NEXT_PUBLIC_S3_BUCKET || "looplic-assets";
+          return { data: { publicUrl: `https://${s3Bucket}.s3.${region}.amazonaws.com/${bucket}/${path}` } };
+        },
         remove: async (_paths: string[]) => ({ data: null, error: null }),
       }),
     },

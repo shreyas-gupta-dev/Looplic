@@ -58,9 +58,8 @@ async function requireTechnicianBooking(bookingId: string) {
 async function getCustomerEmailFromBooking(userId: string | null) {
   if (!userId) return "";
   try {
-    const cognitoUser = await adminGetUser(userId);
-    const emailAttr = cognitoUser?.UserAttributes?.find((a) => a.Name === "email");
-    return asText(emailAttr?.Value).toLowerCase();
+    const authUser = await adminGetUser(userId);
+    return asText(authUser?.email).toLowerCase();
   } catch {
     return "";
   }

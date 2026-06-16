@@ -1,9 +1,8 @@
 "use client";
 
-import { Amplify } from "aws-amplify";
-import { fetchAuthSession, signIn, signOut } from "aws-amplify/auth";
 import { useEffect, useState } from "react";
-import { amplifyConfig, hasCognitoConfig } from "@/src/lib/auth/config";
+import { getBrowserSupabase } from "@/src/lib/supabase/browser";
+import { hasSupabaseConfig } from "@/src/lib/auth/config";
 
 type RoleName = "admin" | "operation" | "technician";
 
@@ -13,28 +12,24 @@ export type AppUser = {
   user_metadata?: { full_name?: string };
 };
 
-let amplifyConfigured = false;
-
-function ensureAmplify() {
-  if (!amplifyConfigured && hasCognitoConfig) {
-    Amplify.configure(amplifyConfig, { ssr: true });
-    amplifyConfigured = true;
-  }
-}
-
-// Wipe any lingering Cognito tokens from BOTH localStorage and cookies.
-// Older deployments stored tokens in localStorage; the current SSR config uses
-// cookies, so a normal signOut() can leave the other store's tokens behind,
-// which makes signIn() throw "There is already a signed in user".
+// Clears any leftover auth tokens from older deployments (legacy Cognito/Amplify
+// keys and stale Supabase keys) from both localStorage and cookies. Harmless to
+// call at any time; kept exported for the admin login screen.
 export function wipeStaleCognitoTokens() {
   if (typeof window === "undefined") return;
   try {
     for (const key of Object.keys(window.localStorage)) {
-      if (key.startsWith("CognitoIdentityServiceProvider") || key.startsWith("amplify-")) {
+      if (
+        key.startsWith("CognitoIdentityServiceProvider") ||
+        key.startsWith("amplify-") ||
+        key.startsWith("sb-")
+      ) {
         window.localStorage.removeItem(key);
       }
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   try {
     for (const cookie of document.cookie.split(";")) {
       const name = cookie.split("=")[0]?.trim();
@@ -42,23 +37,21 @@ export function wipeStaleCognitoTokens() {
         document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
       }
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 }
 
 async function getCurrentUser(): Promise<AppUser | null> {
-  ensureAmplify();
-  try {
-    const { tokens } = await fetchAuthSession();
-    if (!tokens?.idToken) return null;
-    const payload = tokens.idToken.payload;
-    return {
-      id: String(payload.sub || ""),
-      email: String(payload.email || ""),
-      user_metadata: { full_name: String(payload.name || "") },
-    };
-  } catch {
-    return null;
-  }
+  const supabase = getBrowserSupabase();
+  const { data } = await supabase.auth.getUser();
+  const user = data.user;
+  if (!user) return null;
+  return {
+    id: user.id,
+    email: user.email ?? undefined,
+    user_metadata: { full_name: (user.user_metadata?.full_name as string) || "" },
+  };
 }
 
 async function checkUserRole(userId: string, role: RoleName): Promise<boolean> {
@@ -90,7 +83,7 @@ export function useRoleSession(role: RoleName) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!hasCognitoConfig) {
+    if (!hasSupabaseConfig) {
       setLoading(false);
       return;
     }
@@ -125,39 +118,19 @@ export function useRoleSession(role: RoleName) {
   }, [role]);
 
   async function signInFn(email: string, password: string) {
-    if (!hasCognitoConfig) throw new Error("Missing Cognito configuration.");
-    // Force re-init to flush any stale in-memory token state from conflicting configure calls
-    amplifyConfigured = false;
-    ensureAmplify();
+    if (!hasSupabaseConfig) throw new Error("Missing Supabase configuration.");
 
-    const username = email.trim().toLowerCase();
-    const pwd = password.trim();
+    const supabase = getBrowserSupabase();
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password: password.trim(),
+    });
 
-    async function attemptSignIn() {
-      return signIn({ username, password: pwd });
+    if (error) {
+      return { error: { message: error.message } };
     }
 
-    // IMPORTANT: do NOT call signOut() on the happy path. The app has Cognito
-    // OAuth (hosted UI) configured for Google login, and Amplify's signOut() can
-    // redirect the browser to the Cognito logout URL, silently swallowing the
-    // sign-in. Instead, sign in directly; only if Amplify reports an existing
-    // session do we wipe tokens from storage (no redirect) and retry.
-    let result;
-    try {
-      result = await attemptSignIn();
-    } catch (err: any) {
-      const msg = String(err?.message || "");
-      if (msg.includes("already a signed in user") || err?.name === "UserAlreadyAuthenticatedException") {
-        // Storage wipe clears persisted tokens without any network call or
-        // OAuth redirect, so the retry sees no existing session.
-        wipeStaleCognitoTokens();
-        result = await attemptSignIn();
-      } else {
-        throw err;
-      }
-    }
-
-    if (result.isSignedIn) {
+    if (data.session) {
       const currentUser = await getCurrentUser();
       setUser(currentUser);
       let roleOk = false;
@@ -170,12 +143,13 @@ export function useRoleSession(role: RoleName) {
       }
       return { error: null };
     }
+
     return { error: { message: "Sign in incomplete" } };
   }
 
   async function signOutFn() {
-    ensureAmplify();
-    await signOut();
+    const supabase = getBrowserSupabase();
+    await supabase.auth.signOut();
     setUser(null);
     setHasRole(false);
   }

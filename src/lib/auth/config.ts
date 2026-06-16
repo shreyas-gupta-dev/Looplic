@@ -1,26 +1,9 @@
-export const cognitoUserPoolId = process.env.NEXT_PUBLIC_COGNITO_USER_POOL_ID || "";
-export const cognitoClientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || "";
-export const cognitoDomain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN || "";
-export const cognitoRegion = process.env.NEXT_PUBLIC_AWS_REGION || "ap-south-1";
+// Auth is handled by Supabase (login for customers, admin, technician, operation).
+// The application database stays on Amazon RDS (accessed via the /api/db-proxy
+// route and the Drizzle client) — only authentication lives in Supabase.
+
+export const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+export const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 export const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.looplic.com";
 
-export const hasCognitoConfig = Boolean(cognitoUserPoolId && cognitoClientId);
-
-export const amplifyConfig = {
-  Auth: {
-    Cognito: {
-      userPoolId: cognitoUserPoolId,
-      userPoolClientId: cognitoClientId,
-      signInWithRedirectUri: `${appUrl}/auth/callback`,
-      loginWith: {
-        oauth: {
-          domain: cognitoDomain,
-          scopes: ["email", "profile", "openid"],
-          redirectSignIn: [`${appUrl}/auth/callback`],
-          redirectSignOut: [`${appUrl}/`],
-          responseType: "code" as const,
-        },
-      },
-    },
-  },
-};
+export const hasSupabaseConfig = Boolean(supabaseUrl && supabaseAnonKey);

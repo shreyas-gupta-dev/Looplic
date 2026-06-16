@@ -6,10 +6,10 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { createClient } from "@/src/lib/data-client/client";
-import { hasCognitoConfig } from "@/src/lib/auth/config";
+import { hasSupabaseConfig } from "@/src/lib/auth/config";
 
 export function AuthHeaderActions({ mobile = false }: { mobile?: boolean }) {
-  const dataClient = hasCognitoConfig ? createClient() : null;
+  const dataClient = hasSupabaseConfig ? createClient() : null;
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();

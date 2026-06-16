@@ -11,11 +11,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@aws-amplify/adapter-nextjs": "^1.7.3",
-    "@aws-amplify/auth": "^6.20.0",
-    "@aws-sdk/client-cognito-identity-provider": "^3.1064.0",
     "@aws-sdk/client-s3": "^3.1064.0",
-    "@aws-sdk/s3-request-presigner": "^3.1064.0",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
@@ -44,9 +40,10 @@
     "@radix-ui/react-toggle": "^1.1.9",
     "@radix-ui/react-toggle-group": "^1.1.10",
     "@radix-ui/react-tooltip": "^1.2.7",
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.108.2",
     "@tanstack/react-query": "^5.83.0",
     "@upstash/redis": "^1.38.0",
-    "aws-amplify": "^6.17.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
