@@ -14,7 +14,11 @@ function getPool(): Pool {
       connectionString,
       ssl: process.env.DATABASE_SSL === "false" ? false : { rejectUnauthorized: false },
       max: 10,
-      idleTimeoutMillis: 30000,
+      // Keep pooled connections alive between requests so warm Lambdas (kept hot
+      // by the EventBridge warmer) reuse an open RDS connection instead of paying
+      // a fresh TLS reconnect (~300-800ms) on each request after a short idle.
+      idleTimeoutMillis: 300000,
+      keepAlive: true,
     });
   } else {
     pool = new Pool({
@@ -25,7 +29,8 @@ function getPool(): Pool {
       password: process.env.RDS_PASSWORD || "",
       ssl: process.env.RDS_SSL === "false" ? false : { rejectUnauthorized: false },
       max: 10,
-      idleTimeoutMillis: 30000,
+      idleTimeoutMillis: 300000,
+      keepAlive: true,
     });
   }
 

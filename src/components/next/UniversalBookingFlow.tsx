@@ -376,6 +376,10 @@ export function UniversalBookingFlow({
 
   useEffect(() => {
     if (!GOOGLE_MAPS_API_KEY || typeof window === "undefined") return;
+    // The map only renders on the "details" step. Defer loading the ~0.5MB
+    // Google Maps script until then so the device/service/schedule steps aren't
+    // weighed down by it on every booking page load.
+    if (currentStep !== "details") return;
     if (window.google?.maps) { setMapReady(true); return; }
     if (!window.__looplicGoogleMapsLoading) {
       window.__looplicGoogleMapsLoading = new Promise<void>((resolve, reject) => {
@@ -390,7 +394,7 @@ export function UniversalBookingFlow({
     window.__looplicGoogleMapsLoading
       .then(() => setMapReady(true))
       .catch(() => toast.error("Unable to load Google Maps."));
-  }, []);
+  }, [currentStep]);
 
   useEffect(() => {
     if (!mapReady || !mapElementRef.current || !window.google?.maps || googleMapRef.current) return;
