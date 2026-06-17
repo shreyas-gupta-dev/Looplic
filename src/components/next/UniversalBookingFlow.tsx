@@ -507,7 +507,9 @@ export function UniversalBookingFlow({
     const bookingNotes = buildBookingNotes();
     const visitingCharge = formatVisitingCharge(dbServiceType);
 
-    await saveCustomerProfile();
+    // The profile was already persisted when leaving the details step, so save
+    // it in parallel with the booking insert instead of blocking on it first.
+    const profileSavePromise = saveCustomerProfile();
     persistProfileLocally();
 
     let bookingCode = "";
@@ -553,6 +555,10 @@ export function UniversalBookingFlow({
         bookingError = result.error;
       }
     }
+
+    // Surface any profile-save completion (errors here are non-fatal — already
+    // saved at the details step; result is unused).
+    await profileSavePromise;
 
     if (bookingError) {
       toast.error((bookingError as any).message || "Booking failed. Please try again.");

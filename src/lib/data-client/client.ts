@@ -116,12 +116,13 @@ class DbQueryBuilder {
 
   private async _mutate(op: string, payload: any, onConflict?: string): Promise<{ data: any; error: any }> {
     try {
-      const token = await fetch("/api/auth-token").then((r) => r.json()).then((r) => r.token).catch(() => null);
+      // db-proxy authenticates from the session cookie (getServerSession), so we
+      // skip the extra /api/auth-token round-trip that used to run before every
+      // write — its Bearer token was never read server-side.
       const res = await fetch(`/api/db-proxy`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
           table: this._table,
