@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/src/lib/db";
 import * as schema from "@/src/lib/db/schema";
-import { and, eq, inArray, ne } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, ne } from "drizzle-orm";
 import { getServerSession } from "@/src/lib/auth/cognito-server";
 
 const TABLE_MAP: Record<string, any> = {
@@ -58,6 +58,31 @@ function applyFilters(query: any, tbl: any, filters: Array<[string, string, any]
   return query;
 }
 
+// Builds a Drizzle column-projection object from a "col_a, col_b" select string.
+// Returns undefined for "*"/empty (full row) so the caller selects everything.
+function buildSelection(tbl: any, select?: string) {
+  if (!select || select.trim() === "" || select.trim() === "*") return undefined;
+  const projection: Record<string, any> = {};
+  for (const raw of select.split(",")) {
+    const col = raw.trim();
+    if (!col || col === "*") return undefined; // a "*" anywhere means full row
+    const colDef = tbl[snakeToCamel(col)];
+    if (colDef) projection[snakeToCamel(col)] = colDef;
+  }
+  return Object.keys(projection).length > 0 ? projection : undefined;
+}
+
+function applyOrder(query: any, tbl: any, order: Array<[string, string]>) {
+  const exprs = (order || [])
+    .map(([col, dir]) => {
+      const colDef = tbl[snakeToCamel(col)];
+      if (!colDef) return null;
+      return String(dir).toUpperCase() === "DESC" ? desc(colDef) : asc(colDef);
+    })
+    .filter(Boolean) as any[];
+  return exprs.length > 0 ? query.orderBy(...exprs) : query;
+}
+
 function mapRowOut(row: any) {
   const out: any = {};
   for (const [k, v] of Object.entries(row)) {
@@ -77,7 +102,7 @@ function mapRowIn(row: any) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { table, op, payload, filters, inFilters, select, single, onConflict } = body;
+    const { table, op, payload, filters, inFilters, select, single, onConflict, order, limit } = body;
 
     const tbl = TABLE_MAP[table];
     if (!tbl) {
@@ -94,8 +119,12 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      let query = db.select().from(tbl) as any;
+      const selection = buildSelection(tbl, select);
+      let query = (selection ? db.select(selection).from(tbl) : db.select().from(tbl)) as any;
       query = applyFilters(query, tbl, filters, inFilters);
+      query = applyOrder(query, tbl, order);
+      const effectiveLimit = single ? 1 : (typeof limit === "number" && limit > 0 ? limit : undefined);
+      if (effectiveLimit) query = query.limit(effectiveLimit);
       const rows: any[] = await query;
       const mapped = rows.map(mapRowOut);
       return NextResponse.json({ data: single ? (mapped[0] ?? null) : mapped });
