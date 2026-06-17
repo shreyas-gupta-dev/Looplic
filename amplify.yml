@@ -7,6 +7,11 @@ frontend:
     build:
       commands:
         - export NODE_OPTIONS=--max-old-space-size=4096
+        # Amplify WEB_COMPUTE does not inject console env vars into the SSR
+        # runtime — only at build time. Persist server-side vars into
+        # .env.production so Next.js loads them at runtime (fixes ECONNREFUSED
+        # 127.0.0.1:5432 from DATABASE_URL being undefined in the Lambda).
+        - env | grep -E '^(DATABASE_|SUPABASE_|RESEND_|APP_AWS_|NEXT_PUBLIC_)' >> .env.production
         - npm run build
   artifacts:
     baseDirectory: .next
