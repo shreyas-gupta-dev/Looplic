@@ -15,6 +15,28 @@ export async function getServerSession(): Promise<{ user: ServerCognitoUser | nu
 
   try {
     const supabase = await getServerSupabase();
+
+    // Fast path: verify the JWT signature locally (no network round-trip).
+    // The project signs tokens with ES256, so getClaims() validates against the
+    // cached JWKS via WebCrypto. This runs on every protected db-proxy request,
+    // so avoiding the /auth/v1/user call materially cuts admin/booking latency.
+    try {
+      const { data: claimsData, error: claimsError } = await supabase.auth.getClaims();
+      if (!claimsError && claimsData?.claims?.sub) {
+        const claims = claimsData.claims as Record<string, any>;
+        const meta = (claims.user_metadata as Record<string, any> | undefined) ?? undefined;
+        return {
+          user: {
+            id: String(claims.sub),
+            email: (claims.email as string) ?? undefined,
+            name: (meta?.full_name as string) || (meta?.name as string) || undefined,
+          },
+        };
+      }
+    } catch {
+      // Fall back to network validation below (e.g. symmetric token / no WebCrypto).
+    }
+
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) return { user: null };
 
