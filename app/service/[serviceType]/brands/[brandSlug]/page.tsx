@@ -8,7 +8,7 @@ import { CrawlableInternalLinks } from "@/src/components/next/CrawlableInternalL
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { LaptopBrandBookingPrompt } from "@/src/components/next/LaptopBrandBookingPrompt";
 import { SeriesCatalogPage } from "@/src/components/next/SeriesCatalogPage";
-import { getAllModelsForBrand, getBrandsForListing, getSeriesForBrand } from "@/src/lib/data/catalog";
+import { getAllModelsForBrand, getSeriesForBrand } from "@/src/lib/data/catalog";
 import { resolveBrandPageData } from "@/src/lib/data/catalog-page";
 import { buildPageMetadata } from "@/src/lib/metadata";
 
@@ -39,15 +39,8 @@ const serviceMap = {
   },
 };
 
-export async function generateStaticParams() {
-  const params: { serviceType: string; brandSlug: string }[] = [];
-  for (const [serviceType, config] of Object.entries(serviceMap)) {
-    const brands = await getBrandsForListing(config.listingType);
-    for (const brand of brands) {
-      params.push({ serviceType, brandSlug: brand.slug });
-    }
-  }
-  return params;
+export function generateStaticParams() {
+  return [];
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
