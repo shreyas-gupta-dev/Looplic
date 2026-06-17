@@ -508,12 +508,14 @@ export function UniversalBookingFlow({
     if (!scheduledDate || !timeSlot) { toast.error("Please select a date and time slot."); return; }
 
     setSubmitting(true);
+    try {
     const bookingNotes = buildBookingNotes();
     const visitingCharge = formatVisitingCharge(dbServiceType);
 
     // The profile was already persisted when leaving the details step, so save
     // it in parallel with the booking insert instead of blocking on it first.
-    const profileSavePromise = saveCustomerProfile();
+    // Swallow its result so a profile-save failure can never block the booking.
+    const profileSavePromise = Promise.resolve(saveCustomerProfile()).catch(() => null);
     persistProfileLocally();
 
     let bookingCode = "";
@@ -560,13 +562,13 @@ export function UniversalBookingFlow({
       }
     }
 
-    // Surface any profile-save completion (errors here are non-fatal — already
-    // saved at the details step; result is unused).
-    await profileSavePromise;
+    // Profile save runs in the background (best-effort — already saved at the
+    // details step, and the address is stored on the booking row itself). Don't
+    // await it, so a slow or hung profile request can never freeze the spinner.
+    void profileSavePromise;
 
     if (bookingError) {
       toast.error((bookingError as any).message || "Booking failed. Please try again.");
-      setSubmitting(false);
       return;
     }
 
@@ -576,6 +578,10 @@ export function UniversalBookingFlow({
         ? [getCctvServiceLabel(selectedCctvService), selectedCctvBrand].filter(Boolean).join(" – ")
         : serviceLabel;
 
+    // The booking row is already saved. Everything below is best-effort — a
+    // failure (PDF generation, ad tracking, email beacon) must NEVER leave the
+    // user stuck on the "Booking..." spinner.
+    try {
     void notifyLeadSubmission({
       source: "booking",
       title: "New Looplic booking",
@@ -601,29 +607,44 @@ export function UniversalBookingFlow({
         latitude, longitude, visitingCharge,
       },
     });
+    } catch (notifyErr) {
+      console.warn("Booking lead notification failed (non-fatal)", notifyErr);
+    }
 
-    downloadBookingConfirmationPdf({
-      bookingCode, customerName: name, customerPhone: phone,
-      serviceType: dbServiceType, serviceLabel: displayLabel,
-      price: isDeviceFlow ? selectedPrice : undefined,
-      brand: brand?.name, series: series?.name, model: model?.name,
-      scheduledDate, timeSlot, address, city, pincode, notes: bookingNotes,
-    });
+    try {
+      downloadBookingConfirmationPdf({
+        bookingCode, customerName: name, customerPhone: phone,
+        serviceType: dbServiceType, serviceLabel: displayLabel,
+        price: isDeviceFlow ? selectedPrice : undefined,
+        brand: brand?.name, series: series?.name, model: model?.name,
+        scheduledDate, timeSlot, address, city, pincode, notes: bookingNotes,
+      });
+    } catch (pdfErr) {
+      console.warn("Booking confirmation PDF failed (non-fatal)", pdfErr);
+    }
 
-    trackGoogleAdsConversion("booking_form_submit", {
-      lead_type: "booking", source: "universal_booking_flow",
-      booking_code: bookingCode, service_type: dbServiceType,
-      value: Number(isDeviceFlow ? selectedPrice ?? 0 : 0), currency: "INR",
-    });
+    try {
+      trackGoogleAdsConversion("booking_form_submit", {
+        lead_type: "booking", source: "universal_booking_flow",
+        booking_code: bookingCode, service_type: dbServiceType,
+        value: Number(isDeviceFlow ? selectedPrice ?? 0 : 0), currency: "INR",
+      });
+    } catch (trackErr) {
+      console.warn("Booking ad tracking failed (non-fatal)", trackErr);
+    }
 
     toast.success("Booking confirmed!");
     setBookedCode(bookingCode);
     setBooked(true);
-    setSubmitting(false);
     router.push(buildThankYouHref({
       type: "booking", source: "universal_booking_flow",
       booking_code: bookingCode, service_type: dbServiceType,
     }));
+    } catch (err: any) {
+      toast.error(err?.message || "Booking failed. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   // ─── Early returns ────────────────────────────────────────────────────────────
