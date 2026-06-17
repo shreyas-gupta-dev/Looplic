@@ -14,6 +14,9 @@ class DbQueryBuilder {
   private _single = false;
   private _maybeSingle = false;
   private _limit?: number;
+  private _op?: "insert" | "update" | "delete" | "upsert";
+  private _payload?: any;
+  private _onConflict?: string;
 
   constructor(table: string) {
     this._table = table;
@@ -49,21 +52,57 @@ class DbQueryBuilder {
     return this;
   }
 
+  // Mutations are deferred: insert/update/delete/upsert just record the op and
+  // return `this`, so callers can keep chaining (.eq/.select/.single) exactly
+  // like the Supabase client. Execution happens on await/.then()/.single().
+  insert(rows: any | any[]) {
+    this._op = "insert";
+    this._payload = rows;
+    return this;
+  }
+
+  update(values: Record<string, any>) {
+    this._op = "update";
+    this._payload = values;
+    return this;
+  }
+
+  delete() {
+    this._op = "delete";
+    this._payload = null;
+    return this;
+  }
+
+  upsert(rows: any | any[], opts?: { onConflict?: string }) {
+    this._op = "upsert";
+    this._payload = rows;
+    this._onConflict = opts?.onConflict;
+    return this;
+  }
+
   single() {
     this._single = true;
-    return this._execute();
+    return this._run();
   }
 
   maybeSingle() {
     this._maybeSingle = true;
-    return this._execute();
+    return this._run();
   }
 
   then(resolve: (v: any) => any, reject?: (e: any) => any) {
-    return this._execute().then(resolve, reject);
+    return this._run().then(resolve, reject);
   }
 
-  private async _execute(): Promise<{ data: any; error: any }> {
+  catch(reject: (e: any) => any) {
+    return this._run().catch(reject);
+  }
+
+  private _run(): Promise<{ data: any; error: any }> {
+    return this._op ? this._runMutation() : this._runRead();
+  }
+
+  private async _runRead(): Promise<{ data: any; error: any }> {
     try {
       const res = await fetch(`/api/db-proxy`, {
         method: "POST",
@@ -90,48 +129,22 @@ class DbQueryBuilder {
     }
   }
 
-  async insert(rows: any | any[]) {
-    return this._mutate("insert", rows);
-  }
-
-  async update(values: Record<string, any>) {
-    return this._mutate("update", values);
-  }
-
-  async delete() {
-    return this._mutate("delete", null);
-  }
-
-  upsert(rows: any | any[], opts?: { onConflict?: string }) {
-    const execute = () => this._mutate("upsert", rows, opts?.onConflict);
-    return {
-      select(_fields: string) { return this; },
-      single() { return execute(); },
-      maybeSingle() { return execute(); },
-      then(resolve: (v: any) => any, reject?: (e: any) => any) {
-        return execute().then(resolve, reject);
-      },
-    };
-  }
-
-  private async _mutate(op: string, payload: any, onConflict?: string): Promise<{ data: any; error: any }> {
+  private async _runMutation(): Promise<{ data: any; error: any }> {
     try {
       // db-proxy authenticates from the session cookie (getServerSession), so we
       // skip the extra /api/auth-token round-trip that used to run before every
       // write — its Bearer token was never read server-side.
       const res = await fetch(`/api/db-proxy`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           table: this._table,
-          op,
-          payload,
+          op: this._op,
+          payload: this._payload,
           filters: this._filters,
           inFilters: this._inFilters,
           select: this._select,
-          ...(onConflict ? { onConflict } : {}),
+          ...(this._onConflict ? { onConflict: this._onConflict } : {}),
         }),
       });
 
@@ -140,7 +153,12 @@ class DbQueryBuilder {
       }
 
       const json = await res.json();
-      return { data: json.data ?? null, error: json.error ?? null };
+      let data = json.data ?? null;
+      // Match Supabase: .single()/.maybeSingle() return the row, not an array.
+      if ((this._single || this._maybeSingle) && Array.isArray(data)) {
+        data = data[0] ?? null;
+      }
+      return { data, error: json.error ?? null };
     } catch (err: any) {
       return { data: null, error: { message: err.message } };
     }
