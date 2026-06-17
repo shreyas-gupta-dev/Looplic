@@ -54,11 +54,13 @@ async function getCurrentUser(): Promise<AppUser | null> {
   };
 }
 
-async function checkUserRole(userId: string, role: RoleName): Promise<boolean> {
+async function checkUserRole(userId: string, role: RoleName, accessToken?: string): Promise<boolean> {
   try {
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
     const res = await fetch("/api/auth/check-role", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({ userId, role }),
     });
     if (!res.ok) return false;
@@ -127,7 +129,7 @@ export function useRoleSession(role: RoleName) {
       setUser(currentUser);
       let roleOk = false;
       if (currentUser) {
-        roleOk = await checkUserRole(currentUser.id, role);
+        roleOk = await checkUserRole(currentUser.id, role, data.session.access_token);
         setHasRole(roleOk);
       }
       if (!roleOk) {
