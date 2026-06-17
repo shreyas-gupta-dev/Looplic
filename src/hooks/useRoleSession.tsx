@@ -56,22 +56,14 @@ async function getCurrentUser(): Promise<AppUser | null> {
 
 async function checkUserRole(userId: string, role: RoleName): Promise<boolean> {
   try {
-    const res = await fetch("/api/db-proxy", {
+    const res = await fetch("/api/auth/check-role", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        table: "user_roles",
-        select: "role",
-        filters: [
-          ["eq", "user_id", userId],
-          ["eq", "role", role],
-        ],
-        single: true,
-      }),
+      body: JSON.stringify({ userId, role }),
     });
     if (!res.ok) return false;
     const json = await res.json();
-    return Boolean(json.data);
+    return Boolean(json.hasRole);
   } catch {
     return false;
   }
