@@ -28,6 +28,7 @@ const PUBLIC_READ_TABLES = new Set([
   "brands", "series", "models", "repair_categories", "repair_subcategories",
   "model_repair_services", "model_screen_guards", "screen_guard_types",
   "screen_guard_categories", "app_settings", "model_repair_subcategory_prices",
+  "user_roles",
 ]);
 
 const PUBLIC_INSERT_TABLES = new Set(["bookings", "technician_applications"]);
