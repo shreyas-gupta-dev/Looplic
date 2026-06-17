@@ -1,0 +1,36 @@
+name: keep-warm
+
+# Keeps the Amplify SSR compute (and its RDS connection pool) warm so the first
+# real visitor after an idle period doesn't pay a cold-start. POSTs to
+# /api/db-proxy always invoke the compute (POSTs aren't CDN-cached) and exercise
+# the DB connection; the page GETs are a bonus. GitHub's shortest cron is 5 min,
+# which matches the Lambda warm window. Free/unlimited on this public repo.
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch: {}
+
+# Don't pile up runs if a previous one is still going.
+concurrency:
+  group: keep-warm
+  cancel-in-progress: true
+
+jobs:
+  warm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Warm SSR compute + RDS pool (dynamic endpoint)
+        run: |
+          for i in 1 2; do
+            curl -s -o /dev/null -w "db-proxy try$i: HTTP %{http_code}  %{time_total}s\n" \
+              -X POST https://www.looplic.com/api/db-proxy \
+              -H "Content-Type: application/json" \
+              -d '{"table":"brands","select":"id","limit":1}' || true
+          done
+      - name: Warm key pages
+        run: |
+          for p in "/" "/service/mobile-repair/brands" "/service/laptop-repair/brands"; do
+            curl -s -o /dev/null -w "$p: HTTP %{http_code}  %{time_total}s\n" "https://www.looplic.com$p" || true
+          done
