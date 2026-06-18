@@ -7,7 +7,7 @@ import { useMemo, useState } from "react";
 
 import { BrandLogo } from "@/src/components/next/BrandLogo";
 import type { CatalogBrand, CatalogModelWithSeries } from "@/src/lib/data/catalog";
-import { buildServiceBookingRoute } from "@/src/lib/routes";
+import { buildServiceSeriesRoute } from "@/src/lib/routes";
 import type { ServiceType } from "@/src/lib/routes";
 
 type BrandModelsCatalogPageProps = {
@@ -98,7 +98,7 @@ export function BrandModelsCatalogPage({
             {filtered.map((model) => (
               <Link
                 key={model.id}
-                href={buildServiceBookingRoute(serviceType, brand.slug, model.series_slug, model.slug)}
+                href={buildServiceSeriesRoute(serviceType, brand.slug, model.series_slug)}
                 className="group flex items-center rounded-2xl border border-border bg-card p-4 shadow-card-brand transition-all hover:border-primary/30 hover:shadow-elevated-brand active:scale-[0.98]"
               >
                 <div className="flex min-w-0 items-center gap-3">
