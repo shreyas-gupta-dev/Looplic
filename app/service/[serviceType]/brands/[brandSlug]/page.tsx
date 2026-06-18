@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { BrandModelsCatalogPage } from "@/src/components/next/BrandModelsCatalogPage";
 import { CatalogNavbar } from "@/src/components/next/CatalogNavbar";
 import { CatalogServiceTabs } from "@/src/components/next/CatalogServiceTabs";
 import { CrawlableInternalLinks } from "@/src/components/next/CrawlableInternalLinks";
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { LaptopBrandBookingPrompt } from "@/src/components/next/LaptopBrandBookingPrompt";
 import { SeriesCatalogPage } from "@/src/components/next/SeriesCatalogPage";
-import { getAllModelsForBrand, getSeriesForBrand } from "@/src/lib/data/catalog";
+import { getSeriesForBrand } from "@/src/lib/data/catalog";
 import { resolveBrandPageData } from "@/src/lib/data/catalog-page";
 import { buildPageMetadata } from "@/src/lib/metadata";
 
@@ -80,37 +79,6 @@ export default async function ServiceBrandPage({ params }: PageProps) {
 
   if (!brand) {
     notFound();
-  }
-
-  if (config.listingType === "mobile") {
-    const allModels = await getAllModelsForBrand(brand.id);
-    const seriesList = await getSeriesForBrand(brand.id);
-
-    return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <CatalogNavbar />
-        <CatalogServiceTabs active={config.activeTab} />
-        <BrandModelsCatalogPage
-          brand={brand}
-          models={allModels}
-          brandsPath={`/service/${serviceType}/brands`}
-          serviceType="mobile-repair"
-          serviceLabel={config.label}
-        />
-        <CrawlableInternalLinks
-          title={`${brand.name} ${config.label} models`}
-          links={[
-            { href: `/service/${serviceType}/brands`, label: `All ${config.label} brands` },
-            { href: `/service/${serviceType}`, label: `${config.label} overview` },
-            ...seriesList.map((series) => ({
-              href: `/service/${serviceType}/brands/${brand.slug}/${series.slug}`,
-              label: `${brand.name} ${series.name}`,
-            })),
-          ]}
-        />
-        <HomepageFooter />
-      </div>
-    );
   }
 
   const seriesList = await getSeriesForBrand(brand.id);
