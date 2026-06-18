@@ -6,9 +6,9 @@ import { CatalogServiceTabs } from "@/src/components/next/CatalogServiceTabs";
 import { CrawlableInternalLinks } from "@/src/components/next/CrawlableInternalLinks";
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { LaptopBrandBookingPrompt } from "@/src/components/next/LaptopBrandBookingPrompt";
-import { ModelsBySeriesCatalogPage } from "@/src/components/next/ModelsBySeriesCatalogPage";
+import { MobileSeriesCatalogPage } from "@/src/components/next/MobileSeriesCatalogPage";
 import { SeriesCatalogPage } from "@/src/components/next/SeriesCatalogPage";
-import { getAllModelsForBrand, getSeriesForBrand } from "@/src/lib/data/catalog";
+import { getSeriesForBrand } from "@/src/lib/data/catalog";
 import { resolveBrandPageData } from "@/src/lib/data/catalog-page";
 import { buildPageMetadata } from "@/src/lib/metadata";
 
@@ -85,18 +85,15 @@ export default async function ServiceBrandPage({ params }: PageProps) {
   const seriesList = await getSeriesForBrand(brand.id);
 
   if (config.listingType === "mobile") {
-    const allModels = await getAllModelsForBrand(brand.id);
-
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <CatalogNavbar />
         <CatalogServiceTabs active={config.activeTab} />
-        <ModelsBySeriesCatalogPage
+        <MobileSeriesCatalogPage
           brand={brand}
-          series={seriesList}
-          models={allModels}
+          seriesList={seriesList}
           brandsPath={`/service/${serviceType}/brands`}
-          serviceType="mobile-repair"
+          seriesPathPrefix={`/service/${serviceType}/brands/${brand.slug}`}
           serviceLabel={config.label}
         />
         <CrawlableInternalLinks
