@@ -11,6 +11,20 @@ import type { CatalogBrand, CatalogModelWithSeries, CatalogSeries } from "@/src/
 import { buildServiceBookingRoute } from "@/src/lib/routes";
 import type { ServiceType } from "@/src/lib/routes";
 
+// Rank a series for newest-first ordering. The `series` table has no manual
+// sort column, so derive an order from the name: a model number (iPhone 17 -> 17)
+// sorts highest-first; named lines are slotted by era (Air newest; X/XR/XS ~ 10;
+// SE near the older end). Unknown names fall to the bottom.
+function seriesRank(name: string): number {
+  const value = name.toLowerCase();
+  const numberMatch = value.match(/\d{1,3}/);
+  if (numberMatch) return Number(numberMatch[0]);
+  if (/\bair\b/.test(value)) return 1000;
+  if (/\bx[rs]?\b/.test(value)) return 10;
+  if (/\bse\b/.test(value)) return 4;
+  return -1;
+}
+
 type ModelsBySeriesCatalogPageProps = {
   brand: CatalogBrand;
   series: CatalogSeries[];
@@ -46,7 +60,8 @@ export function ModelsBySeriesCatalogPage({
     }
     return series
       .map((s) => ({ series: s, models: modelsBySeries.get(s.id) ?? [] }))
-      .filter((group) => group.models.length > 0);
+      .filter((group) => group.models.length > 0)
+      .sort((a, b) => seriesRank(b.series.name) - seriesRank(a.series.name) || a.series.name.localeCompare(b.series.name));
   }, [models, series, search]);
 
   const totalShown = groups.reduce((count, group) => count + group.models.length, 0);
