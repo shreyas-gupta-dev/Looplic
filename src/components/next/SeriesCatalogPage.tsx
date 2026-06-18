@@ -8,6 +8,13 @@ import { BrandLogo } from "@/src/components/next/BrandLogo";
 import { CatalogPrefetchLink } from "@/src/components/next/CatalogPrefetchLink";
 import type { CatalogBrand, CatalogSeries } from "@/src/lib/data/catalog";
 
+// Series are stored with a trailing "Series" (e.g. "iPhone 11 Series"), but the
+// brand-page cards read cleaner without it ("iPhone 11"). Strip only a trailing
+// "Series" word and fall back to the original name if nothing is left.
+function formatSeriesLabel(name: string) {
+  return name.replace(/\s*series\s*$/i, "").trim() || name;
+}
+
 type SeriesCatalogPageProps = {
   brand: CatalogBrand;
   seriesList: CatalogSeries[];
@@ -102,7 +109,7 @@ export function SeriesCatalogPage({
                     <DeviceIcon className="size-5 text-primary" />
                   </div>
                   <span className="whitespace-normal break-words text-sm font-bold leading-tight text-foreground">
-                    {series.name}
+                    {formatSeriesLabel(series.name)}
                   </span>
                 </div>
               </CatalogPrefetchLink>
