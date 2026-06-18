@@ -6,8 +6,9 @@ import { CatalogServiceTabs } from "@/src/components/next/CatalogServiceTabs";
 import { CrawlableInternalLinks } from "@/src/components/next/CrawlableInternalLinks";
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { LaptopBrandBookingPrompt } from "@/src/components/next/LaptopBrandBookingPrompt";
+import { ModelsBySeriesCatalogPage } from "@/src/components/next/ModelsBySeriesCatalogPage";
 import { SeriesCatalogPage } from "@/src/components/next/SeriesCatalogPage";
-import { getSeriesForBrand } from "@/src/lib/data/catalog";
+import { getAllModelsForBrand, getSeriesForBrand } from "@/src/lib/data/catalog";
 import { resolveBrandPageData } from "@/src/lib/data/catalog-page";
 import { buildPageMetadata } from "@/src/lib/metadata";
 
@@ -82,6 +83,37 @@ export default async function ServiceBrandPage({ params }: PageProps) {
   }
 
   const seriesList = await getSeriesForBrand(brand.id);
+
+  if (config.listingType === "mobile") {
+    const allModels = await getAllModelsForBrand(brand.id);
+
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <CatalogNavbar />
+        <CatalogServiceTabs active={config.activeTab} />
+        <ModelsBySeriesCatalogPage
+          brand={brand}
+          series={seriesList}
+          models={allModels}
+          brandsPath={`/service/${serviceType}/brands`}
+          serviceType="mobile-repair"
+          serviceLabel={config.label}
+        />
+        <CrawlableInternalLinks
+          title={`${brand.name} ${config.label} models`}
+          links={[
+            { href: `/service/${serviceType}/brands`, label: `All ${config.label} brands` },
+            { href: `/service/${serviceType}`, label: `${config.label} overview` },
+            ...seriesList.map((series) => ({
+              href: `/service/${serviceType}/brands/${brand.slug}/${series.slug}`,
+              label: `${brand.name} ${series.name}`,
+            })),
+          ]}
+        />
+        <HomepageFooter />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
