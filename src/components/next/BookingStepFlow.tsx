@@ -52,6 +52,18 @@ const serviceBadges: Record<string, string> = {
 const DEFAULT_INSPECT_LOCATION = { lat: 13.034627, lng: 77.622726 };
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || process.env.VITE_GOOGLE_MAPS_API_KEY;
 
+// Postgres `numeric` columns come back from the RDS proxy as strings, so saved
+// inspect coordinates arrive as "13.03" rather than 13.03. Feeding a string to
+// google.maps.Map (and doing `lat + 0.012` for bounds) throws InvalidValueError
+// and crashes the booking page, so always coerce to a finite number or null.
+function toFiniteCoord(value: unknown): number | null {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 declare global {
   interface Window {
     google?: any;
@@ -244,8 +256,8 @@ export function BookingStepFlow({
 
   function getInspectPosition() {
     return {
-      lat: latitude ?? DEFAULT_INSPECT_LOCATION.lat,
-      lng: longitude ?? DEFAULT_INSPECT_LOCATION.lng,
+      lat: toFiniteCoord(latitude) ?? DEFAULT_INSPECT_LOCATION.lat,
+      lng: toFiniteCoord(longitude) ?? DEFAULT_INSPECT_LOCATION.lng,
     };
   }
 
@@ -452,9 +464,11 @@ export function BookingStepFlow({
           setAddress(customerProfile.address || "");
           setCity(customerProfile.city || "");
           setPincode(customerProfile.pincode || "");
-          setLatitude(customerProfile.inspect_latitude ?? null);
-          setLongitude(customerProfile.inspect_longitude ?? null);
-          if (customerProfile.inspect_latitude && customerProfile.inspect_longitude) {
+          const profileLat = toFiniteCoord(customerProfile.inspect_latitude);
+          const profileLng = toFiniteCoord(customerProfile.inspect_longitude);
+          setLatitude(profileLat);
+          setLongitude(profileLng);
+          if (profileLat !== null && profileLng !== null) {
             shouldCenterMapRef.current = true;
           }
         }
@@ -485,9 +499,11 @@ export function BookingStepFlow({
           setAddress(parsedLocation.address);
           setCity(parsedLocation.city);
           setPincode(bookingProfile.pincode || "");
-          setLatitude(bookingProfile.inspect_latitude ?? null);
-          setLongitude(bookingProfile.inspect_longitude ?? null);
-          if (bookingProfile.inspect_latitude && bookingProfile.inspect_longitude) {
+          const bookingLat = toFiniteCoord(bookingProfile.inspect_latitude);
+          const bookingLng = toFiniteCoord(bookingProfile.inspect_longitude);
+          setLatitude(bookingLat);
+          setLongitude(bookingLng);
+          if (bookingLat !== null && bookingLng !== null) {
             shouldCenterMapRef.current = true;
           }
         }
