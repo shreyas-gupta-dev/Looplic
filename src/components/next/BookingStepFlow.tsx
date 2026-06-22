@@ -288,7 +288,11 @@ export function BookingStepFlow({
         setLongitude(position.coords.longitude);
         setLocating(false);
         shouldCenterMapRef.current = true;
-        googleMapRef.current?.setZoom(18);
+        try {
+          googleMapRef.current?.setZoom(18);
+        } catch (error) {
+          console.error("Inspect map zoom failed", error);
+        }
         toast.success("Inspect location pinned.");
       },
       () => {
@@ -336,35 +340,42 @@ export function BookingStepFlow({
       return;
     }
 
-    const position = getInspectPosition();
-    googleMapRef.current = new window.google.maps.Map(mapElementRef.current, {
-      center: position,
-      zoom: 17,
-      disableDefaultUI: true,
-      zoomControl: false,
-      draggable: pinEditable,
-      gestureHandling: pinEditable ? "greedy" : "none",
-      keyboardShortcuts: false,
-      scrollwheel: pinEditable,
-      disableDoubleClickZoom: !pinEditable,
-      restriction: {
-        latLngBounds: {
-          north: position.lat + 0.012,
-          south: position.lat - 0.012,
-          east: position.lng + 0.012,
-          west: position.lng - 0.012,
+    let detachMapListeners: (() => void) | undefined;
+    try {
+      const position = getInspectPosition();
+      googleMapRef.current = new window.google.maps.Map(mapElementRef.current, {
+        center: position,
+        zoom: 17,
+        disableDefaultUI: true,
+        zoomControl: false,
+        draggable: pinEditable,
+        gestureHandling: pinEditable ? "greedy" : "none",
+        keyboardShortcuts: false,
+        scrollwheel: pinEditable,
+        disableDoubleClickZoom: !pinEditable,
+        restriction: {
+          latLngBounds: {
+            north: position.lat + 0.012,
+            south: position.lat - 0.012,
+            east: position.lng + 0.012,
+            west: position.lng - 0.012,
+          },
+          strictBounds: false,
         },
-        strictBounds: false,
-      },
-      styles: [
-        { featureType: "poi", stylers: [{ visibility: "off" }] },
-        { featureType: "transit", stylers: [{ visibility: "off" }] },
-      ],
-    });
-    const detachMapListeners = attachMapListeners(googleMapRef.current, pinEditableRef, shouldCenterMapRef, setLatitude, setLongitude);
+        styles: [
+          { featureType: "poi", stylers: [{ visibility: "off" }] },
+          { featureType: "transit", stylers: [{ visibility: "off" }] },
+        ],
+      });
+      detachMapListeners = attachMapListeners(googleMapRef.current, pinEditableRef, shouldCenterMapRef, setLatitude, setLongitude);
+    } catch (error) {
+      console.error("Inspect map failed to initialize", error);
+      googleMapRef.current = null;
+      return;
+    }
 
     return () => {
-      detachMapListeners();
+      detachMapListeners?.();
       googleMapRef.current = null;
     };
     // Create the map once; the next effect updates position/editability without rebuilding listeners.
@@ -376,24 +387,28 @@ export function BookingStepFlow({
       return;
     }
 
-    const position = getInspectPosition();
-    googleMapRef.current.setOptions({
-      draggable: pinEditable,
-      gestureHandling: pinEditable ? "greedy" : "none",
-      scrollwheel: pinEditable,
-      disableDoubleClickZoom: !pinEditable,
-      restriction: {
-        latLngBounds: {
-          north: position.lat + 0.012,
-          south: position.lat - 0.012,
-          east: position.lng + 0.012,
-          west: position.lng - 0.012,
+    try {
+      const position = getInspectPosition();
+      googleMapRef.current.setOptions({
+        draggable: pinEditable,
+        gestureHandling: pinEditable ? "greedy" : "none",
+        scrollwheel: pinEditable,
+        disableDoubleClickZoom: !pinEditable,
+        restriction: {
+          latLngBounds: {
+            north: position.lat + 0.012,
+            south: position.lat - 0.012,
+            east: position.lng + 0.012,
+            west: position.lng - 0.012,
+          },
+          strictBounds: false,
         },
-        strictBounds: false,
-      },
-    });
-    if (shouldCenterMapRef.current) {
-      googleMapRef.current.panTo(position);
+      });
+      if (shouldCenterMapRef.current) {
+        googleMapRef.current.panTo(position);
+      }
+    } catch (error) {
+      console.error("Inspect map update failed", error);
     }
     // `getInspectPosition` is derived from the state already listed here.
     // eslint-disable-next-line react-hooks/exhaustive-deps
