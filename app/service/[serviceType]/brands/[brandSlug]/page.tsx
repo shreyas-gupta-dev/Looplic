@@ -152,6 +152,44 @@ export default async function ServiceBrandPage({ params }: PageProps) {
     );
   }
 
+  // Laptop brands with a single series (Framework, Honor, Razer, Realme,
+  // Samsung) have just one card to pick, so skip the series-selection step and
+  // render the model grid directly — same collapse as the mobile branch above.
+  if (seriesList.length === 1) {
+    const series = seriesList[0];
+    const models = await getModelsForSeries(series.id);
+
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <CatalogNavbar />
+        <CatalogServiceTabs active={config.activeTab} />
+        <ModelsCatalogPage
+          brand={brand}
+          series={series}
+          models={models}
+          brandsPath={`/service/${serviceType}/brands`}
+          seriesPath={`/service/${serviceType}/brands/${brand.slug}`}
+          modelPathPrefix={`/service/${serviceType}/book/${brand.slug}/${series.slug}`}
+          serviceLabel={config.label}
+          collapsedSeries
+        />
+        {config.listingType === "laptop" ? <LaptopBrandBookingPrompt brandName={brand.name} /> : null}
+        <CrawlableInternalLinks
+          title={`${brand.name} ${config.label} models`}
+          links={[
+            { href: `/service/${serviceType}/brands`, label: `All ${config.label} brands` },
+            { href: `/service/${serviceType}`, label: `${config.label} overview` },
+            ...models.map((model) => ({
+              href: `/service/${serviceType}/book/${brand.slug}/${series.slug}/${model.slug}`,
+              label: `${brand.name} ${model.name} ${config.label}`,
+            })),
+          ]}
+        />
+        <HomepageFooter />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <CatalogNavbar />
