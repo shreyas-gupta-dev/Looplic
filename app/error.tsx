@@ -49,15 +49,6 @@ export default function RouteError({ error, reset }: { error: Error & { digest?:
             Reload page
           </button>
         </div>
-        <details className="mt-4 text-left">
-          <summary className="cursor-pointer text-xs text-muted-foreground">Technical details</summary>
-          <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-secondary/60 p-3 text-left text-[11px] leading-5 text-foreground">
-{`message: ${error?.message || "(none)"}
-name: ${error?.name || "(none)"}
-digest: ${error?.digest || "(none)"}
-stack: ${error?.stack || "(none)"}`}
-          </pre>
-        </details>
       </div>
     </div>
   );
