@@ -48,8 +48,8 @@ export function InfoPageLayout({ eyebrow, title, description, children }: InfoPa
             { href: "/service/mobile-repair", label: "Mobile repair" },
             { href: "/service/mobile-repair/brands", label: "Mobile repair brands" },
             { href: "/service/laptop-repair/brands", label: "Laptop repair brands" },
-            { href: "/doorstep-mobile-repair", label: "Doorstep mobile repair" },
-            { href: "/office-it-support", label: "Office IT support" },
+            { href: "/service/mobile-repair", label: "Mobile repair" },
+            { href: "/service/it-support", label: "IT support" },
           ]}
         />
       </main>

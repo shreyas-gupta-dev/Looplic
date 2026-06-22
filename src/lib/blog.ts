@@ -258,9 +258,7 @@ export const blogPosts = [
     ],
     internalLinks: [
       { href: "/service/mobile-repair", label: "Looplic mobile repair in Bangalore" },
-      { href: "/service/mobile-repair/brands", label: "Choose your mobile brand on Looplic" },
-      { href: "/doorstep-mobile-repair", label: "Doorstep mobile repair by Looplic" },
-      { href: "/bangalore", label: "Looplic Bangalore service areas" },
+      { href: "/service/mobile-repair/brands", label: "Choose your mobile brand on Looplic" },      { href: "/bangalore", label: "Looplic Bangalore service areas" },
       { href: "/apple-iphone-screen-replacement", label: "iPhone screen replacement Bangalore" },
       { href: "/samsung-screen-replacement", label: "Samsung screen replacement Bangalore" },
       { href: "/oneplus-screen-replacement", label: "OnePlus screen replacement Bangalore" },
@@ -440,9 +438,7 @@ export const blogPosts = [
       "Back up important data and keep booking details handy.",
     ],
     internalLinks: [
-      { href: "/service/mobile-repair", label: "Mobile repair in Bangalore" },
-      { href: "/doorstep-mobile-repair", label: "Doorstep mobile repair" },
-      { href: "/service/mobile-repair/brands", label: "Browse all mobile brands" },
+      { href: "/service/mobile-repair", label: "Mobile repair in Bangalore" },      { href: "/service/mobile-repair/brands", label: "Browse all mobile brands" },
       { href: "/bangalore", label: "Looplic service areas in Bangalore" },
       { href: "/apple-iphone-screen-replacement", label: "iPhone screen replacement" },
       { href: "/samsung-screen-replacement", label: "Samsung screen replacement" },
@@ -621,9 +617,7 @@ export const blogPosts = [
     internalLinks: [
       { href: "/bangalore/hbr-layout", label: "Looplic in HBR Layout" },
       { href: "/bangalore/hbr-layout/service/mobile-repair", label: "Mobile repair in HBR Layout" },
-      { href: "/service/mobile-repair", label: "Mobile repair in Bangalore" },
-      { href: "/doorstep-mobile-repair", label: "Doorstep mobile repair" },
-      { href: "/service/mobile-repair/brands", label: "Browse all mobile brands" },
+      { href: "/service/mobile-repair", label: "Mobile repair in Bangalore" },      { href: "/service/mobile-repair/brands", label: "Browse all mobile brands" },
       { href: "/apple-iphone-screen-replacement", label: "iPhone screen replacement" },
       { href: "/samsung-screen-replacement", label: "Samsung screen replacement" },
       { href: "/oneplus-screen-replacement", label: "OnePlus screen replacement" },
@@ -801,9 +795,7 @@ export const blogPosts = [
     internalLinks: [
       { href: "/bangalore/marathahalli", label: "Looplic in Marathahalli" },
       { href: "/bangalore/marathahalli/service/mobile-repair", label: "Mobile repair in Marathahalli" },
-      { href: "/service/mobile-repair", label: "Mobile repair in Bangalore" },
-      { href: "/doorstep-mobile-repair", label: "Doorstep mobile repair" },
-      { href: "/service/mobile-repair/brands", label: "Browse all mobile brands" },
+      { href: "/service/mobile-repair", label: "Mobile repair in Bangalore" },      { href: "/service/mobile-repair/brands", label: "Browse all mobile brands" },
       { href: "/apple-iphone-screen-replacement", label: "iPhone screen replacement" },
       { href: "/samsung-screen-replacement", label: "Samsung screen replacement" },
       { href: "/oneplus-screen-replacement", label: "OnePlus screen replacement" },
@@ -964,9 +956,7 @@ export const blogPosts = [
       "Back up important files and remove sensitive unlock access when practical.",
     ],
     internalLinks: [
-      { href: "/service/mobile-repair", label: "Mobile repair in Bangalore" },
-      { href: "/doorstep-mobile-repair", label: "Doorstep mobile repair" },
-      { href: "/service/mobile-repair/brands", label: "Browse all mobile brands" },
+      { href: "/service/mobile-repair", label: "Mobile repair in Bangalore" },      { href: "/service/mobile-repair/brands", label: "Browse all mobile brands" },
       { href: "/service/mobile-repair/brands/apple", label: "Apple iPhone repair" },
       { href: "/service/mobile-repair/brands/samsung", label: "Samsung repair" },
       { href: "/service/mobile-repair/brands/oneplus", label: "OnePlus repair" },
@@ -1102,9 +1092,7 @@ export const blogPosts = [
     ],
     internalLinks: [
       { href: "/service/mobile-repair", label: "Mobile repair services" },
-      { href: "/service/mobile-repair/brands", label: "Browse mobile brands" },
-      { href: "/doorstep-mobile-repair", label: "Doorstep mobile repair" },
-      { href: "/bangalore", label: "Looplic in Bangalore" },
+      { href: "/service/mobile-repair/brands", label: "Browse mobile brands" },      { href: "/bangalore", label: "Looplic in Bangalore" },
       { href: "/contact-us", label: "Contact support" },
     ],
     externalLinks: [
