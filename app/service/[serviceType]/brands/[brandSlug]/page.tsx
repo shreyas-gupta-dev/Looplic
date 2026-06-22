@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { CatalogNavbar } from "@/src/components/next/CatalogNavbar";
 import { CatalogServiceTabs } from "@/src/components/next/CatalogServiceTabs";
@@ -84,6 +84,15 @@ export default async function ServiceBrandPage({ params }: PageProps) {
 
   const seriesList = await getSeriesForBrand(brand.id);
 
+  // Cashify-scraped brands (Motorola, Nokia, Infinix, LG, ...) carry a single
+  // "All Models" series, so the series-selection page is a pointless one-card
+  // hop. Send those brand pages straight to the single series' model grid
+  // (e.g. /brands/lg → /brands/lg/all-models) instead of rendering it inline,
+  // so the models always live under the canonical series URL.
+  if (seriesList.length === 1) {
+    redirect(`/service/${serviceType}/brands/${brand.slug}/${seriesList[0].slug}`);
+  }
+
   if (config.listingType === "mobile") {
     return (
       <div className="min-h-screen bg-background flex flex-col">
@@ -112,6 +121,8 @@ export default async function ServiceBrandPage({ params }: PageProps) {
     );
   }
 
+  // Laptop brands fall through to the series-selection grid. Single-series
+  // laptop brands were already redirected to their series page above.
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <CatalogNavbar />

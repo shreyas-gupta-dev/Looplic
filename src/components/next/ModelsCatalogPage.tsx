@@ -18,6 +18,11 @@ type ModelsCatalogPageProps = {
   modelPathPrefix: string;
   serviceLabel: string;
   homeHref?: string;
+  // When a brand has a single series (e.g. the "All Models" Cashify brands), the
+  // brand page renders this model grid directly without a series-selection step.
+  // In that case there is no meaningful series to show, so hide the series crumb
+  // and drop the series name from headings/placeholders.
+  collapsedSeries?: boolean;
 };
 
 export function ModelsCatalogPage({
@@ -29,10 +34,14 @@ export function ModelsCatalogPage({
   modelPathPrefix,
   serviceLabel,
   homeHref = "/",
+  collapsedSeries = false,
 }: ModelsCatalogPageProps) {
   const DeviceIcon = brand.service_type === "laptop" ? Laptop : Smartphone;
   const [search, setSearch] = useState("");
   const [loadingHref, setLoadingHref] = useState("");
+
+  const heading = collapsedSeries ? `${brand.name} Models` : `${brand.name} ${series.name} Models`;
+  const searchScope = collapsedSeries ? brand.name : `${brand.name} ${series.name}`;
 
   const filteredModels = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -55,11 +64,17 @@ export function ModelsCatalogPage({
             Brands
           </Link>
           <ChevronRight className="size-3" />
-          <Link href={seriesPath} className="transition-colors hover:text-foreground">
-            {brand.name}
-          </Link>
-          <ChevronRight className="size-3" />
-          <span className="text-foreground">{series.name}</span>
+          {collapsedSeries ? (
+            <span className="text-foreground">{brand.name}</span>
+          ) : (
+            <>
+              <Link href={seriesPath} className="transition-colors hover:text-foreground">
+                {brand.name}
+              </Link>
+              <ChevronRight className="size-3" />
+              <span className="text-foreground">{series.name}</span>
+            </>
+          )}
         </div>
 
         <div className="mb-6 flex items-center gap-4">
@@ -73,7 +88,7 @@ export function ModelsCatalogPage({
           />
           <div>
             <h1 className="text-2xl font-semibold text-foreground md:text-3xl">
-              {brand.name} {series.name} Models
+              {heading}
             </h1>
             <p className="mt-1 text-xs text-muted-foreground">Select your model for {serviceLabel.toLowerCase()} services</p>
           </div>
@@ -82,7 +97,7 @@ export function ModelsCatalogPage({
         <div className="relative mb-6 max-w-sm">
           <input
             type="text"
-            placeholder={`Search ${brand.name} ${series.name} models...`}
+            placeholder={`Search ${searchScope} models...`}
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
