@@ -7,8 +7,9 @@ import { CrawlableInternalLinks } from "@/src/components/next/CrawlableInternalL
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { LaptopBrandBookingPrompt } from "@/src/components/next/LaptopBrandBookingPrompt";
 import { MobileSeriesCatalogPage } from "@/src/components/next/MobileSeriesCatalogPage";
+import { ModelsCatalogPage } from "@/src/components/next/ModelsCatalogPage";
 import { SeriesCatalogPage } from "@/src/components/next/SeriesCatalogPage";
-import { getSeriesForBrand } from "@/src/lib/data/catalog";
+import { getModelsForSeries, getSeriesForBrand } from "@/src/lib/data/catalog";
 import { resolveBrandPageData } from "@/src/lib/data/catalog-page";
 import { buildPageMetadata } from "@/src/lib/metadata";
 
@@ -85,6 +86,45 @@ export default async function ServiceBrandPage({ params }: PageProps) {
   const seriesList = await getSeriesForBrand(brand.id);
 
   if (config.listingType === "mobile") {
+    // Cashify-scraped brands (Motorola, Nokia, Infinix, ...) carry a single
+    // "All Models" series, so the series-selection page is a pointless one-card
+    // hop. When a brand has only one series, render the model grid directly on
+    // the brand page — matching where the multi-series brands (Apple, Samsung)
+    // ultimately land, just without the extra click.
+    if (seriesList.length === 1) {
+      const series = seriesList[0];
+      const models = await getModelsForSeries(series.id);
+
+      return (
+        <div className="min-h-screen bg-background flex flex-col">
+          <CatalogNavbar />
+          <CatalogServiceTabs active={config.activeTab} />
+          <ModelsCatalogPage
+            brand={brand}
+            series={series}
+            models={models}
+            brandsPath={`/service/${serviceType}/brands`}
+            seriesPath={`/service/${serviceType}/brands/${brand.slug}`}
+            modelPathPrefix={`/service/${serviceType}/book/${brand.slug}/${series.slug}`}
+            serviceLabel={config.label}
+            collapsedSeries
+          />
+          <CrawlableInternalLinks
+            title={`${brand.name} ${config.label} models`}
+            links={[
+              { href: `/service/${serviceType}/brands`, label: `All ${config.label} brands` },
+              { href: `/service/${serviceType}`, label: `${config.label} overview` },
+              ...models.map((model) => ({
+                href: `/service/${serviceType}/book/${brand.slug}/${series.slug}/${model.slug}`,
+                label: `${brand.name} ${model.name} ${config.label}`,
+              })),
+            ]}
+          />
+          <HomepageFooter />
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <CatalogNavbar />
