@@ -113,6 +113,17 @@ function getTodayDateString() {
   return new Date().toISOString().split("T")[0];
 }
 
+// Postgres `numeric` columns (inspect_latitude/inspect_longitude) come back from
+// the RDS proxy as strings ("13.03" rather than 13.03). Feeding a string to
+// `new google.maps.Map({ center: { lat: "13.03" ... } })` throws
+// InvalidValueError, which is uncaught and crashes the booking page for
+// logged-in users with saved coords. Always coerce to a finite number or null.
+function toFiniteCoord(value: unknown): number | null {
+  if (value === null || value === undefined || value === "") return null;
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 function getStaticInspectMapUrl(position: { lat: number; lng: number }) {
   if (!GOOGLE_MAPS_API_KEY) return "";
   const params = new URLSearchParams({
@@ -261,7 +272,10 @@ export function UniversalBookingFlow({
   const visitingChargePolicy = getVisitingChargePolicy(dbServiceType);
 
   function getInspectPosition() {
-    return { lat: latitude ?? DEFAULT_INSPECT_LOCATION.lat, lng: longitude ?? DEFAULT_INSPECT_LOCATION.lng };
+    return {
+      lat: toFiniteCoord(latitude) ?? DEFAULT_INSPECT_LOCATION.lat,
+      lng: toFiniteCoord(longitude) ?? DEFAULT_INSPECT_LOCATION.lng,
+    };
   }
 
   function buildBookingNotes(): string {
@@ -341,9 +355,11 @@ export function UniversalBookingFlow({
           setAddress(p.address || "");
           setCity(p.city || "");
           setPincode(p.pincode || "");
-          setLatitude(p.inspect_latitude ?? null);
-          setLongitude(p.inspect_longitude ?? null);
-          if (p.inspect_latitude && p.inspect_longitude) shouldCenterMapRef.current = true;
+          const profileLat = toFiniteCoord(p.inspect_latitude);
+          const profileLng = toFiniteCoord(p.inspect_longitude);
+          setLatitude(profileLat);
+          setLongitude(profileLng);
+          if (profileLat !== null && profileLng !== null) shouldCenterMapRef.current = true;
         } else if (!ignore) {
           // 3. Fall back to last booking
           const { data: lastBooking } = await dataClient
@@ -361,9 +377,11 @@ export function UniversalBookingFlow({
             setAddress(loc.address);
             setCity(loc.city);
             setPincode(b.pincode || "");
-            setLatitude(b.inspect_latitude ?? null);
-            setLongitude(b.inspect_longitude ?? null);
-            if (b.inspect_latitude && b.inspect_longitude) shouldCenterMapRef.current = true;
+            const bookingLat = toFiniteCoord(b.inspect_latitude);
+            const bookingLng = toFiniteCoord(b.inspect_longitude);
+            setLatitude(bookingLat);
+            setLongitude(bookingLng);
+            if (bookingLat !== null && bookingLng !== null) shouldCenterMapRef.current = true;
           }
         }
       } finally {
