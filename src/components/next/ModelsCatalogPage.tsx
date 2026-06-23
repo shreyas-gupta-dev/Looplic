@@ -119,23 +119,21 @@ export function ModelsCatalogPage({
                 onClick={() => setLoadingHref(`${modelPathPrefix}/${model.slug}`)}
                 className="group flex flex-col items-center gap-2 rounded-2xl border border-border bg-card px-3 py-4 shadow-card-brand transition-all hover:border-primary/30 hover:shadow-elevated-brand active:scale-95"
               >
-                {loadingHref === `${modelPathPrefix}/${model.slug}` ? (
-                  <div className="flex size-16 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <Loader2 className="size-6 animate-spin" />
-                  </div>
-                ) : model.image_url ? (
-                  <Image
-                    src={model.image_url}
-                    alt={model.name}
-                    width={64}
-                    height={64}
-                    className="size-16 rounded-xl object-contain"
-                  />
-                ) : (
-                  <div className="flex size-16 items-center justify-center rounded-xl bg-secondary">
+                <div className="flex size-20 items-center justify-center rounded-2xl bg-secondary/40 p-2.5">
+                  {loadingHref === `${modelPathPrefix}/${model.slug}` ? (
+                    <Loader2 className="size-6 animate-spin text-primary" />
+                  ) : model.image_url ? (
+                    <Image
+                      src={model.image_url}
+                      alt={model.name}
+                      width={72}
+                      height={72}
+                      className="h-full w-full object-contain"
+                    />
+                  ) : (
                     <DeviceIcon className="size-7 text-primary" />
-                  </div>
-                )}
+                  )}
+                </div>
                 <div className="w-full">
                   <span className="block whitespace-normal break-words text-center text-xs font-bold leading-tight text-foreground">
                     {loadingHref === `${modelPathPrefix}/${model.slug}` ? "Loading services..." : model.name}
