@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { CatalogNavbar } from "@/src/components/next/CatalogNavbar";
 import { CatalogServiceTabs } from "@/src/components/next/CatalogServiceTabs";
 import { CrawlableInternalLinks } from "@/src/components/next/CrawlableInternalLinks";
+import { HomepageView } from "@/src/components/next/HomepageView";
 import { HowItWorks } from "@/src/components/next/HowItWorks";
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { LaptopBrandBookingPrompt } from "@/src/components/next/LaptopBrandBookingPrompt";
@@ -66,6 +67,21 @@ export default async function ServicePage({ params }: PageProps) {
   }
 
   const [brands, searchIndex] = await Promise.all([getBrandsForListing(config.listingType), getCatalogSearchIndex(config.listingType)]);
+
+  if (serviceType === "mobile-repair") {
+    return (
+      <HomepageView
+        brands={brands}
+        searchBrands={searchIndex.brands}
+        searchSeries={searchIndex.series}
+        searchModels={searchIndex.models}
+        heroTitle="Mobile Repair at Your Doorstep in Bangalore"
+        heroDescription="Pick your model, choose a repair, and book a doorstep technician in minutes."
+        heroBrowseHref="/service/mobile-repair/brands"
+        heroSearchPlaceholder="Search your phone model in Bangalore..."
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
