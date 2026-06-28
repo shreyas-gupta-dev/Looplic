@@ -41,7 +41,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={nunito.variable}>
+      <body className={nunito.variable} suppressHydrationWarning>
         <Script async src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ADS_ID}`} strategy="afterInteractive" />
         <Script id="looplic-google-ads" strategy="afterInteractive">
           {`
