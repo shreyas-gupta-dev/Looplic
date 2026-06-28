@@ -1,23 +1,71 @@
 version: 1
-frontend:
-  phases:
-    preBuild:
-      commands:
-        - npm ci
-    build:
-      commands:
-        - export NODE_OPTIONS=--max-old-space-size=4096
-        # Amplify WEB_COMPUTE does not inject console env vars into the SSR
-        # runtime — only at build time. Persist server-side vars into
-        # .env.production so Next.js loads them at runtime (fixes ECONNREFUSED
-        # 127.0.0.1:5432 from DATABASE_URL being undefined in the Lambda).
-        - env | grep -E '^(DATABASE_|SUPABASE_|RESEND_|APP_AWS_|NEXT_PUBLIC_)' >> .env.production
-        - npm run build
-  artifacts:
-    baseDirectory: .next
-    files:
-      - '**/*'
-  cache:
-    paths:
-      - node_modules/**/*
-      - .next/cache/**/*
+# Monorepo build spec. Each Amplify app sets AMPLIFY_MONOREPO_APP_ROOT to one of
+# the appRoot values below; Amplify builds only that block.
+#   - looplic-user        -> apps/user        (www.looplic.com)
+#   - looplic-admin       -> apps/admin       (admin.looplic.com)
+#   - looplic-technician  -> apps/technician  (tech.looplic.com)
+# buildPath: '/' installs + builds from the monorepo root so the npm workspace
+# (and the shared @looplic/db package) resolve correctly.
+applications:
+  - appRoot: apps/user
+    frontend:
+      buildPath: '/'
+      phases:
+        preBuild:
+          commands:
+            - npm ci
+        build:
+          commands:
+            - export NODE_OPTIONS=--max-old-space-size=4096
+            # Amplify WEB_COMPUTE injects env vars only at build time; persist
+            # them so Next.js loads them at runtime (fixes ECONNREFUSED on RDS).
+            - env | grep -E '^(DATABASE_|SUPABASE_|RESEND_|APP_AWS_|NEXT_PUBLIC_)' >> apps/user/.env.production
+            - npm run build -w @looplic/user
+      artifacts:
+        baseDirectory: apps/user/.next
+        files:
+          - '**/*'
+      cache:
+        paths:
+          - node_modules/**/*
+          - apps/user/.next/cache/**/*
+  - appRoot: apps/admin
+    frontend:
+      buildPath: '/'
+      phases:
+        preBuild:
+          commands:
+            - npm ci
+        build:
+          commands:
+            - export NODE_OPTIONS=--max-old-space-size=4096
+            - env | grep -E '^(DATABASE_|SUPABASE_|RESEND_|APP_AWS_|NEXT_PUBLIC_)' >> apps/admin/.env.production
+            - npm run build -w @looplic/admin
+      artifacts:
+        baseDirectory: apps/admin/.next
+        files:
+          - '**/*'
+      cache:
+        paths:
+          - node_modules/**/*
+          - apps/admin/.next/cache/**/*
+  - appRoot: apps/technician
+    frontend:
+      buildPath: '/'
+      phases:
+        preBuild:
+          commands:
+            - npm ci
+        build:
+          commands:
+            - export NODE_OPTIONS=--max-old-space-size=4096
+            - env | grep -E '^(DATABASE_|SUPABASE_|RESEND_|APP_AWS_|NEXT_PUBLIC_)' >> apps/technician/.env.production
+            - npm run build -w @looplic/technician
+      artifacts:
+        baseDirectory: apps/technician/.next
+        files:
+          - '**/*'
+      cache:
+        paths:
+          - node_modules/**/*
+          - apps/technician/.next/cache/**/*
