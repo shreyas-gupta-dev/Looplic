@@ -37,6 +37,28 @@ const nextConfig: NextConfig = {
         destination: "/mi-screen-replacement",
         permanent: true,
       },
+      // Back-office moved to its own subdomains. Forward old looplic.com links
+      // (and any installed PWAs / bookmarks) to the dedicated apps.
+      {
+        source: "/admin/:path*",
+        destination: "https://admin.looplic.com/admin/:path*",
+        permanent: true,
+      },
+      {
+        source: "/operator/:path*",
+        destination: "https://admin.looplic.com/operator/:path*",
+        permanent: true,
+      },
+      {
+        source: "/operation/:path*",
+        destination: "https://admin.looplic.com/operation/:path*",
+        permanent: true,
+      },
+      {
+        source: "/technician/:path*",
+        destination: "https://tech.looplic.com/technician/:path*",
+        permanent: true,
+      },
     ];
   },
   env: {
