@@ -8,11 +8,18 @@ import { BrandLogo } from "@/src/components/next/BrandLogo";
 import { CatalogPrefetchLink } from "@/src/components/next/CatalogPrefetchLink";
 import type { CatalogBrand, CatalogSeries } from "@/src/lib/data/catalog";
 
-// Series are stored with a trailing "Series" (e.g. "iPhone 11 Series"), but the
-// brand-page cards read cleaner without it ("iPhone 11"). Strip only a trailing
-// "Series" word and fall back to the original name if nothing is left.
-function formatSeriesLabel(name: string) {
-  return name.replace(/\s*series\s*$/i, "").trim() || name;
+// Series are stored with a trailing "Series" (e.g. "iPhone 11 Series") and often
+// repeat the brand ("Apple iPhone 11 Series"). On the brand page the brand is
+// already shown in the header, so strip a leading brand prefix and the trailing
+// "Series" word for a cleaner, shorter label ("iPhone 11"). Fall back to the
+// original name if stripping leaves nothing.
+function formatSeriesLabel(name: string, brandName?: string) {
+  let label = name.replace(/\s*series\s*$/i, "").trim();
+  if (brandName) {
+    const escaped = brandName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    label = label.replace(new RegExp(`^${escaped}\\s+`, "i"), "").trim();
+  }
+  return label || name.replace(/\s*series\s*$/i, "").trim() || name;
 }
 
 type SeriesCatalogPageProps = {
@@ -69,9 +76,11 @@ export function SeriesCatalogPage({
             className="size-16 rounded-2xl border border-border object-contain shadow-card-brand"
             fallbackClassName="size-16 rounded-2xl shadow-sm"
           />
-          <div>
-            <h1 className="text-2xl font-semibold text-foreground md:text-4xl">{brand.name} {deviceLabel} Series</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
+          <div className="min-w-0">
+            <h1 className="text-lg font-semibold leading-tight text-foreground sm:text-2xl md:text-4xl">
+              {brand.name} {deviceLabel} Series
+            </h1>
+            <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
               Select your {brand.name} series to find {serviceLabel.toLowerCase()} services
             </p>
           </div>
@@ -102,14 +111,14 @@ export function SeriesCatalogPage({
                 key={series.id}
                 href={`${seriesPathPrefix}/${series.slug}`}
                 eagerPrefetch={!search}
-                className="group flex items-center rounded-2xl border border-border bg-card p-4 shadow-card-brand transition-all hover:border-primary/30 hover:shadow-elevated-brand active:scale-[0.98]"
+                className="group flex items-center rounded-2xl border border-border bg-card p-3 shadow-card-brand transition-all hover:border-primary/30 hover:shadow-elevated-brand active:scale-[0.98] sm:p-4"
               >
-                <div className="flex min-w-0 items-center gap-3">
-                  <div className="flex size-10 flex-shrink-0 items-center justify-center rounded-xl bg-secondary">
-                    <DeviceIcon className="size-5 text-primary" />
+                <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+                  <div className="flex size-9 flex-shrink-0 items-center justify-center rounded-xl bg-secondary sm:size-10">
+                    <DeviceIcon className="size-4 text-primary sm:size-5" />
                   </div>
-                  <span className="whitespace-normal break-words text-sm font-bold leading-tight text-foreground">
-                    {formatSeriesLabel(series.name)}
+                  <span className="min-w-0 text-[13px] font-bold leading-snug text-foreground sm:text-sm">
+                    {formatSeriesLabel(series.name, brand.name)}
                   </span>
                 </div>
               </CatalogPrefetchLink>
