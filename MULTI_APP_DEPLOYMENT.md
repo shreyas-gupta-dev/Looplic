@@ -1,13 +1,13 @@
 # Multi-App Deployment — Looplic
 
-This repo is now an **npm-workspaces monorepo** with three independently
-deployable Next.js apps that share **one database**:
+This repo is an **npm-workspaces monorepo** with three independently deployed
+Next.js apps that share **one database**. All three are live:
 
-| App | Folder | Subdomain | Purpose |
-|-----|--------|-----------|---------|
-| Customer | repo root (`app/`, `src/`) | `www.looplic.com` | Public marketing + booking |
-| Admin | `apps/admin` | `admin.looplic.com` | Admin **+ operator** back-office |
-| Technician | `apps/technician` | `tech.looplic.com` | Technician dashboard |
+| App | Folder | Subdomain | `AMPLIFY_MONOREPO_APP_ROOT` | Purpose |
+|-----|--------|-----------|------------------------------|---------|
+| Customer | `apps/user` | `www.looplic.com` | `apps/user` | Public marketing + booking |
+| Admin | `apps/admin` | `admin.looplic.com` | `apps/admin` | Admin **+ operator** back-office |
+| Technician | `apps/technician` | `tech.looplic.com` | `apps/technician` | Technician dashboard |
 
 Shared code:
 
@@ -15,35 +15,48 @@ Shared code:
 |---------|--------|-----------|
 | `@looplic/db` | `packages/db` | all three apps — the **common database** (Drizzle schema + pooled pg client) |
 
-> **Why this layout?** Each app builds and deploys on its own. If the customer
-> site has a bad deploy or a traffic spike, `admin.looplic.com` and
-> `tech.looplic.com` keep running because they are separate Amplify apps /
-> Lambdas. They stay integrated because all three talk to the **same RDS
-> database** through the identical `@looplic/db` schema.
+> **Why this layout?** Each app is its **own Amplify app** with its own build,
+> Lambda, and subdomain. If the customer site has a bad deploy or a traffic
+> spike, `admin.looplic.com` and `tech.looplic.com` keep running. They stay
+> integrated because all three talk to the **same RDS database** through the
+> identical `@looplic/db` schema.
+
+```
+looplic/                       (repo root = workspace manager only)
+├─ amplify.yml                 (ONE monorepo build spec — applications[] block per app)
+├─ package.json                (npm workspaces: apps/*, packages/*)
+├─ apps/
+│  ├─ user/                    → www.looplic.com   (customer-only)
+│  ├─ admin/                   → admin.looplic.com (admin + operator)
+│  └─ technician/              → tech.looplic.com
+└─ packages/
+   └─ db/                      @looplic/db — the common database
+```
 
 ---
 
 ## How the "common database" works
 
 `packages/db` is the single source of truth for the schema and the connection
-pool. Each app's `src/lib/db` simply re-exports it:
+pool. Each app's `src/lib/db` just re-exports it:
 
 ```ts
-// src/lib/db/index.ts  (in every app)
+// apps/<app>/src/lib/db/index.ts
 export * from "@looplic/db";
 ```
 
 So all existing `@/src/lib/db` / `@/lib/db` imports keep working unchanged, and
 there is exactly one schema definition. **A schema change is made once in
-`packages/db/schema.ts` and every app picks it up.**
+`packages/db/schema.ts` and every app picks it up.** Each app's `next.config.ts`
+has `transpilePackages: ["@looplic/db"]` so the shared package compiles into the
+app bundle.
 
 ### Running migrations
-Run Drizzle from the repo root (or from `packages/db`) against the one RDS
-instance — never per-app:
+Run Drizzle from the repo root against the one RDS instance — never per-app:
 
 ```bash
 # from repo root, with DATABASE_URL set
-npx drizzle-kit push        # or: generate + migrate
+npm run db:push          # uses packages/db/drizzle.config.ts
 ```
 
 ---
@@ -51,64 +64,63 @@ npx drizzle-kit push        # or: generate + migrate
 ## Local development
 
 ```bash
-npm install                 # once, at repo root — links all workspaces
+npm install              # once, at repo root — links all workspaces
 
-npm run dev                 # customer app (root)        -> http://localhost:3000
-npm run dev -w @looplic/admin        # admin             -> http://localhost:3001
-npm run dev -w @looplic/technician   # technician        -> http://localhost:3002
+npm run dev:user         # customer    -> http://localhost:3000
+npm run dev:admin        # admin        -> http://localhost:3001
+npm run dev:technician   # technician   -> http://localhost:3002
 ```
 
-Each app reads its own `.env.local`. Copy `.env.example` into each app folder
-and fill in the same values (they share one DB, so `DATABASE_URL` is identical).
+Each app reads its own `apps/<app>/.env.local`. They share one DB, so
+`DATABASE_URL` is identical across them.
 
-> Note: per the project's known constraint, `next dev` can be memory-heavy in
-> the sandbox. Validate with `npx tsc --noEmit` per app and via Amplify preview
-> builds rather than relying on localhost.
+> Note: `next dev` is memory-heavy for this project. Validate with
+> `npx tsc --noEmit` inside an app folder and via Amplify builds rather than
+> relying on localhost.
 
 ---
 
-## ☁️ AWS deployment — steps YOU need to do
+## How the monorepo build works (`amplify.yml`)
 
-The code is ready. These are the **manual AWS Console / CLI actions** required to
-go live. Nothing here auto-deploys until you do them.
+There is **one** `amplify.yml` at the repo root in Amplify's **`applications[]`**
+format — one `appRoot` block per app. **This is required:** Amplify monorepo
+builds read the root spec and reject the single-app `frontend:` format with
+`CustomerError: Monorepo spec provided without "applications" key`. Per-app
+`amplify.yml` files are ignored.
 
-### Prerequisite — one RDS database (already exists)
-All three apps point `DATABASE_URL` at the **same** existing RDS instance. No new
-database needed. ✅
+Each Amplify app selects its block via the **`AMPLIFY_MONOREPO_APP_ROOT`** env
+var (the console sets this when you mark the app as a monorepo). Each block:
 
-### Step 1 — Create two new Amplify apps (admin + technician)
+- `buildPath: '/'` → installs/builds from the repo root so the npm workspace and
+  `@looplic/db` resolve.
+- `npm ci` at the root, then `npm run build -w @looplic/<app>`.
+- Writes server env into `apps/<app>/.env.production` at build time (Amplify
+  WEB_COMPUTE injects env only at build time; this fixes the runtime
+  `ECONNREFUSED 127.0.0.1:5432` from `DATABASE_URL` being undefined).
+- `artifacts.baseDirectory: apps/<app>/.next`.
 
-The existing Amplify app keeps serving the **customer** site from the repo root.
-You add **two more** Amplify apps from the **same GitHub repo**, each with a
-different monorepo app root.
+---
 
-For **admin**:
-1. Amplify Console → **New app → Host web app**.
-2. Connect the same GitHub repo, branch `main` (or your release branch).
-3. When asked about monorepo: enable **"My app is a monorepo"** and set
-   **app root = `apps/admin`**.
-4. Build settings: Amplify auto-detects `apps/admin/amplify.yml`. If not, paste
-   its contents.
-5. Platform must be **Next.js SSR (WEB_COMPUTE)** — same as the customer app.
-6. Create app.
+## ☁️ AWS setup reference (already done — keep for re-creating an app)
 
-Repeat for **technician** with **app root = `apps/technician`**.
+### One RDS database
+All three apps point `DATABASE_URL` at the **same** existing RDS instance
+(`ap-south-1`). No per-app database.
 
-> CLI alternative per app:
-> ```bash
-> aws amplify create-app --name looplic-admin --repository <repo-url> \
->   --platform WEB_COMPUTE --region ap-south-1
-> aws amplify create-branch --app-id <ADMIN_APP_ID> --branch-name main \
->   --environment-variables ... \
->   --framework "Next.js - SSR"
-> # set AMPLIFY_MONOREPO_APP_ROOT=apps/admin in the branch/app env vars
-> ```
-> In the Console the monorepo app-root toggle is the reliable path.
+### Creating an Amplify app for one folder
+1. Amplify Console (ap-south-1) → **Create new app** → GitHub →
+   repo `shreyas-gupta-dev/Looplic`, branch `master`.
+2. Check **"My app is a monorepo"** → app root = e.g. `apps/admin`.
+   (Amplify sets `AMPLIFY_MONOREPO_APP_ROOT=apps/admin`.)
+3. App settings: framework auto-detects **Next.js (SSR / WEB_COMPUTE)**; create
+   the SSR service role when prompted.
+4. The root `amplify.yml` is used automatically.
 
-### Step 2 — Set environment variables on EACH new app
+> For the **existing** customer app, it was switched to monorepo by manually
+> adding `AMPLIFY_MONOREPO_APP_ROOT=apps/user` in its env vars.
 
-In Amplify Console → app → **Hosting → Environment variables**, add the SAME
-server vars the customer app already uses (they all hit one DB). Required:
+### Environment variables (set on EACH app)
+Copy the same values to all three; only `NEXT_PUBLIC_APP_URL` differs.
 
 ```
 DATABASE_URL=postgresql://<user>:<pass>@<rds-endpoint>.ap-south-1.rds.amazonaws.com:5432/looplic
@@ -117,79 +129,61 @@ NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...
 NEXT_PUBLIC_AWS_REGION=ap-south-1
-AWS_ACCESS_KEY_ID=...
-AWS_SECRET_ACCESS_KEY=...
+APP_AWS_ACCESS_KEY_ID=...        # Amplify RESERVES the AWS_ prefix → use APP_AWS_*
+APP_AWS_SECRET_ACCESS_KEY=...    # the code reads APP_AWS_* first
 NEXT_PUBLIC_S3_BUCKET=looplic-assets
 NEXT_PUBLIC_S3_REGION=ap-south-1
-S3_UPLOAD_ROLE_ARN=...
 RESEND_API_KEY=...
+RESEND_FROM_EMAIL=Looplic <noreply@looplic.com>
 RESEND_LEADS_TO=...
-RESEND_FROM_EMAIL=...
 RESEND_REPLY_TO=...
-UPSTASH_REDIS_REST_URL=...
-UPSTASH_REDIS_REST_TOKEN=...
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=...
-NEXT_PUBLIC_APP_URL=https://admin.looplic.com   # tech.looplic.com on the technician app
+NEXT_PUBLIC_APP_URL=https://admin.looplic.com   # www / tech per app
 ```
 
-> The `amplify.yml` in each app writes the `DATABASE_*/SUPABASE_*/RESEND_*/
-> APP_AWS_*/NEXT_PUBLIC_*` vars into `.env.production` at build time, which fixes
-> the Amplify SSR "env undefined at runtime → ECONNREFUSED 127.0.0.1:5432"
-> problem the customer app already solved.
+Amplify also auto-adds `AMPLIFY_MONOREPO_APP_ROOT` and `AMPLIFY_DIFF_DEPLOY`.
 
-### Step 3 — Point the RDS security group at the new apps
-The new Amplify SSR Lambdas need network access to RDS exactly like the customer
-app. If RDS is publicly reachable with SSL (current setup), nothing changes. If
-you later move RDS into a VPC, attach the same VPC config to all three apps.
+### Custom domains (Route 53, same account)
+Each app → **Hosting → Custom domains → Add domain** → enter the subdomain
+directly (`admin.looplic.com` / `tech.looplic.com` / `www.looplic.com`), keep the
+single root mapping → `master`, remove any auto-added `www.<sub>` row, and use
+**Amplify managed certificate** (not the existing `www.looplic.com` cert).
+Amplify issues an ACM cert and writes the Route 53 records automatically.
 
-### Step 4 — Add the subdomains (Route 53)
+Each app's `middleware.ts` forces its own subdomain as canonical and 308s the
+raw `*.amplifyapp.com` URL to it.
 
-In each new Amplify app → **Hosting → Custom domains → Add domain**:
-- Admin app → add subdomain **`admin`** of `looplic.com` → maps to `admin.looplic.com`.
-- Technician app → add subdomain **`tech`** of `looplic.com` → maps to `tech.looplic.com`.
-
-Amplify creates the ACM cert + the CNAME/ALIAS records. Because `looplic.com` is
-on **Route 53** (per project DNS setup), accept the auto-created records, or add
-them manually in the hosted zone:
-- `admin.looplic.com` → Amplify domain target of the admin app
-- `tech.looplic.com`  → Amplify domain target of the technician app
-
-Each app's `middleware.ts` already forces its own subdomain as canonical and
-redirects the raw `*.amplifyapp.com` URL to it.
-
-### Step 5 — Deploy & verify
-Push to the connected branch → each Amplify app builds **only its own app root**.
-Verify:
-- `https://admin.looplic.com/admin/login` loads the admin login.
-- `https://admin.looplic.com/operator/login` loads the operator login.
-- `https://tech.looplic.com/technician` loads the technician dashboard.
-- `https://www.looplic.com` unchanged.
+### Supabase auth allowlist
+Supabase → **Authentication → URL Configuration → Redirect URLs** must include
+(with scheme + wildcard):
+```
+https://www.looplic.com/**
+https://admin.looplic.com/**
+https://tech.looplic.com/**
+```
 
 ---
 
-## Follow-up (after subdomains are verified live)
+## Customer app is customer-only
 
-To make the customer app "customer-only" (optional clean-up — NOT done yet to
-keep this PR safe and additive):
+The back-office routes/components were removed from `apps/user`, and old links
+redirect to the subdomains (in `apps/user/next.config.ts`):
 
-1. Delete `app/admin`, `app/operator`, `app/operation`, `app/technician` and the
-   back-office-only API routes (`app/api/admin/*`, `app/api/technician/*`) from
-   the **root** customer app.
-2. Add redirects in root `next.config.ts` so old links forward to the new
-   subdomains, e.g.:
-   ```ts
-   { source: "/admin/:path*",      destination: "https://admin.looplic.com/admin/:path*", permanent: true },
-   { source: "/operator/:path*",   destination: "https://admin.looplic.com/operator/:path*", permanent: true },
-   { source: "/technician/:path*", destination: "https://tech.looplic.com/technician/:path*", permanent: true },
-   ```
-3. Prune now-unused back-office components from the root `src/components/next`
-   (`AdminDashboardClient`, `OperationDashboardClient`, `TechnicianDashboardClient`, etc.).
+```
+/admin/*      -> https://admin.looplic.com/admin/*
+/operator/*   -> https://admin.looplic.com/operator/*
+/operation/*  -> https://admin.looplic.com/operation/*
+/technician/* -> https://tech.looplic.com/technician/*
+```
 
-**Merge order matters:** do this clean-up only *after* the admin/tech subdomains
-are confirmed working, otherwise back-office access has a gap.
+---
 
-## Optional: rename root → `apps/user`
-For full symmetry you can later `git mv` the customer `app/`, `src/`, and configs
-into `apps/user/`. It is safe (the `@/*` → `./*` aliases are relative to the app
-root) but requires updating the customer Amplify app's app-root to `apps/user`.
-Deferred to keep the live customer deployment untouched for now.
+## Troubleshooting
+
+| Symptom | Cause / fix |
+|---|---|
+| `Monorepo spec provided without "applications" key` | The root `amplify.yml` isn't in `applications[]` format, or an app lacks `AMPLIFY_MONOREPO_APP_ROOT`. |
+| Build fails at `npm ci` | Must install from repo root — `buildPath: '/'` handles this; don't run `npm ci` inside an app folder. |
+| `ECONNREFUSED 127.0.0.1:5432` at runtime | A server env var (esp. `DATABASE_URL`) is missing on that Amplify app. |
+| "Welcome… create your first deployment / index.html" page | No successful build yet, **or** the app platform is `Web` (static) instead of `Web compute`. Fix: `aws amplify update-app --app-id <id> --platform WEB_COMPUTE --region ap-south-1`, then redeploy. |
+| Admin/tech login redirect fails | Add the subdomain to the Supabase redirect allowlist (above). |
