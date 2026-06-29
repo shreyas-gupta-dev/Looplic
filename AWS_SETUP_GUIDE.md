@@ -233,7 +233,10 @@ aws s3api put-bucket-versioning \
   --bucket looplic-assets \
   --versioning-configuration Status=Enabled
 
-# Allow public read for image assets
+# Allow public read for image assets.
+# NOTE: the app uploads to folders like service-images/, guard-type-images/,
+# model-images/, brand-logos/ (NOT under public/). The policy resource must
+# cover the whole bucket, otherwise GETs on those keys return 403 Forbidden.
 aws s3api put-bucket-policy \
   --bucket looplic-assets \
   --policy '{
@@ -243,7 +246,7 @@ aws s3api put-bucket-policy \
       "Effect":"Allow",
       "Principal":"*",
       "Action":"s3:GetObject",
-      "Resource":"arn:aws:s3:::looplic-assets/public/*"
+      "Resource":"arn:aws:s3:::looplic-assets/*"
     }]
   }'
 
@@ -253,8 +256,8 @@ aws s3api put-bucket-cors \
   --cors-configuration '{
     "CORSRules":[{
       "AllowedHeaders":["*"],
-      "AllowedMethods":["GET","PUT","POST","DELETE"],
-      "AllowedOrigins":["https://www.looplic.com","http://localhost:3000"],
+      "AllowedMethods":["GET","PUT","POST","DELETE","HEAD"],
+      "AllowedOrigins":["https://www.looplic.com","https://looplic.com","http://localhost:3000"],
       "ExposeHeaders":["ETag"],
       "MaxAgeSeconds":3600
     }]
