@@ -88,6 +88,16 @@ type FlowStep =
   | "details"
   | "schedule";
 
+const FLOW_STEPS: FlowStep[] = [
+  "service-select",
+  "repair-select",
+  "laptop-specs",
+  "cctv-config",
+  "notes",
+  "details",
+  "schedule",
+];
+
 export type UniversalBookingFlowProps = {
   serviceSlug: string;
   // Device flows (mobile-repair / laptop-repair)
@@ -188,9 +198,23 @@ export function UniversalBookingFlow({
   const pinEditableRef = useRef(false);
 
   // ─ Device selection ─
-  const [selectedGuard, setSelectedGuard] = useState<ModelScreenGuard | null>(null);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
-  const [selectedSubcategory, setSelectedSubcategory] = useState<RepairSubcategory | null>(null);
+  // Step + selection are mirrored into the URL (see the sync effect below) so a
+  // sign-in round-trip — or a refresh — returns the user to the exact point they
+  // left off instead of restarting the flow. Seed initial state from those params.
+  const guardParam = searchParams.get("guard");
+  const categoryParam = searchParams.get("category");
+  const repairParam = searchParams.get("repair");
+  const [selectedGuard, setSelectedGuard] = useState<ModelScreenGuard | null>(
+    () => (guardParam ? guards.find((g) => g.id === guardParam) ?? null : null),
+  );
+  const [selectedSubcategory, setSelectedSubcategory] = useState<RepairSubcategory | null>(
+    () => (repairParam ? repairSubcategories.find((s) => s.id === repairParam) ?? null : null),
+  );
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
+    () =>
+      categoryParam ||
+      (repairParam ? repairSubcategories.find((s) => s.id === repairParam)?.category_id ?? null : null),
+  );
   const [optionSearch, setOptionSearch] = useState("");
 
   // ─ Laptop specs ─
@@ -220,17 +244,37 @@ export function UniversalBookingFlow({
   const [bookedCode, setBookedCode] = useState("");
 
   // ─ Step ─
-  function getInitialStep(): FlowStep {
+  // The step the flow naturally starts on, before any URL state is applied.
+  function flowEntryStep(): FlowStep {
     if (isDeviceFlow) return "service-select";
     if (isCctv) return "cctv-config";
     return "notes";
   }
-  const [currentStep, setCurrentStep] = useState<FlowStep>(getInitialStep);
+  const stepParam = searchParams.get("step");
+  const [currentStep, setCurrentStep] = useState<FlowStep>(
+    () => (stepParam && FLOW_STEPS.includes(stepParam as FlowStep) ? (stepParam as FlowStep) : flowEntryStep()),
+  );
 
   function goTo(step: FlowStep) {
     window.scrollTo({ top: 0, behavior: "smooth" });
     setCurrentStep(step);
     setOptionSearch("");
+  }
+
+  // Full booking URL (path + current step + selection) used as the post-login
+  // return target. Built from component state rather than window.location so it is
+  // already correct on the render that triggers a redirect, before the URL-sync
+  // effect below has had a chance to run.
+  function buildBookingUrl(): string {
+    const params = new URLSearchParams();
+    if (selectedCctvService) params.set("cctv_service", selectedCctvService);
+    if (selectedCctvBrand) params.set("cctv_brand", selectedCctvBrand);
+    if (currentStep !== flowEntryStep()) params.set("step", currentStep);
+    if (selectedCategoryId) params.set("category", selectedCategoryId);
+    if (selectedSubcategory) params.set("repair", selectedSubcategory.id);
+    if (selectedGuard) params.set("guard", selectedGuard.id);
+    const qs = params.toString();
+    return qs ? `${pathname}?${qs}` : pathname;
   }
 
   // ─ Derived state ─
@@ -326,6 +370,19 @@ export function UniversalBookingFlow({
     });
     return () => { ignore = true; subscription.unsubscribe(); };
   }, [dataClient.auth]);
+
+  // Mirror step + selection into the URL so the booking context survives a
+  // sign-in round-trip and a page refresh. replaceState (not router.push) avoids
+  // pushing a history entry for every step transition.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const target = buildBookingUrl();
+    const current = window.location.pathname + window.location.search;
+    if (target !== current) {
+      window.history.replaceState(window.history.state, "", target);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep, selectedCategoryId, selectedSubcategory, selectedGuard]);
 
   useEffect(() => {
     let ignore = false;
@@ -487,7 +544,7 @@ export function UniversalBookingFlow({
 
   async function handleContinueFromDetails() {
     if (!user) {
-      router.push(`/auth?redirect=${encodeURIComponent(typeof window !== "undefined" ? window.location.pathname + window.location.search : "/")}`);
+      router.push(`/auth?redirect=${encodeURIComponent(buildBookingUrl())}`);
       return;
     }
     if (!hasSavedProfile) {
@@ -517,7 +574,7 @@ export function UniversalBookingFlow({
 
   async function handleBook() {
     if (!user) {
-      router.push(`/auth?redirect=${encodeURIComponent(typeof window !== "undefined" ? window.location.pathname + window.location.search : "/")}`);
+      router.push(`/auth?redirect=${encodeURIComponent(buildBookingUrl())}`);
       return;
     }
     if (!hasSavedProfile) { toast.error("Please complete your details first."); goTo("details"); return; }
@@ -672,31 +729,6 @@ export function UniversalBookingFlow({
       <div className="flex min-h-[50vh] items-center justify-center">
         <Loader2 className="size-6 animate-spin text-primary" />
       </div>
-    );
-  }
-
-  if (!user) {
-    const redirectTarget = encodeURIComponent(
-      typeof window !== "undefined" ? window.location.pathname + window.location.search : "/"
-    );
-    return (
-      <main className="container mx-auto max-w-lg px-4 py-16">
-        <div className="rounded-2xl border border-border bg-card p-6 text-center shadow-sm">
-          <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-primary/10">
-            <LogIn className="size-6 text-primary" />
-          </div>
-          <h2 className="mb-2 text-lg font-semibold text-foreground">Sign in to book {serviceLabel}</h2>
-          <p className="mb-5 text-sm text-muted-foreground">
-            Create an account or sign in to save your details and schedule your service.
-          </p>
-          <Link
-            href={`/auth?redirect=${redirectTarget}`}
-            className="inline-flex items-center gap-2 rounded-2xl gradient-brand px-6 py-3 text-sm font-bold text-primary-foreground"
-          >
-            <LogIn className="size-4" /> Sign In or Create Account
-          </Link>
-        </div>
-      </main>
     );
   }
 
@@ -1038,7 +1070,25 @@ export function UniversalBookingFlow({
         )}
 
         {/* ── STEP: details ── */}
-        {currentStep === "details" && (
+        {currentStep === "details" && !user && (
+          <section className="rounded-2xl border border-border bg-card p-6 text-center shadow-card-brand">
+            <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-primary/10">
+              <LogIn className="size-6 text-primary" />
+            </div>
+            <h2 className="mb-2 text-lg font-semibold text-foreground">Sign in to continue booking</h2>
+            <p className="mb-5 text-sm text-muted-foreground">
+              Create an account or sign in to save your details and schedule your {serviceLabel}. We&apos;ll bring you right back to this step.
+            </p>
+            <Link
+              href={`/auth?redirect=${encodeURIComponent(buildBookingUrl())}`}
+              className="inline-flex items-center gap-2 rounded-2xl gradient-brand px-6 py-3 text-sm font-bold text-primary-foreground"
+            >
+              <LogIn className="size-4" /> Sign In or Create Account
+            </Link>
+          </section>
+        )}
+
+        {currentStep === "details" && user && (
           <section className="rounded-2xl border border-border bg-card p-5 shadow-card-brand">
             <h1 className="mb-4 text-xl font-semibold text-foreground">Your Details &amp; Address</h1>
 
