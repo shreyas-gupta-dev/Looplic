@@ -8,6 +8,18 @@ export async function GET(request: Request) {
   const next = requestUrl.searchParams.get("next");
   const cookieHeader = request.headers.get("cookie") ?? "";
 
+  // Behind Amplify/CloudFront the server sees an internal origin of
+  // https://localhost:3000, so requestUrl.origin must NOT be used to build the
+  // redirect — it would bounce every signed-in user to localhost. The real
+  // public host arrives in x-forwarded-host; fall back to the request origin
+  // only for local dev where that header is absent.
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const forwardedProto =
+    request.headers.get("x-forwarded-proto") ?? requestUrl.protocol.replace(":", "");
+  const origin = forwardedHost
+    ? `${forwardedProto}://${forwardedHost}`
+    : requestUrl.origin;
+
   const fallbackRedirect =
     cookieHeader
       .split(";")
@@ -26,7 +38,7 @@ export async function GET(request: Request) {
     await supabase.auth.exchangeCodeForSession(code);
   }
 
-  const response = NextResponse.redirect(new URL(safeNext || "/", requestUrl.origin));
+  const response = NextResponse.redirect(new URL(safeNext || "/", origin));
   response.cookies.set(OAUTH_REDIRECT_COOKIE, "", { path: "/", maxAge: 0 });
   return response;
 }
