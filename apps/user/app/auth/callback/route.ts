@@ -35,7 +35,19 @@ export async function GET(request: Request) {
   // session cookies via the cookie adapter, so the redirect response carries them.
   if (code) {
     const supabase = await getServerSupabase();
-    await supabase.auth.exchangeCodeForSession(code);
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+    // If the exchange fails (e.g. a missing PKCE verifier cookie behind the
+    // apex→www redirect), we must NOT fall through and redirect as if signed in
+    // — that silently keeps the previous account's session cookies, so the app
+    // keeps showing the old user's name. Clear any stale session and send the
+    // user back to sign in instead.
+    if (error) {
+      await supabase.auth.signOut();
+      const errorResponse = NextResponse.redirect(new URL("/auth?error=oauth", origin));
+      errorResponse.cookies.set(OAUTH_REDIRECT_COOKIE, "", { path: "/", maxAge: 0 });
+      return errorResponse;
+    }
   }
 
   const response = NextResponse.redirect(new URL(safeNext || "/", origin));
