@@ -49,9 +49,21 @@ export async function signUpWithEmail(email: string, password: string, name: str
   return { isSignUpComplete: Boolean(data.session) };
 }
 
+// Base URL that auth providers send the user back to. Sign-in must never land
+// on localhost or a preview domain, so any origin that isn't a real looplic.com
+// host falls back to the canonical site (appUrl).
+function authRedirectBase() {
+  if (typeof window !== "undefined") {
+    const { origin, hostname } = window.location;
+    const isLooplicHost = hostname === "looplic.com" || hostname.endsWith(".looplic.com");
+    if (isLooplicHost) return origin;
+  }
+  return appUrl;
+}
+
 export async function signInWithGoogle(redirectUrl?: string) {
   const supabase = getBrowserSupabase();
-  const origin = typeof window !== "undefined" ? window.location.origin : appUrl;
+  const origin = authRedirectBase();
   const next = redirectUrl && redirectUrl.startsWith("/") ? redirectUrl : "/";
   const { error } = await supabase.auth.signInWithOAuth({
     provider: "google",
