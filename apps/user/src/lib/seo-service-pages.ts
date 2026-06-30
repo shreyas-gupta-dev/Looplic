@@ -136,6 +136,16 @@ const screenReplacementBrandLinks = screenReplacementBrandPages.map((page) => ({
   description: `Dedicated ${page.brand} screen repair page for Bangalore customers.`,
 }));
 
+// Maps a mobile-repair catalog brand slug (e.g. "apple", "samsung", "mi") to its
+// dedicated screen-replacement landing page, so catalog brand pages can link back
+// to the matching SEO landing (reciprocal internal linking).
+export const screenReplacementLandingByBrandSlug = new Map<string, { href: string; label: string }>(
+  screenReplacementBrandPages.map((page) => [
+    page.ctaHref.split("/").pop() as string,
+    { href: `/${page.slug}`, label: `${page.brand} screen replacement` },
+  ]),
+);
+
 const generatedScreenReplacementPages: SeoServicePage[] = screenReplacementBrandPages.map((brandPage) => ({
   slug: brandPage.slug,
   keyword: `${brandPage.brand} Screen Replacement in Bangalore`,
@@ -143,7 +153,7 @@ const generatedScreenReplacementPages: SeoServicePage[] = screenReplacementBrand
   problem: brandPage.problem,
   eyebrow: `${brandPage.brand} Screen Replacement`,
   title: `${brandPage.brand} Screen Replacement in Bangalore`,
-  description: `Book ${brandPage.brand} screen replacement in Bangalore for cracked glass, display lines, dead touch, flicker, black screen, and visible panel damage with doorstep inspection and quote confirmation.`,
+  description: `Book ${brandPage.brand} screen replacement in Bangalore for cracked glass, display lines, dead touch, and black screen issues, with doorstep inspection and a quote.`,
   ctaLabel: `Choose ${brandPage.brand} model`,
   ctaHref: brandPage.ctaHref,
   secondaryHref: "/service/mobile-repair/brands",
@@ -181,11 +191,12 @@ export const seoServicePages: SeoServicePage[] = [
     problem: "cracked or damaged iPhone display",
     eyebrow: "iPhone Screen Replacement",
     title: "Doorstep iPhone Screen Replacement in Bangalore",
-    description: "Book an iPhone screen inspection and replacement flow for cracked glass, touch issues, display lines, black screen problems, and visible panel damage in Bangalore.",
+    description: "Book iPhone screen inspection and replacement in Bangalore for cracked glass, touch issues, display lines, and black screen problems, with doorstep service.",
     ctaLabel: "Book iPhone screen repair",
     ctaHref: "/service/mobile-repair/book/apple/11-series/iphone-11?step=repair&category=a46f9cf5-c005-48c3-8672-3d097587e6fb&repair=8b220074-d814-47b8-ae20-c0c446744e94",
     secondaryHref: "/service/mobile-repair/brands/apple",
     secondaryLabel: "Choose another iPhone",
+    brandLinks: screenReplacementBrandLinks,
     highlights: ["Screen category preselected", "Doorstep technician inspection", "Quote before repair", "Booking connected to mobile repair workflow"],
     sections: [
       { title: "Built for one problem", body: "This page is focused only on iPhone screen replacement in Bangalore, so visitors with cracked glass, display flicker, dead touch, or black screen issues land directly on the right repair intent." },

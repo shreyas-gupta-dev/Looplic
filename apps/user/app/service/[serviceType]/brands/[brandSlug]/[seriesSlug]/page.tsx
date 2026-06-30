@@ -6,6 +6,7 @@ import { CatalogServiceTabs } from "@/src/components/next/CatalogServiceTabs";
 import { CrawlableInternalLinks } from "@/src/components/next/CrawlableInternalLinks";
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { ModelsCatalogPage } from "@/src/components/next/ModelsCatalogPage";
+import { BreadcrumbJsonLd } from "@/src/components/seo/BreadcrumbJsonLd";
 import { getModelsForSeries } from "@/src/lib/data/catalog";
 import { resolveSeriesPageData } from "@/src/lib/data/catalog-page";
 import { buildPageMetadata } from "@/src/lib/metadata";
@@ -91,6 +92,15 @@ export default async function ServiceSeriesPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", path: "/" },
+          { name: config.label, path: `/service/${serviceType}` },
+          { name: `${config.label} Brands`, path: `/service/${serviceType}/brands` },
+          { name: brand.name, path: `/service/${serviceType}/brands/${brand.slug}` },
+          { name: series.name, path: `/service/${serviceType}/brands/${brand.slug}/${series.slug}` },
+        ]}
+      />
       <CatalogNavbar />
       <CatalogServiceTabs active={config.activeTab} />
       <ModelsCatalogPage

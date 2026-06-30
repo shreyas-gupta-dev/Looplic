@@ -8,8 +8,8 @@ import { companyName, supportEmail, supportPhone, supportPhoneDisplay, whatsappP
 import { buildPageMetadata } from "@/src/lib/metadata";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: `Contact ${companyName}`,
-  description: `Contact ${companyName} for booking help, customer support, order updates, WhatsApp assistance, and general service enquiries.`,
+  title: "Contact Us",
+  description: `Contact ${companyName} for booking help, order updates, WhatsApp support, and service enquiries in Bangalore. Reach our team for doorstep repair and IT support.`,
   pathname: "/contact-us",
 });
 

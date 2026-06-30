@@ -12,6 +12,7 @@ import { ServiceLandingPage } from "@/src/components/next/ServiceLandingPage";
 import { TrustSignals } from "@/src/components/next/TrustSignals";
 import { getBrandsForListing, getCatalogSearchIndex } from "@/src/lib/data/catalog";
 import { buildPageMetadata } from "@/src/lib/metadata";
+import { seoServicePages } from "@/src/lib/seo-service-pages";
 
 export const revalidate = 300;
 
@@ -79,6 +80,8 @@ export default async function ServicePage({ params }: PageProps) {
         heroDescription="Pick your model, choose a repair, and book a doorstep technician in minutes."
         heroBrowseHref="/service/mobile-repair/brands"
         heroSearchPlaceholder="Search your phone model in Bangalore..."
+        internalLinksTitle="Popular screen replacements in Bangalore"
+        internalLinks={seoServicePages.map((page) => ({ href: `/${page.slug}`, label: page.eyebrow }))}
       />
     );
   }

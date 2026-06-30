@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { BookingPageShell } from "@/src/components/next/BookingPageShell";
 import { CrawlableInternalLinks } from "@/src/components/next/CrawlableInternalLinks";
+import { BreadcrumbJsonLd } from "@/src/components/seo/BreadcrumbJsonLd";
 import { getModelsForSeries } from "@/src/lib/data/catalog";
 import { getRepairCatalogData, resolveModelPageData } from "@/src/lib/data/catalog-page";
 import { buildPageMetadata } from "@/src/lib/metadata";
@@ -89,6 +90,16 @@ export default async function ServiceBookingPage({ params }: PageProps) {
 
   return (
     <>
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", path: "/" },
+          { name: config.label, path: `/service/${serviceType}` },
+          { name: `${config.label} Brands`, path: `/service/${serviceType}/brands` },
+          { name: brand.name, path: `/service/${serviceType}/brands/${brand.slug}` },
+          { name: series.name, path: `/service/${serviceType}/brands/${brand.slug}/${series.slug}` },
+          { name: model.name, path: `/service/${serviceType}/book/${brand.slug}/${series.slug}/${model.slug}` },
+        ]}
+      />
       <BookingPageShell
         brand={brand}
         series={series}

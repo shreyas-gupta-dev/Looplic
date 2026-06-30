@@ -11,6 +11,7 @@ export const metadata: Metadata = buildPageMetadata({
   description: "Plain URL index for Looplic SEO service pages in Bangalore. This page lists service URLs only, without model booking URLs.",
   pathname: "/service-pages",
   keywords: ["Looplic service URLs", "mobile repair URLs", "laptop repair URLs", "IT support URLs"],
+  noIndex: true,
 });
 
 export default function ServicePagesIndex() {

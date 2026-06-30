@@ -9,8 +9,8 @@ import { blogPosts } from "@/src/lib/blog";
 import { buildPageMetadata } from "@/src/lib/metadata";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Looplic Blog",
-  description: "Read practical Looplic guides on mobile repair, doorstep service, device care, and choosing reliable repair support in Bangalore.",
+  title: "Mobile & Laptop Repair Guides",
+  description: "Practical Looplic guides on mobile repair, laptop care, doorstep service, and choosing reliable device repair support in Bangalore. Tips, how-tos, and advice.",
   pathname: "/blog",
   keywords: ["Looplic blog", "mobile repair blog", "Bangalore phone repair guide", "doorstep mobile repair"],
 });
