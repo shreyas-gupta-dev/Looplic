@@ -6,8 +6,8 @@ import { companyName, supportEmail, supportPhoneDisplay } from "@/src/lib/compan
 import { buildPageMetadata } from "@/src/lib/metadata";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: `About ${companyName}`,
-  description: `Learn about ${companyName}, our doorstep device repair, CCTV installation, and IT support approach, and how we support customers across booking, communication, and service quality.`,
+  title: "About Us",
+  description: `Learn how ${companyName} delivers doorstep device repair, CCTV installation, and IT support in Bangalore with clear booking, fast confirmation, and reliable service.`,
   pathname: "/about-us",
 });
 

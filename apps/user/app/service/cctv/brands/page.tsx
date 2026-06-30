@@ -8,8 +8,8 @@ import { buildCctvBookingHref, buildCctvBrandSelectionHref, cctvBrandOptions, cc
 import { buildPageMetadata } from "@/src/lib/metadata";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Choose CCTV Brand | Looplic CCTV Booking",
-  description: "Select your CCTV service and brand before booking installation, repair, upgrade, relocation, or AMC support.",
+  title: "Choose Your CCTV Brand",
+  description: "Select your CCTV service and brand to book installation, repair, upgrade, relocation, or AMC support in Bangalore with Looplic's doorstep technicians.",
   pathname: "/service/cctv/brands",
 });
 

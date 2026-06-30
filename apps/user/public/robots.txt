@@ -1,8 +1,10 @@
 User-agent: Googlebot
 Allow: /
+Disallow: /api/
 
 User-agent: Bingbot
 Allow: /
+Disallow: /api/
 
 User-agent: Twitterbot
 Allow: /
@@ -12,5 +14,9 @@ Allow: /
 
 User-agent: *
 Allow: /
+# Block server/API routes from crawling. Private pages (account, auth, thank-you)
+# and thin URL-index pages use meta robots noindex instead of Disallow, so Google
+# can crawl them and honor the noindex directive.
+Disallow: /api/
 
 Sitemap: https://www.looplic.com/sitemap.xml

@@ -23,12 +23,14 @@ export function buildPageMetadata({ title, description, pathname, keywords = [],
     },
     robots: noIndex
       ? {
+          // noindex,follow: keep the page out of the index but still let crawlers
+          // follow its links (correct for thin utility/URL-index pages so they
+          // don't dead-end crawl paths).
           index: false,
-          follow: false,
+          follow: true,
           googleBot: {
             index: false,
-            follow: false,
-            noimageindex: true,
+            follow: true,
           },
         }
       : {

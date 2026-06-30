@@ -34,6 +34,23 @@ export const metadata: Metadata = {
   },
 };
 
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: siteConfig.name,
+  url: siteConfig.url,
+  logo: new URL("/looplic-app-icon-512.png", siteConfig.url).toString(),
+  description: siteConfig.description,
+  sameAs: ["https://www.instagram.com/thelooplic/", "https://www.linkedin.com/company/looplic"],
+  contactPoint: {
+    "@type": "ContactPoint",
+    telephone: "+91-88844-45206",
+    contactType: "customer support",
+    areaServed: "IN",
+    availableLanguage: ["en", "hi"],
+  },
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -42,6 +59,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={nunito.variable} suppressHydrationWarning>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }} />
         <Script async src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ADS_ID}`} strategy="afterInteractive" />
         <Script id="looplic-google-ads" strategy="afterInteractive">
           {`

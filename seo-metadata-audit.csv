@@ -1,0 +1,26 @@
+Path,Type,Indexable,Issue,Current Title (effective with " | Looplic"),Title Len,Proposed Title (source value; template adds " | Looplic"),Current Desc Len,Proposed Description
+/,Home (static),Yes,Title 76c + Desc 195c too long,"Doorstep Mobile Repair, Laptop Repair & Tech Support in 30 Minutes | Looplic",76,"Doorstep Mobile & Laptop Repair in Bangalore",195,"Book doorstep mobile repair, laptop repair, CCTV installation & IT support in Bangalore. Quick scheduling, technician assignment, and live order tracking."
+/service/cctv,Service (static),Yes,Title 84c + literal pipe collides with template,"CCTV Installation in Bangalore | Camera, DVR, NVR and Mobile Viewing Setup | Looplic",84,"CCTV Camera Installation & Setup in Bangalore",156,"Book CCTV installation in Bangalore for camera setup, DVR/NVR config, mobile viewing, network connection, and security system checks at your doorstep."
+/service/cctv/brands,Service (static),Yes,Title repeats brand + pipe; desc short,"Choose CCTV Brand | Looplic CCTV Booking | Looplic",50,"Choose Your CCTV Brand",108,"Select your CCTV service and brand to book installation, repair, upgrade, relocation, or AMC support in Bangalore with Looplic's doorstep technicians."
+/about-us,Info (static),Yes,Redundant "Looplic | Looplic"; desc 173c,"About Looplic | Looplic",23,"About Us",173,"Learn how Looplic delivers doorstep device repair, CCTV installation, and IT support in Bangalore with clear booking, fast confirmation, and reliable service."
+/contact-us,Info (static),Yes,Redundant brand; desc short (118c),"Contact Looplic | Looplic",25,"Contact Us",118,"Contact Looplic for booking help, order updates, WhatsApp support, and service enquiries in Bangalore. Reach our team for doorstep repair and IT support."
+/blog,Blog index (static),Yes,Desc short (129c); generic title,"Looplic Blog | Looplic",22,"Mobile & Laptop Repair Guides",129,"Practical Looplic guides on mobile repair, laptop care, doorstep service, and choosing reliable device repair support in Bangalore. Tips, how-tos, and advice."
+/{brand}-screen-replacement,SEO landing (12 pages),Yes,Desc template 187c (affects all 12 brand pages),"{Brand} Screen Replacement in Bangalore | Looplic",49,"(keep) {Brand} Screen Replacement in Bangalore","187","Book {Brand} screen replacement in Bangalore for cracked glass, display lines, dead touch, and black screen issues, with doorstep inspection and a quote first."
+/iphone-screen-replacement,SEO landing (static),Yes,Desc 163c (3 over),"Doorstep iPhone Screen Replacement in Bangalore | Looplic",57,"(keep) Doorstep iPhone Screen Replacement in Bangalore",163,"Book iPhone screen inspection and replacement in Bangalore for cracked glass, touch issues, display lines, and black screen problems, with doorstep service."
+/bangalore,Local (static),Yes,OK,"Mobile Repair in Bangalore at Your Doorstep | Looplic",53,"(keep)",,"(verify length; currently multiline in source)"
+/service/desktop-assembly,Service (static),Yes,OK,"Desktop Assembly and Custom PC Build Service | Looplic",54,"(keep)",157,"(keep)"
+/service/it-support,Service (static),Yes,OK,"IT Support for Home and Office | Looplic",40,"(keep)",154,"(keep)"
+/service/managed-it-services,Service (static),Yes,OK,"Managed IT Services for Businesses | Looplic",44,"(keep)",149,"(keep)"
+/privacy-policy,Legal (static),Yes,OK (short is fine for legal),"Privacy Policy | Looplic",24,"(keep)",,"(keep)"
+/terms-and-conditions,Legal (static),Yes,OK,"Terms and Conditions | Looplic",30,"(keep)",,"(keep)"
+/service-pages,Utility index,Review,Internal URL index - consider noindex,"Looplic Service Page URLs | Looplic",35,"(keep or noindex)",,"(keep or noindex)"
+/brand-pages,Utility index,Review,Internal URL index - consider noindex,"Looplic Brand Page URLs | Looplic",33,"(keep or noindex)",,"(keep or noindex)"
+/service/[serviceType],Dynamic template,Yes,OK,"{Label} at Your Doorstep | Looplic",34,"(keep)",,"(keep)"
+/service/[serviceType]/brands,Dynamic template,Yes,Short title,"{Label} Brands | Looplic",24,"(keep) {Label} Brands in Bangalore",,"(keep)"
+/service/[serviceType]/brands/[brandSlug],Dynamic template,Yes,Short title,"{Brand} {Label} | Looplic",25,"(keep)",,"(keep)"
+/service/[serviceType]/brands/[brandSlug]/[seriesSlug],Dynamic template,Yes,OK,"{Brand} {Series} {Label} | Looplic",,"(keep)",,"(keep)"
+/service/[serviceType]/book/.../[modelSlug],Dynamic template,Yes,Monitor (long model names may exceed 60),"{Brand} {Model} {Label} | Looplic",,"(keep; monitor length)",,"(keep)"
+/blog/[slug],Dynamic (per post),Yes,Uses post.title/description,"{post.title} | Looplic",,"(per-post; ensure <=50c source)",,"(per-post; ensure 150-160c)"
+/account,Account,No (noindex),Correct,,,,,
+/auth,Auth,No (noindex),Correct,,,,,
+/thank-you,Thank-you,Yes (SHOULD be noindex - Phase 6),Flag,,,,,

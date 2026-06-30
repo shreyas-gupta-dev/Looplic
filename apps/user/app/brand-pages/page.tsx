@@ -13,6 +13,7 @@ export const metadata: Metadata = buildPageMetadata({
   description: "Plain URL index for Looplic mobile and laptop brand and series pages in Bangalore. Model booking URLs are excluded.",
   pathname: "/brand-pages",
   keywords: ["Looplic brand URLs", "mobile repair brand pages", "laptop repair brand pages"],
+  noIndex: true,
 });
 
 type BrandUrlEntry = {

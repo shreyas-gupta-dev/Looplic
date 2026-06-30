@@ -21,8 +21,8 @@ export function CatalogNavbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-lg">
-      <div className="container flex h-14 items-center justify-between">
+    <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-lg">
+      <nav aria-label="Primary" className="container flex h-14 items-center justify-between">
         <Link href="/">
           <img src={logo.src} alt="Looplic" className="h-8 md:h-7" />
         </Link>
@@ -54,7 +54,7 @@ export function CatalogNavbar() {
             {open ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
         </div>
-      </div>
+      </nav>
 
       {open ? (
         <div className="overflow-hidden border-b border-border bg-card md:hidden">
@@ -80,6 +80,6 @@ export function CatalogNavbar() {
           </div>
         </div>
       ) : null}
-    </nav>
+    </header>
   );
 }

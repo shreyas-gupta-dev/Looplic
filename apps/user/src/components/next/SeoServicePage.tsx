@@ -32,6 +32,22 @@ export function SeoServicePage({ slug }: SeoServicePageProps) {
     notFound();
   }
 
+  const faqJsonLd =
+    page.faqs && page.faqs.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: page.faqs.map((faq) => ({
+            "@type": "Question",
+            name: faq.question,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: faq.answer,
+            },
+          })),
+        }
+      : null;
+
   return (
     <>
       <ServiceJsonLd
@@ -40,6 +56,9 @@ export function SeoServicePage({ slug }: SeoServicePageProps) {
         path={`/${page.slug}`}
         serviceType={page.keyword}
       />
+      {faqJsonLd ? (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+      ) : null}
       <SeoServiceLandingPage page={page} />
     </>
   );

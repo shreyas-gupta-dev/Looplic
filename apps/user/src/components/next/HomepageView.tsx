@@ -1,4 +1,5 @@
 import { HowItWorks } from "@/src/components/next/HowItWorks";
+import { CrawlableInternalLinks } from "@/src/components/next/CrawlableInternalLinks";
 import { HomepageBrandGrid } from "@/src/components/next/HomepageBrandGrid";
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { HomepageHeroSection } from "@/src/components/next/HomepageHeroSection";
@@ -20,6 +21,8 @@ export function HomepageView({
   heroSearchPlaceholder,
   currentAreaSlug,
   mobileRepairOnly = false,
+  internalLinks,
+  internalLinksTitle,
 }: {
   brands: CatalogBrand[];
   searchBrands: CatalogBrand[];
@@ -32,6 +35,8 @@ export function HomepageView({
   heroSearchPlaceholder?: string;
   currentAreaSlug?: string;
   mobileRepairOnly?: boolean;
+  internalLinks?: { href: string; label: string }[];
+  internalLinksTitle?: string;
 }) {
   return (
     <div className="min-h-screen bg-background">
@@ -51,6 +56,9 @@ export function HomepageView({
       <HomepageBrandGrid brands={brands} />
       <HowItWorks />
       <TrustSignals />
+      {internalLinks && internalLinks.length > 0 ? (
+        <CrawlableInternalLinks title={internalLinksTitle ?? "Popular repairs"} links={internalLinks} />
+      ) : null}
       <HomepageFooter />
       <ServiceAreasSection currentAreaSlug={currentAreaSlug} />
     </div>

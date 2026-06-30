@@ -3,16 +3,23 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   transpilePackages: ["@looplic/db"],
   async headers() {
+    // Per-user / account-specific pages must never be cached by the CDN or
+    // browser — they render account-bound data (saved profile, address,
+    // booking details). Caching them risks one account seeing another's saved
+    // details (see booking stale-profile fix). Marketing/catalog pages carry no
+    // per-user data and are intentionally left edge-cacheable for Core Web
+    // Vitals; per-user UI on them (sign-in vs account) renders client-side.
+    const noStore = {
+      key: "Cache-Control",
+      value: "no-store, no-cache, max-age=0, must-revalidate",
+    };
+
     return [
-      {
-        source: "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|manifest.webmanifest|sw.js|technician-alert-sw.js).*)",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "no-store, no-cache, max-age=0, must-revalidate",
-          },
-        ],
-      },
+      { source: "/account", headers: [noStore] },
+      { source: "/thank-you", headers: [noStore] },
+      { source: "/auth/:path*", headers: [noStore] },
+      { source: "/book/:path*", headers: [noStore] },
+      { source: "/service/:serviceType/book/:path*", headers: [noStore] },
       {
         // Service workers must always be revalidated against the origin. If the
         // worker script is cached by the CDN or browser, a phone stuck on an old
@@ -30,6 +37,16 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      {
+        // Canonicalize the apex onto www with a 301. Inert until the apex domain
+        // is mapped to serve this app in Amplify (today CloudFront short-circuits
+        // apex requests with its own 302); once apex routes into the app, this
+        // enforces the permanent redirect at the app layer.
+        source: "/:path*",
+        has: [{ type: "host", value: "looplic.com" }],
+        destination: "https://www.looplic.com/:path*",
+        permanent: true,
+      },
       {
         source: "/service/:serviceType/brands/xiaomi",
         destination: "/service/:serviceType/brands/mi",

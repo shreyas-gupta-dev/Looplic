@@ -6,8 +6,10 @@ import { seoServicePages } from "@/src/lib/seo-service-pages";
 import { bangaloreAreas, buildBangaloreAreaRoute, buildBangaloreAreaServiceRoute } from "@/src/lib/service-areas";
 import { siteConfig } from "@/src/lib/site";
 
+// ISR: regenerate at most every 5 minutes. Previously force-dynamic, which
+// rebuilt the sitemap on every request and is unnecessary for content that
+// changes slowly.
 export const revalidate = 300;
-export const dynamic = "force-dynamic";
 
 type SitemapEntry = MetadataRoute.Sitemap[number];
 
@@ -17,10 +19,18 @@ function toAbsoluteUrl(pathname: string) {
   return new URL(pathname, siteConfig.url).toString();
 }
 
-function createEntry(pathname: string, priority: number, changeFrequency: SitemapEntry["changeFrequency"]): SitemapEntry {
+// lastModified is only emitted when we have a real content date (e.g. a blog
+// post's updatedAt). Stamping every URL with `new Date()` on each render is a
+// fake freshness signal that crawlers learn to distrust, so we omit it instead.
+function createEntry(
+  pathname: string,
+  priority: number,
+  changeFrequency: SitemapEntry["changeFrequency"],
+  lastModified?: Date,
+): SitemapEntry {
   return {
     url: toAbsoluteUrl(pathname),
-    lastModified: new Date(),
+    ...(lastModified ? { lastModified } : {}),
     changeFrequency,
     priority,
   };
@@ -58,9 +68,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     createEntry("/privacy-policy", 0.2, "yearly"),
     createEntry("/terms-and-conditions", 0.2, "yearly"),
     createEntry("/blog", 0.6, "weekly"),
-    ...blogPosts.map((post) => createEntry(`/blog/${post.slug}`, 0.6, "monthly")),
-    createEntry("/service-pages", 0.7, "weekly"),
-    createEntry("/brand-pages", 0.7, "weekly"),
+    ...blogPosts.map((post) => createEntry(`/blog/${post.slug}`, 0.6, "monthly", new Date(post.updatedAt))),
+    // /service-pages and /brand-pages are noindex,follow URL-index pages — they
+    // stay crawlable via the footer but are intentionally excluded from the sitemap.
     ...seoServicePages.map((page) => createEntry(`/${page.slug}`, 0.8, "weekly")),
     ...buildRepairEntries("mobile-repair", mobileIndex),
     ...buildRepairEntries("laptop-repair", laptopIndex),

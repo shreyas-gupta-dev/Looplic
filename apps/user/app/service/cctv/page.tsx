@@ -10,8 +10,8 @@ import { buildCctvBrandSelectionHref } from "@/src/lib/cctv-booking";
 import { buildPageMetadata } from "@/src/lib/metadata";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "CCTV Installation in Bangalore | Camera, DVR, NVR and Mobile Viewing Setup",
-  description: "Book CCTV installation in Bangalore for camera installation, DVR/NVR setup, mobile viewing, network connection, security system checks, and troubleshooting.",
+  title: "CCTV Camera Installation & Setup in Bangalore",
+  description: "Book CCTV installation in Bangalore for camera setup, DVR/NVR config, mobile viewing, network connection, security checks, and troubleshooting at your doorstep.",
   pathname: "/service/cctv",
   keywords: ["CCTV installation Bangalore", "security camera setup", "DVR setup", "NVR installation", "CCTV camera installation", "IP camera installation", "CCTV troubleshooting"],
 });

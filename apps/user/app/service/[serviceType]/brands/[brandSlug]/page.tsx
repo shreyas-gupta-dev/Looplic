@@ -11,6 +11,8 @@ import { SeriesCatalogPage } from "@/src/components/next/SeriesCatalogPage";
 import { getSeriesForBrand } from "@/src/lib/data/catalog";
 import { resolveBrandPageData } from "@/src/lib/data/catalog-page";
 import { buildPageMetadata } from "@/src/lib/metadata";
+import { screenReplacementLandingByBrandSlug } from "@/src/lib/seo-service-pages";
+import { BreadcrumbJsonLd } from "@/src/components/seo/BreadcrumbJsonLd";
 
 // Pre-render these pages at build time and serve them via ISR (revalidate below)
 // instead of querying the database on every request. force-dynamic caused empty
@@ -93,9 +95,22 @@ export default async function ServiceBrandPage({ params }: PageProps) {
     redirect(`/service/${serviceType}/brands/${brand.slug}/${seriesList[0].slug}`);
   }
 
+  const screenReplacementLanding = config.listingType === "mobile" ? screenReplacementLandingByBrandSlug.get(brand.slug) : undefined;
+  const brandBreadcrumb = (
+    <BreadcrumbJsonLd
+      items={[
+        { name: "Home", path: "/" },
+        { name: config.label, path: `/service/${serviceType}` },
+        { name: `${config.label} Brands`, path: `/service/${serviceType}/brands` },
+        { name: brand.name, path: `/service/${serviceType}/brands/${brand.slug}` },
+      ]}
+    />
+  );
+
   if (config.listingType === "mobile") {
     return (
       <div className="min-h-screen bg-background flex flex-col">
+        {brandBreadcrumb}
         <CatalogNavbar />
         <CatalogServiceTabs active={config.activeTab} />
         <MobileSeriesCatalogPage
@@ -110,6 +125,7 @@ export default async function ServiceBrandPage({ params }: PageProps) {
           links={[
             { href: `/service/${serviceType}/brands`, label: `All ${config.label} brands` },
             { href: `/service/${serviceType}`, label: `${config.label} overview` },
+            ...(screenReplacementLanding ? [screenReplacementLanding] : []),
             ...seriesList.map((series) => ({
               href: `/service/${serviceType}/brands/${brand.slug}/${series.slug}`,
               label: `${brand.name} ${series.name}`,

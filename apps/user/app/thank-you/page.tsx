@@ -10,6 +10,7 @@ export const metadata: Metadata = buildPageMetadata({
   title: "Thank You",
   description: "Thank you for contacting Looplic. We have received your request and will follow up shortly.",
   pathname: "/thank-you",
+  noIndex: true,
 });
 
 export default async function ThankYouPage({

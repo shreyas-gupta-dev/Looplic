@@ -11,9 +11,9 @@ export const revalidate = 300;
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Doorstep Mobile Repair, Laptop Repair & Tech Support in 30 Minutes",
+  title: "Doorstep Mobile & Laptop Repair in Bangalore",
   description:
-    "Book doorstep mobile repair, laptop repair, desktop assembly, CCTV installation, IT support, and managed IT services in Bangalore with quick scheduling, technician assignment, and order tracking.",
+    "Book doorstep mobile repair, laptop repair, CCTV installation & IT support in Bangalore. Quick scheduling, technician assignment, and live order tracking.",
   pathname: "/",
   keywords: [
     "doorstep mobile repair",
