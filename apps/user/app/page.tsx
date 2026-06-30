@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 
 import { NewHomepageView } from "@/src/components/next/NewHomepageView";
-import { RootOAuthRedirect } from "@/src/components/next/RootOAuthRedirect";
 import { getBrandsForListing, getCatalogSearchIndex } from "@/src/lib/data/catalog";
 import { buildPageMetadata } from "@/src/lib/metadata";
 import { siteConfig } from "@/src/lib/site";
 
+// ISR (not force-dynamic) so the homepage is edge-cacheable. The OAuth `/?code=`
+// return is handled entirely in middleware.ts (redirect to /auth/callback), so
+// this page never needs request-time searchParams.
 export const revalidate = 300;
-export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Doorstep Mobile & Laptop Repair in Bangalore",
@@ -30,31 +30,7 @@ export const metadata: Metadata = buildPageMetadata({
   ],
 });
 
-type PageProps = {
-  searchParams?: Promise<{
-    code?: string;
-    next?: string;
-    state?: string;
-  }>;
-};
-
-export default async function HomePage({ searchParams }: PageProps) {
-  const params = await searchParams;
-
-  if (params?.code) {
-    const callbackParams = new URLSearchParams({ code: params.code });
-
-    if (params.next) {
-      callbackParams.set("next", params.next);
-    }
-
-    if (params.state) {
-      callbackParams.set("state", params.state);
-    }
-
-    redirect(`/auth/callback?${callbackParams.toString()}`);
-  }
-
+export default async function HomePage() {
   const [brands, searchIndex] = await Promise.all([getBrandsForListing("mobile"), getCatalogSearchIndex("mobile")]);
 
   return (
@@ -93,7 +69,6 @@ export default async function HomePage({ searchParams }: PageProps) {
           }),
         }}
       />
-      <RootOAuthRedirect />
       <NewHomepageView brands={brands} searchBrands={searchIndex.brands} searchSeries={searchIndex.series} searchModels={searchIndex.models} />
     </>
   );
