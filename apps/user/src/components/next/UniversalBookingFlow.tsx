@@ -41,7 +41,13 @@ declare global {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const PROFILE_STORAGE_KEY = "looplic-booking-profile";
+// Scoped per user id: a single device-global key leaks one account's cached
+// name/phone/address into the booking form of the next account that signs in on
+// the same device.
+const PROFILE_STORAGE_KEY_PREFIX = "looplic-booking-profile";
+function profileStorageKey(userId: string) {
+  return `${PROFILE_STORAGE_KEY_PREFIX}:${userId}`;
+}
 const TIME_SLOTS = ["8 AM - 11 AM", "11 AM - 2 PM", "2 PM - 5 PM", "5 PM - 8 PM"] as const;
 const DEFAULT_INSPECT_LOCATION = { lat: 13.034627, lng: 77.622726 };
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || process.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -389,8 +395,10 @@ export function UniversalBookingFlow({
     async function hydrateProfile() {
       if (!user || profileLoaded) return;
       try {
-        // 1. localStorage (fast pre-fill)
-        const stored = typeof window !== "undefined" ? localStorage.getItem(PROFILE_STORAGE_KEY) : null;
+        // 1. localStorage (fast pre-fill). Drop the legacy device-global key from
+        // older builds so a previous account's cached details can't leak through.
+        if (typeof window !== "undefined") localStorage.removeItem(PROFILE_STORAGE_KEY_PREFIX);
+        const stored = typeof window !== "undefined" ? localStorage.getItem(profileStorageKey(user.id)) : null;
         if (stored && !ignore) {
           const p = JSON.parse(stored);
           setName(p.customer_name || "");
@@ -535,8 +543,8 @@ export function UniversalBookingFlow({
   }
 
   function persistProfileLocally() {
-    if (typeof window === "undefined") return;
-    localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify({
+    if (typeof window === "undefined" || !user) return;
+    localStorage.setItem(profileStorageKey(user.id), JSON.stringify({
       customer_name: name.trim(), customer_phone: phone.trim(),
       address: address.trim(), city: city.trim(), pincode: pincode.trim(),
     }));
