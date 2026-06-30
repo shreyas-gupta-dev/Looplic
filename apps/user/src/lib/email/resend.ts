@@ -19,6 +19,7 @@ type ResendEmailInput = {
   text: string;
   html: string;
   replyTo?: string;
+  context?: string;
   attachments?: Array<{
     filename: string;
     content: string;
@@ -235,9 +236,15 @@ function buildCustomerBookingEmail(payload: LeadPayload) {
 }
 
 async function sendResendEmail(input: ResendEmailInput) {
+  const label = input.context || "resend-email";
   const apiKey = process.env.RESEND_API_KEY;
 
   if (!apiKey) {
+    console.error(`[email:${label}] RESEND_API_KEY is not configured — email NOT sent.`, {
+      to: input.to,
+      from: input.from,
+      subject: input.subject,
+    });
     return { ok: false, status: 503, error: "RESEND_API_KEY is not configured." };
   }
 
@@ -265,19 +272,33 @@ async function sendResendEmail(input: ResendEmailInput) {
     const data = await response.json().catch(() => null);
 
     if (!response.ok) {
+      const error = data?.message || data?.error || "Resend email request failed.";
+      console.error(`[email:${label}] Resend API returned ${response.status}: ${error}`, {
+        to: input.to,
+        from: input.from,
+        subject: input.subject,
+        response: data,
+      });
       return {
         ok: false,
         status: response.status,
-        error: data?.message || data?.error || "Resend email request failed.",
+        error,
       };
     }
 
+    console.info(`[email:${label}] sent OK`, { to: input.to, id: data?.id });
     return { ok: true, status: response.status, data };
   } catch (error) {
+    const message = error instanceof Error ? error.message : "Unable to send email.";
+    console.error(`[email:${label}] send threw: ${message}`, {
+      to: input.to,
+      from: input.from,
+      subject: input.subject,
+    });
     return {
       ok: false,
       status: 500,
-      error: error instanceof Error ? error.message : "Unable to send lead email.",
+      error: message,
     };
   } finally {
     clearTimeout(timeoutId);
@@ -363,6 +384,7 @@ export async function sendPickupAgreementEmail(input: PickupAgreementEmailInput)
     text,
     html,
     replyTo: process.env.RESEND_REPLY_TO || DEFAULT_LEAD_TO_EMAIL,
+    context: "pickup-agreement",
     attachments: [
       {
         filename: input.pdfFilename,
@@ -378,7 +400,7 @@ export async function sendLeadEmail(payload: LeadPayload) {
   const from = process.env.RESEND_FROM_EMAIL || DEFAULT_FROM_EMAIL;
   const replyTo = asText(payload.customer?.email) || undefined;
 
-  return sendResendEmail({ to, from, subject, text, html, replyTo });
+  return sendResendEmail({ to, from, subject, text, html, replyTo, context: "lead-notification" });
 }
 
 export async function sendCustomerBookingConfirmation(payload: LeadPayload) {
@@ -398,5 +420,6 @@ export async function sendCustomerBookingConfirmation(payload: LeadPayload) {
     text,
     html,
     replyTo: process.env.RESEND_REPLY_TO || DEFAULT_LEAD_TO_EMAIL,
+    context: "booking-confirmation",
   });
 }
