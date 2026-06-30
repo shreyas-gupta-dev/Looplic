@@ -38,6 +38,16 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        // Canonicalize the apex onto www with a 301. Inert until the apex domain
+        // is mapped to serve this app in Amplify (today CloudFront short-circuits
+        // apex requests with its own 302); once apex routes into the app, this
+        // enforces the permanent redirect at the app layer.
+        source: "/:path*",
+        has: [{ type: "host", value: "looplic.com" }],
+        destination: "https://www.looplic.com/:path*",
+        permanent: true,
+      },
+      {
         source: "/service/:serviceType/brands/xiaomi",
         destination: "/service/:serviceType/brands/mi",
         permanent: true,
