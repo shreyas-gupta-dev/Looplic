@@ -55,8 +55,12 @@ export async function signUpWithEmail(email: string, password: string, name: str
 function authRedirectBase() {
   if (typeof window !== "undefined") {
     const { origin, hostname } = window.location;
-    const isLooplicHost = hostname === "looplic.com" || hostname.endsWith(".looplic.com");
-    if (isLooplicHost) return origin;
+    // The apex (looplic.com) is 308-redirected to www by middleware, which drops
+    // the host-only PKCE verifier cookie and makes exchangeCodeForSession fail —
+    // leaving the previous account's session in place. Keep the whole OAuth
+    // round-trip on the canonical host so the verifier cookie survives.
+    if (hostname === "www.looplic.com") return origin;
+    if (hostname === "looplic.com" || hostname.endsWith(".looplic.com")) return appUrl;
   }
   return appUrl;
 }
