@@ -128,7 +128,7 @@ export function OperationDashboardClient({ loginPath = "/operation/login" }: Ope
           </TabsContent>
 
           <TabsContent value="technicians">
-            {activeTab === "technicians" ? <TechniciansTab /> : null}
+            {activeTab === "technicians" ? <TechniciansTab canDelete={false} /> : null}
           </TabsContent>
         </Tabs>
       </div>

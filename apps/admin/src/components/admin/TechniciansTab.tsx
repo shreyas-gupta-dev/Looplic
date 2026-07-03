@@ -30,7 +30,7 @@ const statusStyles: Record<string, string> = {
   rejected: "border-rose-200 bg-rose-50 text-rose-800",
 };
 
-export default function TechniciansTab() {
+export default function TechniciansTab({ canDelete = true }: { canDelete?: boolean } = {}) {
   const dataClient = createClient() as any;
   const [applications, setApplications] = useState<TechnicianApplication[]>([]);
   const [loading, setLoading] = useState(true);
@@ -241,7 +241,7 @@ export default function TechniciansTab() {
                   <button type="button" onClick={() => { setReviewing(application); setNotes(application.review_notes || ""); }} className="rounded-xl border border-border px-3 py-2 text-xs font-bold text-foreground hover:border-primary/30 hover:text-primary">
                     Review
                   </button>
-                  {application.status === "approved" ? (
+                  {canDelete && application.status === "approved" ? (
                     <button type="button" onClick={() => removeApplication(application)} disabled={busyId === application.id} className="rounded-xl border border-rose-200 px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-50">
                       Remove
                     </button>
