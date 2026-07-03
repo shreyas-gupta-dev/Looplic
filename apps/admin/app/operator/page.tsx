@@ -1,8 +1,8 @@
-import { OperationDashboardClient } from "@/src/components/next/OperationDashboardClient";
+import { OperatorDashboardClient } from "@/src/components/next/OperatorDashboardClient";
 import { buildMigrationMetadata } from "@/src/lib/metadata";
 
 export const metadata = buildMigrationMetadata("Operator Dashboard", "/operator");
 
 export default function OperatorPage() {
-  return <OperationDashboardClient loginPath="/operator/login" />;
+  return <OperatorDashboardClient loginPath="/operator/login" />;
 }

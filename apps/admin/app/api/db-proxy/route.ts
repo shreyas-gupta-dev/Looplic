@@ -33,6 +33,21 @@ const PUBLIC_READ_TABLES = new Set([
 
 const PUBLIC_INSERT_TABLES = new Set(["bookings", "technician_applications"]);
 
+// Deleting records is an admin-only action. Operators (and the operation desk)
+// share the "operation" role and get full create/edit access but must never
+// delete. The only exception is clearing a per-model price override, which is
+// part of the pricing-edit workflow available to operators — not a record
+// deletion — so it stays allowed for any authenticated session.
+const NON_ADMIN_DELETABLE_TABLES = new Set(["model_repair_subcategory_prices"]);
+
+async function userIsAdmin(userId: string): Promise<boolean> {
+  const rows = await db
+    .select({ id: schema.userRoles.id })
+    .from(schema.userRoles)
+    .where(and(eq(schema.userRoles.userId, userId), eq(schema.userRoles.role, "admin")));
+  return rows.length > 0;
+}
+
 function snakeToCamel(s: string) {
   return s.replace(/_([a-z])/g, (_, l) => l.toUpperCase());
 }
@@ -154,6 +169,9 @@ export async function POST(req: NextRequest) {
     }
 
     if (op === "delete") {
+      if (!NON_ADMIN_DELETABLE_TABLES.has(table) && !(await userIsAdmin(session.user.id))) {
+        return NextResponse.json({ error: { message: "Only admins can delete records." } }, { status: 403 });
+      }
       let query = db.delete(tbl) as any;
       query = applyFilters(query, tbl, filters, inFilters);
       await query;

@@ -35,7 +35,12 @@ type Bill = {
 
 type Category = { id: string; name: string; service_type: string };
 type Subcategory = { id: string; category_id: string; name: string; price: number };
-type PaymentsTabProps = { role?: "admin" | "operation" };
+type PaymentsTabProps = {
+  role?: "admin" | "operation";
+  // Explicit override for the delete control; defaults to role-based (admin
+  // only). The operator console passes canDelete={false}.
+  canDelete?: boolean;
+};
 
 const paymentStatuses = ["unpaid", "paid", "partial", "cancelled"] as const;
 
@@ -51,9 +56,9 @@ function isMissingServiceBillsTable(error: { message?: string } | null | undefin
   return Boolean(error?.message && (error.message.includes("service_bills") || error.message.includes("schema cache")));
 }
 
-export default function PaymentsTab({ role = "operation" }: PaymentsTabProps) {
+export default function PaymentsTab({ role = "operation", canDelete }: PaymentsTabProps) {
   const dataClient = createClient() as any;
-  const canDeleteBills = role === "admin";
+  const canDeleteBills = canDelete ?? role === "admin";
   const [bills, setBills] = useState<Bill[]>([]);
   const [bookings, setBookings] = useState<BookingRow[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);

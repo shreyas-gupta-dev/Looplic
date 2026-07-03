@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/src/lib/data-client/client";
 import { toast } from "sonner";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -15,6 +15,15 @@ const dataClient = new Proxy({} as any, {
     return (createClient() as any)[property];
   },
 });
+
+// Gates destructive (delete) actions. Admin dashboards render with the default
+// (true); the operator dashboard provides `false` so operators keep full
+// create/edit access but never see delete controls. Only admins can delete.
+const CanDeleteContext = createContext(true);
+
+function DeleteAction({ children }: { children: React.ReactNode }) {
+  return useContext(CanDeleteContext) ? <>{children}</> : null;
+}
 
 type Brand = { id: string; name: string; slug?: string | null; letter: string; gradient: string; sort_order: number; image_url: string | null; service_type: string };
 type Series = { id: string; brand_id: string; name: string; image_url?: string | null };
@@ -573,7 +582,7 @@ const BrandsTab = ({ serviceType = "mobile" }: { serviceType?: CatalogServiceTyp
                   <GripVertical className="size-3.5" />
                 </button>
                 <button onClick={() => openEdit(b)} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary"><Pencil className="size-3.5" /></button>
-                <button onClick={() => handleDelete(b.id)} className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"><Trash2 className="size-3.5" /></button>
+                <DeleteAction><button onClick={() => handleDelete(b.id)} className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"><Trash2 className="size-3.5" /></button></DeleteAction>
               </div>
             </div>
           ))}
@@ -720,7 +729,7 @@ const SeriesTab = ({ serviceType = "mobile" }: { serviceType?: CatalogServiceTyp
               <span className="flex-1 text-sm font-semibold text-foreground truncate">{s.name}</span>
               <div className="flex items-center gap-1">
                 <button onClick={() => openEdit(s)} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary"><Pencil className="size-3.5" /></button>
-                <button onClick={() => handleDelete(s.id)} className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"><Trash2 className="size-3.5" /></button>
+                <DeleteAction><button onClick={() => handleDelete(s.id)} className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"><Trash2 className="size-3.5" /></button></DeleteAction>
               </div>
             </div>
           ))}
@@ -1067,7 +1076,7 @@ const ModelsTab = ({ serviceType = "mobile" }: { serviceType?: CatalogServiceTyp
               <span className="flex-1 text-sm font-semibold text-foreground truncate">{m.name}</span>
               <div className="flex items-center gap-1">
                 <button onClick={() => openEdit(m)} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary"><Pencil className="size-3.5" /></button>
-                <button onClick={() => handleDelete(m.id)} className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"><Trash2 className="size-3.5" /></button>
+                <DeleteAction><button onClick={() => handleDelete(m.id)} className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"><Trash2 className="size-3.5" /></button></DeleteAction>
               </div>
             </div>
           ))}
@@ -1368,7 +1377,7 @@ const DeviceGuardsManageTab = () => {
                 {editCatId !== c.id && (
                   <div className="flex items-center gap-0.5">
                     <button onClick={(e) => { e.stopPropagation(); setEditCatId(c.id); setEditCatName(c.name); }} className="p-0.5 text-muted-foreground hover:text-foreground"><Pencil className="size-2.5" /></button>
-                    <button onClick={(e) => { e.stopPropagation(); handleDeleteCat(c.id); }} className="p-0.5 text-muted-foreground hover:text-destructive"><Trash2 className="size-2.5" /></button>
+                    <DeleteAction><button onClick={(e) => { e.stopPropagation(); handleDeleteCat(c.id); }} className="p-0.5 text-muted-foreground hover:text-destructive"><Trash2 className="size-2.5" /></button></DeleteAction>
                   </div>
                 )}
               </div>
@@ -1437,7 +1446,7 @@ const DeviceGuardsManageTab = () => {
                   </div>
                   <div className="flex items-center gap-1">
                     <button onClick={() => openEditType(t)} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary"><Pencil className="size-3.5" /></button>
-                    <button onClick={() => handleDeleteType(t.id)} className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"><Trash2 className="size-3.5" /></button>
+                    <DeleteAction><button onClick={() => handleDeleteType(t.id)} className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"><Trash2 className="size-3.5" /></button></DeleteAction>
                   </div>
                 </div>
               ))}
@@ -1627,7 +1636,7 @@ const ModelGuardsTab = () => {
             <div key={g.id} className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border">
               {g.image_url ? <img src={g.image_url} alt={g.guard_type} className="size-8 rounded-lg object-contain flex-shrink-0" /> : <div className="size-8 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0"><Shield className="size-4 text-muted-foreground" /></div>}
               <div className="flex-1"><span className="text-sm font-bold text-foreground">{g.guard_type}</span><span className="ml-2 text-sm font-extrabold text-primary">₹{g.price}</span></div>
-              <button onClick={() => handleDelete(g.id)} className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"><Trash2 className="size-3.5" /></button>
+              <DeleteAction><button onClick={() => handleDelete(g.id)} className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"><Trash2 className="size-3.5" /></button></DeleteAction>
             </div>
           ))}
         </div>
@@ -1825,7 +1834,7 @@ const RepairCategoriesTab = ({ serviceType }: { serviceType: string }) => {
                   <GripVertical className="size-3.5" />
                 </button>
                 <button onClick={() => openEdit(c)} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary"><Pencil className="size-3.5" /></button>
-                <button onClick={() => handleDelete(c.id)} className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"><Trash2 className="size-3.5" /></button>
+                <DeleteAction><button onClick={() => handleDelete(c.id)} className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"><Trash2 className="size-3.5" /></button></DeleteAction>
               </div>
             </div>
           ))}
@@ -1952,7 +1961,7 @@ const AssignRepairTab = ({ serviceType }: { serviceType: string }) => {
           {assigned.map((a: any) => (
             <div key={a.id} className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border">
               <div className="flex-1"><span className="text-sm font-bold text-foreground">{a.repair_categories?.name || "Unknown"}</span><span className="ml-2 text-sm font-extrabold text-primary">₹{a.price}</span></div>
-              <button onClick={() => handleDelete(a.id)} className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"><Trash2 className="size-3.5" /></button>
+              <DeleteAction><button onClick={() => handleDelete(a.id)} className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"><Trash2 className="size-3.5" /></button></DeleteAction>
             </div>
           ))}
         </div>
@@ -2175,7 +2184,7 @@ const RepairSubcategoriesTab = ({ serviceType }: { serviceType: string }) => {
                   <GripVertical className="size-3.5" />
                 </button>
                 <button onClick={() => openEdit(s)} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary"><Pencil className="size-3.5" /></button>
-                <button onClick={() => handleDelete(s.id)} className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"><Trash2 className="size-3.5" /></button>
+                <DeleteAction><button onClick={() => handleDelete(s.id)} className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"><Trash2 className="size-3.5" /></button></DeleteAction>
               </div>
             </div>
           ))}
@@ -2506,10 +2515,11 @@ export const DeviceGuardServicesTab = () => {
 };
 
 // ─── Mobile Repair Services Tab ─────────────────────────────
-export const MobileRepairServicesTab = () => {
+export const MobileRepairServicesTab = ({ canDelete = true }: { canDelete?: boolean } = {}) => {
   const [activeTab, setActiveTab] = useState("brands");
 
   return (
+    <CanDeleteContext.Provider value={canDelete}>
     <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
       <TabsList className={`${adminSubtabListClass} md:grid-cols-6`}>
         <TabsTrigger value="brands" className={adminSubtabTriggerClass}><Tag className="size-3" />Brands</TabsTrigger>
@@ -2526,14 +2536,16 @@ export const MobileRepairServicesTab = () => {
       <TabsContent value="subcategories">{activeTab === "subcategories" ? <RepairSubcategoriesTab serviceType="mobile" /> : null}</TabsContent>
       <TabsContent value="pricing">{activeTab === "pricing" ? <RepairPricingMatrixTab serviceType="mobile" /> : null}</TabsContent>
     </Tabs>
+    </CanDeleteContext.Provider>
   );
 };
 
 // ─── Laptop Repair Services Tab ─────────────────────────────
-export const LaptopRepairServicesTab = () => {
+export const LaptopRepairServicesTab = ({ canDelete = true }: { canDelete?: boolean } = {}) => {
   const [activeTab, setActiveTab] = useState("brands");
 
   return (
+    <CanDeleteContext.Provider value={canDelete}>
     <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
       <TabsList className={`${adminSubtabListClass} md:grid-cols-6`}>
         <TabsTrigger value="brands" className={adminSubtabTriggerClass}><Tag className="size-3" />Brands</TabsTrigger>
@@ -2550,6 +2562,7 @@ export const LaptopRepairServicesTab = () => {
       <TabsContent value="subcategories">{activeTab === "subcategories" ? <RepairSubcategoriesTab serviceType="laptop" /> : null}</TabsContent>
       <TabsContent value="pricing">{activeTab === "pricing" ? <RepairPricingMatrixTab serviceType="laptop" /> : null}</TabsContent>
     </Tabs>
+    </CanDeleteContext.Provider>
   );
 };
 
