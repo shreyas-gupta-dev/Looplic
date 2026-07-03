@@ -45,7 +45,6 @@ type InspectionSummary = {
 
 type ModelLookup = { id: string; name: string; series_id: string };
 type SeriesLookup = { id: string; name?: string; brand_id: string };
-type NamedLookup = { id: string; name: string };
 type BrandLookup = { id: string; name: string; service_type: string };
 type RepairCategoryLookup = { id: string; name: string; service_type: string };
 type RepairSubcategoryLookup = { id: string; name: string; category_id: string; price?: number | null };
@@ -120,11 +119,16 @@ function getInitialCreateOrderForm(): CreateOrderForm {
 
 type BookingsTabProps = {
   role?: "admin" | "operation";
+  // Explicit override for the delete control. When omitted, deletes follow the
+  // role (admin only). The operator console passes role="admin" for full
+  // feature access but canDelete={false} so operators can do everything except
+  // delete orders.
+  canDelete?: boolean;
 };
 
-const BookingsTab = ({ role = "operation" }: BookingsTabProps) => {
+const BookingsTab = ({ role = "operation", canDelete }: BookingsTabProps) => {
   const dataClient = createClient();
-  const canDeleteOrders = role === "admin";
+  const canDeleteOrders = canDelete ?? role === "admin";
   const [bookings, setBookings] = useState<BookingView[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [detail, setDetail] = useState<BookingView | null>(null);
@@ -178,8 +182,11 @@ const BookingsTab = ({ role = "operation" }: BookingsTabProps) => {
   async function fetchBookings() {
     setErrorMessage("");
 
-    const { data, error } = await dataClient.from("bookings").select("*").order("created_at", { ascending: false });
-    const [{ data: billRows }, { data: inspectionRows }, technicianRows, { data: brandRowsForCreate }, { data: seriesRowsForCreate }, { data: modelRowsForCreate }, catalogResult] = await Promise.all([
+    // Single round-trip: the catalog lists (all brands/series/models + repair
+    // options) are fetched alongside the bookings, then reused below to resolve
+    // booking names locally — no follow-up per-id lookups needed.
+    const [{ data, error }, { data: billRows }, { data: inspectionRows }, technicianRows, { data: brandRowsForCreate }, { data: seriesRowsForCreate }, { data: modelRowsForCreate }, catalogResult] = await Promise.all([
+      dataClient.from("bookings").select("*").order("created_at", { ascending: false }),
       (dataClient as any).from("service_bills").select("booking_id, total_amount, payment_status, created_at"),
       (dataClient as any).from("booking_inspections").select("booking_id, status, reported_issue, device_condition, accessories_received, customer_approval, pickup_required, pickup_notes, quote_amount, quote_notes, warranty_label").order("created_at", { ascending: false }),
       fetchApprovedTechnicians(),
@@ -188,14 +195,19 @@ const BookingsTab = ({ role = "operation" }: BookingsTabProps) => {
       dataClient.from("models").select("id, name, series_id").order("name"),
       fetch("/api/catalog/repair-options").then((response) => response.ok ? response.json() : { categories: [], subcategories: [] }).catch(() => ({ categories: [], subcategories: [] })),
     ]);
+    const brandList = (brandRowsForCreate || []) as BrandLookup[];
+    const seriesList = (seriesRowsForCreate || []) as SeriesLookup[];
+    const modelList = (modelRowsForCreate || []) as ModelLookup[];
+    const categoryList = (catalogResult.categories || []) as RepairCategoryLookup[];
+    const subcategoryList = (catalogResult.subcategories || []) as RepairSubcategoryLookup[];
     setBills((billRows || []) as BillSummary[]);
     setInspections((inspectionRows || []) as InspectionSummary[]);
     setTechnicians((technicianRows || []) as TechnicianOption[]);
-    setCatalogBrands((brandRowsForCreate || []) as BrandLookup[]);
-    setCatalogSeries((seriesRowsForCreate || []) as SeriesLookup[]);
-    setCatalogModels((modelRowsForCreate || []) as ModelLookup[]);
-    setCatalogCategories((catalogResult.categories || []) as RepairCategoryLookup[]);
-    setCatalogSubcategories((catalogResult.subcategories || []) as RepairSubcategoryLookup[]);
+    setCatalogBrands(brandList);
+    setCatalogSeries(seriesList);
+    setCatalogModels(modelList);
+    setCatalogCategories(categoryList);
+    setCatalogSubcategories(subcategoryList);
     if (error) {
       setBookings([]);
       setErrorMessage(error.message || "Failed to load bookings.");
@@ -208,41 +220,11 @@ const BookingsTab = ({ role = "operation" }: BookingsTabProps) => {
       return;
     }
 
-    const modelIds = [...new Set(rows.map((booking) => booking.model_id).filter(Boolean))] as string[];
-    const repairCategoryIds = [...new Set(rows.map((booking) => booking.repair_category_id).filter(Boolean))] as string[];
-    const repairSubcategoryIds = [...new Set(rows.map((booking) => booking.repair_subcategory_id).filter(Boolean))] as string[];
-
-    const [{ data: models }, { data: repairCategories }, { data: repairSubcategories }] = await Promise.all([
-      modelIds.length
-        ? dataClient.from("models").select("id, name, series_id").in("id", modelIds)
-        : Promise.resolve({ data: [] as Array<{ id: string; name: string; series_id: string }> }),
-      repairCategoryIds.length
-        ? dataClient.from("repair_categories").select("id, name").in("id", repairCategoryIds)
-        : Promise.resolve({ data: [] as Array<{ id: string; name: string }> }),
-      repairSubcategoryIds.length
-        ? dataClient.from("repair_subcategories").select("id, name").in("id", repairSubcategoryIds)
-        : Promise.resolve({ data: [] as Array<{ id: string; name: string }> }),
-    ]);
-
-    const typedModels = (models || []) as ModelLookup[];
-    const typedRepairCategories = (repairCategories || []) as NamedLookup[];
-    const typedRepairSubcategories = (repairSubcategories || []) as NamedLookup[];
-    const modelMap = new Map<string, ModelLookup>(typedModels.map((model) => [model.id, model]));
-    const seriesIds = [...new Set(typedModels.map((model) => model.series_id).filter(Boolean))];
-    const { data: seriesRows } = seriesIds.length
-      ? await dataClient.from("series").select("id, brand_id").in("id", seriesIds)
-      : { data: [] as Array<{ id: string; brand_id: string }> };
-    const typedSeriesRows = (seriesRows || []) as SeriesLookup[];
-    const seriesMap = new Map<string, SeriesLookup>(typedSeriesRows.map((series) => [series.id, series]));
-    const brandIds = [...new Set(typedSeriesRows.map((series) => series.brand_id).filter(Boolean))];
-    const { data: brandRows } = brandIds.length
-      ? await dataClient.from("brands").select("id, name").in("id", brandIds)
-      : { data: [] as Array<{ id: string; name: string }> };
-
-    const typedBrandRows = (brandRows || []) as NamedLookup[];
-    const brandMap = new Map<string, string>(typedBrandRows.map((brand) => [brand.id, brand.name]));
-    const repairCategoryMap = new Map<string, string>(typedRepairCategories.map((category) => [category.id, category.name]));
-    const repairSubcategoryMap = new Map<string, string>(typedRepairSubcategories.map((subcategory) => [subcategory.id, subcategory.name]));
+    const modelMap = new Map<string, ModelLookup>(modelList.map((model) => [model.id, model]));
+    const seriesMap = new Map<string, SeriesLookup>(seriesList.map((series) => [series.id, series]));
+    const brandMap = new Map<string, string>(brandList.map((brand) => [brand.id, brand.name]));
+    const repairCategoryMap = new Map<string, string>(categoryList.map((category) => [category.id, category.name]));
+    const repairSubcategoryMap = new Map<string, string>(subcategoryList.map((subcategory) => [subcategory.id, subcategory.name]));
 
     setBookings(
       rows.map((booking) => {
