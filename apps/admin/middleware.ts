@@ -45,7 +45,14 @@ export function middleware(request: NextRequest) {
       const path = nextUrl.pathname;
       const isOperatorPath = path === "/operator" || path.startsWith("/operator/");
       const isApi = path.startsWith("/api/");
-      if (!isOperatorPath && !isApi) {
+      // Root-level static assets the layout depends on (manifest.webmanifest,
+      // sw.js, app icons, etc.) aren't app routes — they live at "/" with a file
+      // extension and must be served as-is. Without this they'd 307 to the login
+      // page, breaking the PWA manifest, icons, and service-worker registration
+      // on the operator host. (_next/static and favicon.ico are already excluded
+      // by the matcher below.)
+      const isAsset = path.includes(".");
+      if (!isOperatorPath && !isApi && !isAsset) {
         const target = nextUrl.clone();
         target.pathname = "/operator/login";
         target.search = "";
