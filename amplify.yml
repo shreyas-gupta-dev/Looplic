@@ -4,6 +4,7 @@ version: 1
 #   - looplic-user        -> apps/user        (www.looplic.com)
 #   - looplic-admin       -> apps/admin       (admin.looplic.com)
 #   - looplic-technician  -> apps/technician  (tech.looplic.com)
+#   - looplic-operator    -> apps/operator    (operator.looplic.com)
 # buildPath: '/' installs + builds from the monorepo root so the npm workspace
 # (and the shared @looplic/db package) resolve correctly.
 applications:
@@ -69,3 +70,23 @@ applications:
         paths:
           - node_modules/**/*
           - apps/technician/.next/cache/**/*
+  - appRoot: apps/operator
+    frontend:
+      buildPath: '/'
+      phases:
+        preBuild:
+          commands:
+            - npm ci
+        build:
+          commands:
+            - export NODE_OPTIONS=--max-old-space-size=4096
+            - env | grep -E '^(DATABASE_|SUPABASE_|RESEND_|APP_AWS_|NEXT_PUBLIC_)' >> apps/operator/.env.production
+            - npm run build -w @looplic/operator
+      artifacts:
+        baseDirectory: apps/operator/.next
+        files:
+          - '**/*'
+      cache:
+        paths:
+          - node_modules/**/*
+          - apps/operator/.next/cache/**/*

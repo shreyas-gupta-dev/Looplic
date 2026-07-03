@@ -11,9 +11,11 @@
     "dev:user": "npm run dev -w @looplic/user",
     "dev:admin": "npm run dev -w @looplic/admin",
     "dev:technician": "npm run dev -w @looplic/technician",
+    "dev:operator": "npm run dev -w @looplic/operator",
     "build:user": "npm run build -w @looplic/user",
     "build:admin": "npm run build -w @looplic/admin",
     "build:technician": "npm run build -w @looplic/technician",
+    "build:operator": "npm run build -w @looplic/operator",
     "db:push": "drizzle-kit push --config=packages/db/drizzle.config.ts"
   },
   "devDependencies": {
