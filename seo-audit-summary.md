@@ -3,6 +3,19 @@
 Site: https://www.looplic.com (canonical) — Next.js App Router, `apps/user`.
 Scope: full technical + on-page SEO audit and fixes across 7 phases.
 
+Status: **SHIPPED & VERIFIED LIVE** via PR #28 (main pass) + PR #29 (homepage cacheable).
+
+## Verified in production (post-deploy)
+- Caching (live `Cache-Control`):
+  - `/mi-screen-replacement`, `/service/cctv`, `/blog` → `s-maxage=31536000` (static, cacheable)
+  - `/`, `/service/mobile-repair`, brand catalog → `s-maxage=300, stale-while-revalidate` (ISR)
+  - `/account`, `/thank-you` → `no-store` (correctly uncacheable)
+- Schema present on live: FAQPage (landings), Organization (site-wide), BreadcrumbList (catalog).
+- Indexability: `/service-pages`, `/thank-you` serve `noindex, follow`; canonicals self-referencing.
+- robots.txt: `Disallow: /api/` on Googlebot/Bingbot/*. Sitemap: 2,656 URLs, 100% www-canonical,
+  0 noindexed URL-index pages.
+- OAuth: `/?code=` → 307 → `/auth/callback` via middleware (login intact after H3 change).
+
 ## Deliverables
 - Updated codebase (this branch)
 - `apps/user/app/sitemap.ts` — dynamic sitemap (ISR), noindex pages excluded
