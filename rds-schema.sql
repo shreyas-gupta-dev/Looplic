@@ -336,3 +336,48 @@ CREATE INDEX IF NOT EXISTS idx_technician_applications_email ON technician_appli
 DROP TRIGGER IF EXISTS trg_technician_applications_updated_at ON technician_applications;
 CREATE TRIGGER trg_technician_applications_updated_at
 BEFORE UPDATE ON technician_applications FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- ─── Buyback ──────────────────────────────────────────────────────────────────
+-- Per-model buyback base price (value of the device in perfect condition).
+CREATE TABLE IF NOT EXISTS buyback_model_prices (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  model_id UUID NOT NULL UNIQUE REFERENCES models(id) ON DELETE CASCADE,
+  base_price NUMERIC NOT NULL DEFAULT 0,
+  active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_buyback_model_prices_model_id ON buyback_model_prices(model_id);
+
+DROP TRIGGER IF EXISTS trg_buyback_model_prices_updated_at ON buyback_model_prices;
+CREATE TRIGGER trg_buyback_model_prices_updated_at
+BEFORE UPDATE ON buyback_model_prices FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- Universal evaluation questions buyers answer; scoped per service type.
+CREATE TABLE IF NOT EXISTS buyback_questions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  service_type TEXT NOT NULL DEFAULT 'mobile',
+  title TEXT NOT NULL,
+  description TEXT,
+  question_type TEXT NOT NULL DEFAULT 'single', -- single | multi
+  sort_order INT NOT NULL DEFAULT 0,
+  active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_buyback_questions_service_type ON buyback_questions(service_type);
+
+-- Each option adjusts the quote: deduct/add a fixed amount or a percentage.
+CREATE TABLE IF NOT EXISTS buyback_question_options (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  question_id UUID NOT NULL REFERENCES buyback_questions(id) ON DELETE CASCADE,
+  label TEXT NOT NULL,
+  description TEXT,
+  effect_type TEXT NOT NULL DEFAULT 'deduct_fixed', -- deduct_fixed | deduct_percent | add_fixed | add_percent
+  amount NUMERIC NOT NULL DEFAULT 0,
+  sort_order INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_buyback_question_options_question_id ON buyback_question_options(question_id);

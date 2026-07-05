@@ -22,6 +22,9 @@ const TABLE_MAP: Record<string, any> = {
   service_bills: schema.serviceBills,
   booking_inspections: schema.bookingInspections,
   technician_applications: schema.technicianApplications,
+  buyback_model_prices: schema.buybackModelPrices,
+  buyback_questions: schema.buybackQuestions,
+  buyback_question_options: schema.buybackQuestionOptions,
 };
 
 const PUBLIC_READ_TABLES = new Set([
@@ -29,6 +32,7 @@ const PUBLIC_READ_TABLES = new Set([
   "model_repair_services", "model_screen_guards", "screen_guard_types",
   "screen_guard_categories", "app_settings", "model_repair_subcategory_prices",
   "user_roles",
+  "buyback_model_prices", "buyback_questions", "buyback_question_options",
 ]);
 
 const PUBLIC_INSERT_TABLES = new Set(["bookings", "technician_applications"]);
