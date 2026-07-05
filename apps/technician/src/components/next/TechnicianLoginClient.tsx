@@ -6,12 +6,10 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { useRoleSession } from "@/src/hooks/useRoleSession";
-import { createClient } from "@/src/lib/data-client/client";
 import { orderServiceTypes } from "@/src/lib/service-types";
 
 export function TechnicianLoginClient() {
   const router = useRouter();
-  const dataClient = createClient() as any;
   const { signIn, hasRole, loading, user } = useRoleSession("technician");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -66,47 +64,37 @@ export function TechnicianLoginClient() {
     }
 
     setApplying(true);
-    const signUpResult = await dataClient.auth.signUp({
-      email: email.trim(),
-      password,
-      options: {
-        data: {
+    // Account creation + application insert run server-side (service-role key)
+    // so signup does not depend on Supabase confirmation emails, which the
+    // project cannot send.
+    let applyError = "";
+    try {
+      const res = await fetch("/api/technician/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.trim(),
+          password,
           full_name: riderName.trim(),
           phone: riderPhone.trim(),
-          technician_terms_accepted: true,
-          technician_terms_accepted_at: new Date().toISOString(),
-        },
-      },
-    });
-
-    if (signUpResult.error) {
-      setApplying(false);
-      setError(signUpResult.error.message || "Unable to create technician account.");
-      return;
-    }
-
-    const applicationPayload = {
-      user_id: signUpResult.data?.user?.id || null,
-      email: email.trim(),
-      full_name: riderName.trim(),
-      phone: riderPhone.trim(),
-      city: riderCity.trim() || null,
-      vehicle_type: vehicleType || null,
-      experience: experience.trim() || null,
-      service_types: selectedServiceTypes,
-      status: "pending",
-    };
-    let { error: applicationError } = await dataClient.from("technician_applications").insert(applicationPayload);
-
-    if (applicationError && String(applicationError.message || "").includes("service_types")) {
-      const { service_types: _serviceTypes, ...fallbackPayload } = applicationPayload;
-      const fallbackResult = await dataClient.from("technician_applications").insert(fallbackPayload);
-      applicationError = fallbackResult.error;
+          city: riderCity.trim(),
+          vehicle_type: vehicleType,
+          experience: experience.trim(),
+          service_types: selectedServiceTypes,
+          terms_accepted: termsAccepted,
+        }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.ok) {
+        applyError = json.error || "Unable to submit the technician application.";
+      }
+    } catch {
+      applyError = "Unable to submit the technician application. Check your connection and try again.";
     }
 
     setApplying(false);
-    if (applicationError) {
-      setError(applicationError.message || "Account created, but application was not submitted.");
+    if (applyError) {
+      setError(applyError);
       return;
     }
 
