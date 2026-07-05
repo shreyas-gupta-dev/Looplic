@@ -198,6 +198,42 @@ export const bookingInspections = pgTable("booking_inspections", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// ─── Buyback ─────────────────────────────────────────────────────────────────
+// Per-model buyback base price (value of the device in perfect condition).
+export const buybackModelPrices = pgTable("buyback_model_prices", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  modelId: uuid("model_id").notNull().unique().references(() => models.id, { onDelete: "cascade" }),
+  basePrice: numeric("base_price").notNull().default("0"),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// Universal evaluation questions buyers answer; scoped per service type
+// (mobile/laptop), not per model — every model of that type shares them.
+export const buybackQuestions = pgTable("buyback_questions", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  serviceType: text("service_type").notNull().default("mobile"),
+  title: text("title").notNull(),
+  description: text("description"),
+  questionType: text("question_type").notNull().default("single"), // single | multi
+  sortOrder: integer("sort_order").notNull().default(0),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// Each option adjusts the quote: deduct/add a fixed ₹ amount or a percentage.
+export const buybackQuestionOptions = pgTable("buyback_question_options", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  questionId: uuid("question_id").notNull().references(() => buybackQuestions.id, { onDelete: "cascade" }),
+  label: text("label").notNull(),
+  description: text("description"),
+  effectType: text("effect_type").notNull().default("deduct_fixed"), // deduct_fixed | deduct_percent | add_fixed | add_percent
+  amount: numeric("amount").notNull().default("0"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const technicianApplications = pgTable("technician_applications", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: text("user_id"),
@@ -235,3 +271,6 @@ export type ServiceBill = typeof serviceBills.$inferSelect;
 export type ServiceBillInsert = typeof serviceBills.$inferInsert;
 export type BookingInspection = typeof bookingInspections.$inferSelect;
 export type TechnicianApplication = typeof technicianApplications.$inferSelect;
+export type BuybackModelPrice = typeof buybackModelPrices.$inferSelect;
+export type BuybackQuestion = typeof buybackQuestions.$inferSelect;
+export type BuybackQuestionOption = typeof buybackQuestionOptions.$inferSelect;

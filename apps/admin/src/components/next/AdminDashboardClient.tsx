@@ -1,10 +1,11 @@
 "use client";
 
-import { CalendarCheck, CreditCard, Laptop, LogOut, Smartphone, UserRoundCheck } from "lucide-react";
+import { CalendarCheck, CreditCard, Laptop, LogOut, Recycle, Smartphone, UserRoundCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import BookingsTab from "@/src/components/admin/BookingsTab";
+import BuybackTab from "@/src/components/admin/BuybackTab";
 import PaymentsTab from "@/src/components/admin/PaymentsTab";
 import TechniciansTab from "@/src/components/admin/TechniciansTab";
 import { LaptopRepairServicesTab, MobileRepairServicesTab } from "@/src/components/admin/ServicesTab";
@@ -56,7 +57,7 @@ export function AdminDashboardClient() {
 
       <div className="container py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="flex !h-auto w-full max-w-full !justify-start gap-1 overflow-x-auto rounded-2xl p-1 sm:grid sm:max-w-3xl sm:grid-cols-5 sm:overflow-visible">
+          <TabsList className="flex !h-auto w-full max-w-full !justify-start gap-1 overflow-x-auto rounded-2xl p-1 sm:grid sm:max-w-4xl sm:grid-cols-6 sm:overflow-visible">
             <TabsTrigger value="mobile-repair" className="min-w-[104px] flex-shrink-0 gap-1.5 px-3 py-2.5 text-xs sm:min-w-0">
               <Smartphone className="size-3.5" />
               <span className="hidden sm:inline">Mobile Repair</span>
@@ -66,6 +67,10 @@ export function AdminDashboardClient() {
               <Laptop className="size-3.5" />
               <span className="hidden sm:inline">Laptop Repair</span>
               <span className="sm:hidden">Laptop</span>
+            </TabsTrigger>
+            <TabsTrigger value="buyback" className="min-w-[104px] flex-shrink-0 gap-1.5 px-3 py-2.5 text-xs sm:min-w-0">
+              <Recycle className="size-3.5" />
+              Buyback
             </TabsTrigger>
             <TabsTrigger value="bookings" className="min-w-[104px] flex-shrink-0 gap-1.5 px-3 py-2.5 text-xs sm:min-w-0">
               <CalendarCheck className="size-3.5" />
@@ -89,6 +94,10 @@ export function AdminDashboardClient() {
 
           <TabsContent value="laptop-repair">
             {activeTab === "laptop-repair" ? <LaptopRepairServicesTab /> : null}
+          </TabsContent>
+
+          <TabsContent value="buyback">
+            {activeTab === "buyback" ? <BuybackTab /> : null}
           </TabsContent>
 
           <TabsContent value="bookings">
