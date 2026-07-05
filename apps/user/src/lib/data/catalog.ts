@@ -220,11 +220,17 @@ export const getBrandsForListing = unstable_cache(async (serviceType: "mobile" |
   tags: ["catalog", "catalog-brands"],
 });
 
+// Callers treat null as "brand does not exist" and respond with notFound(); on
+// ISR routes Next caches that 404 for the whole revalidate window. So null must
+// mean the DB answered and the slug truly isn't there — a DB failure throws
+// instead, which makes ISR keep serving the last good page.
 export async function getBrandBySlug(brandSlug: string, serviceType?: "mobile" | "laptop"): Promise<CatalogBrand | null> {
+  const resolvedServiceType = serviceType ?? "mobile";
+  const normalizedBrandSlug = normalizeBrandSlug(brandSlug);
+  const databaseBrandSlug = normalizedBrandSlug === "mi" ? "xiaomi" : normalizedBrandSlug;
+  let dbFailed = false;
+
   try {
-    const resolvedServiceType = serviceType ?? "mobile";
-    const normalizedBrandSlug = normalizeBrandSlug(brandSlug);
-    const databaseBrandSlug = normalizedBrandSlug === "mi" ? "xiaomi" : normalizedBrandSlug;
     const dataClient = createPublicClient();
     const directMatch = await dataClient
       .from("brands")
@@ -233,7 +239,9 @@ export async function getBrandBySlug(brandSlug: string, serviceType?: "mobile" |
       .eq("slug", databaseBrandSlug)
       .maybeSingle();
 
-    if (!directMatch.error && directMatch.data) {
+    if (directMatch.error) {
+      dbFailed = true;
+    } else if (directMatch.data) {
       const slug = normalizeBrandSlug(directMatch.data.slug || slugify(directMatch.data.name) || directMatch.data.id);
       return {
         ...directMatch.data,
@@ -241,114 +249,122 @@ export async function getBrandBySlug(brandSlug: string, serviceType?: "mobile" |
         slug,
       };
     }
-
-    const list = await getBrandsForListing(serviceType ?? "mobile");
-    const listDirectMatch = list.find((brand) => brand.slug === normalizedBrandSlug);
-    if (listDirectMatch) return listDirectMatch;
-    const fallbackMatch = list.find((brand) => normalizeBrandSlug(slugify(brand.name)) === normalizedBrandSlug);
-    return fallbackMatch ?? null;
   } catch {
-    return null;
+    dbFailed = true;
   }
+
+  const list = await getBrandsForListing(resolvedServiceType);
+  const listDirectMatch = list.find((brand) => brand.slug === normalizedBrandSlug);
+  if (listDirectMatch) return listDirectMatch;
+  const fallbackMatch = list.find((brand) => normalizeBrandSlug(slugify(brand.name)) === normalizedBrandSlug);
+  if (fallbackMatch) return fallbackMatch;
+
+  if (dbFailed) {
+    throw new Error(`Catalog DB unavailable while resolving brand "${brandSlug}"`);
+  }
+  return null;
 }
 
+// Throws on DB failure (rather than returning []) so ISR pages keep serving
+// their last good HTML instead of caching an empty page or a 404.
 export async function getSeriesForBrand(brandId: string): Promise<CatalogSeries[]> {
-  try {
-    const dataClient = createPublicClient();
-    const result = await dataClient
-      .from("series")
-      .select("id, brand_id, name, slug, image_url")
-      .eq("brand_id", brandId)
-      .order("name");
+  const dataClient = createPublicClient();
+  const result = await dataClient
+    .from("series")
+    .select("id, brand_id, name, slug, image_url")
+    .eq("brand_id", brandId)
+    .order("name");
 
-    if (!result.error && result.data) {
-      return result.data.map((series) => ({
-        ...series,
-        slug: series.slug || slugify(series.name) || series.id,
-      }));
-    }
-    return [];
-  } catch {
-    return [];
+  if (result.error) {
+    throw new Error(`Catalog DB unavailable while loading series for brand ${brandId}: ${result.error.message}`);
   }
+
+  return (result.data ?? []).map((series) => ({
+    ...series,
+    slug: series.slug || slugify(series.name) || series.id,
+  }));
 }
 
+// null means "series genuinely absent"; DB failures throw (see getBrandBySlug).
 export async function getSeriesBySlug(brandId: string, seriesSlug: string): Promise<CatalogSeries | null> {
-  try {
-    const dataClient = createPublicClient();
-    const directMatch = await dataClient
-      .from("series")
-      .select("id, brand_id, name, slug, image_url")
-      .eq("brand_id", brandId)
-      .eq("slug", seriesSlug)
-      .maybeSingle();
+  const dataClient = createPublicClient();
+  const directMatch = await dataClient
+    .from("series")
+    .select("id, brand_id, name, slug, image_url")
+    .eq("brand_id", brandId)
+    .eq("slug", seriesSlug)
+    .maybeSingle();
 
-    if (!directMatch.error && directMatch.data) {
-      return {
-        ...directMatch.data,
-        slug: directMatch.data.slug || slugify(directMatch.data.name) || directMatch.data.id,
-      };
-    }
-
-    const list = await getSeriesForBrand(brandId);
-    const listDirectMatch = list.find((series) => series.slug === seriesSlug);
-    if (listDirectMatch) return listDirectMatch;
-    return list.find((series) => slugify(series.name) === seriesSlug) ?? null;
-  } catch {
-    return null;
+  if (!directMatch.error && directMatch.data) {
+    return {
+      ...directMatch.data,
+      slug: directMatch.data.slug || slugify(directMatch.data.name) || directMatch.data.id,
+    };
   }
+
+  const list = await getSeriesForBrand(brandId);
+  const listDirectMatch = list.find((series) => series.slug === seriesSlug);
+  if (listDirectMatch) return listDirectMatch;
+  const fallbackMatch = list.find((series) => slugify(series.name) === seriesSlug);
+  if (fallbackMatch) return fallbackMatch;
+
+  if (directMatch.error) {
+    throw new Error(`Catalog DB unavailable while resolving series "${seriesSlug}": ${directMatch.error.message}`);
+  }
+  return null;
 }
 
+// Throws on DB failure (rather than returning []) so ISR pages keep serving
+// their last good HTML instead of caching an empty page or a 404.
 export async function getModelsForSeries(seriesId: string): Promise<CatalogModel[]> {
-  try {
-    const dataClient = createPublicClient();
-    const result = await dataClient
-      .from("models")
-      .select("id, series_id, name, slug, image_url")
-      .eq("series_id", seriesId)
-      .order("name");
+  const dataClient = createPublicClient();
+  const result = await dataClient
+    .from("models")
+    .select("id, series_id, name, slug, image_url")
+    .eq("series_id", seriesId)
+    .order("name");
 
-    if (!result.error && result.data) {
-      return result.data.map((model) => ({
-        ...model,
-        slug: model.slug || slugify(model.name) || model.id,
-      }));
-    }
-    return [];
-  } catch {
-    return [];
+  if (result.error) {
+    throw new Error(`Catalog DB unavailable while loading models for series ${seriesId}: ${result.error.message}`);
   }
+
+  return (result.data ?? []).map((model) => ({
+    ...model,
+    slug: model.slug || slugify(model.name) || model.id,
+  }));
 }
 
+// null means "model genuinely absent"; DB failures throw (see getBrandBySlug).
 export async function getModelBySlug(seriesId: string, modelSlug: string): Promise<CatalogModel | null> {
-  try {
-    const dataClient = createPublicClient();
-    const directMatch = await dataClient
-      .from("models")
-      .select("id, series_id, name, slug, image_url")
-      .eq("series_id", seriesId)
-      .eq("slug", modelSlug)
-      .maybeSingle();
+  const dataClient = createPublicClient();
+  const directMatch = await dataClient
+    .from("models")
+    .select("id, series_id, name, slug, image_url")
+    .eq("series_id", seriesId)
+    .eq("slug", modelSlug)
+    .maybeSingle();
 
-    if (!directMatch.error && directMatch.data) {
-      return {
-        ...directMatch.data,
-        slug: directMatch.data.slug || slugify(directMatch.data.name) || directMatch.data.id,
-      };
-    }
-
-    const list = await getModelsForSeries(seriesId);
-    const listDirectMatch = list.find((model) => model.slug === modelSlug);
-
-    if (listDirectMatch) {
-      return listDirectMatch;
-    }
-
-    const fallbackMatch = list.find((model) => slugify(model.name) === modelSlug);
-    return fallbackMatch ?? null;
-  } catch {
-    return null;
+  if (!directMatch.error && directMatch.data) {
+    return {
+      ...directMatch.data,
+      slug: directMatch.data.slug || slugify(directMatch.data.name) || directMatch.data.id,
+    };
   }
+
+  const list = await getModelsForSeries(seriesId);
+  const listDirectMatch = list.find((model) => model.slug === modelSlug);
+
+  if (listDirectMatch) {
+    return listDirectMatch;
+  }
+
+  const fallbackMatch = list.find((model) => slugify(model.name) === modelSlug);
+  if (fallbackMatch) return fallbackMatch;
+
+  if (directMatch.error) {
+    throw new Error(`Catalog DB unavailable while resolving model "${modelSlug}": ${directMatch.error.message}`);
+  }
+  return null;
 }
 
 export const getModelScreenGuards = unstable_cache(async (modelId: string): Promise<ModelScreenGuard[]> => {
