@@ -44,7 +44,7 @@ const organizationJsonLd = {
   sameAs: ["https://www.instagram.com/thelooplic/", "https://www.linkedin.com/company/looplic"],
   contactPoint: {
     "@type": "ContactPoint",
-    telephone: "+91-88844-45206",
+    telephone: "+91-98865-79923",
     contactType: "customer support",
     areaServed: "IN",
     availableLanguage: ["en", "hi"],
