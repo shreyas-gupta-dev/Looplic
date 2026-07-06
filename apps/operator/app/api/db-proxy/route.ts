@@ -106,10 +106,13 @@ function mapRowOut(row: any) {
   return out;
 }
 
-function mapRowIn(row: any) {
+function mapRowIn(row: any, tbl: any) {
   const out: any = {};
   for (const [k, v] of Object.entries(row)) {
-    out[snakeToCamel(k)] = v;
+    const key = snakeToCamel(k);
+    // Timestamp columns arrive as ISO strings from the browser, but drizzle's
+    // node-postgres driver expects Date objects (it calls .toISOString()).
+    out[key] = typeof v === "string" && tbl?.[key]?.dataType === "date" ? new Date(v) : v;
   }
   return out;
 }
@@ -152,7 +155,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: { message: "Unauthorized" } }, { status: 401 });
       }
 
-      const rows = Array.isArray(payload) ? payload.map(mapRowIn) : [mapRowIn(payload)];
+      const rows = Array.isArray(payload) ? payload.map((row: any) => mapRowIn(row, tbl)) : [mapRowIn(payload, tbl)];
       const inserted = await db.insert(tbl).values(rows).returning();
       return NextResponse.json({ data: inserted.map(mapRowOut) });
     }
@@ -162,7 +165,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (op === "update") {
-      let query = db.update(tbl).set(mapRowIn(payload)) as any;
+      let query = db.update(tbl).set(mapRowIn(payload, tbl)) as any;
       query = applyFilters(query, tbl, filters, inFilters);
       const updated = await query.returning();
       return NextResponse.json({ data: updated.map(mapRowOut) });
@@ -179,7 +182,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (op === "upsert") {
-      const rows = Array.isArray(payload) ? payload.map(mapRowIn) : [mapRowIn(payload)];
+      const rows = Array.isArray(payload) ? payload.map((row: any) => mapRowIn(row, tbl)) : [mapRowIn(payload, tbl)];
       const onConflictKey = onConflict ? snakeToCamel(onConflict) : null;
       const conflictTarget = onConflictKey ? tbl[onConflictKey] : null;
       let insertQuery: any = db.insert(tbl).values(rows);

@@ -119,7 +119,10 @@ class DbQueryBuilder {
       });
 
       if (!res.ok) {
-        return { data: null, error: { message: `DB request failed: ${res.status}` } };
+        // Surface the server's error message (e.g. duplicate-key details) so
+        // callers that branch on it keep working; fall back to the status code.
+        const json = await res.json().catch(() => null);
+        return { data: null, error: { message: json?.error?.message || `DB request failed: ${res.status}` } };
       }
 
       const json = await res.json();
@@ -149,7 +152,10 @@ class DbQueryBuilder {
       });
 
       if (!res.ok) {
-        return { data: null, error: { message: `DB request failed: ${res.status}` } };
+        // Surface the server's error message (e.g. duplicate-key details) so
+        // callers that branch on it keep working; fall back to the status code.
+        const json = await res.json().catch(() => null);
+        return { data: null, error: { message: json?.error?.message || `DB request failed: ${res.status}` } };
       }
 
       const json = await res.json();
