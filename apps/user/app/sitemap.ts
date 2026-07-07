@@ -58,6 +58,7 @@ function buildSellEntries(category: "phone" | "laptop" | "tablet" | "smartwatch"
     createEntry("/sell", 0.9, "daily"),
     createEntry(basePath, 0.7, "daily"),
     ...searchIndex.brands.map((brand) => createEntry(`${basePath}/${brand.slug}`, 0.6, "daily")),
+    ...searchIndex.series.map((series) => createEntry(`${basePath}/${series.brand_slug}/${series.slug}`, 0.5, "daily")),
     ...searchIndex.models.map((model) => createEntry(`${basePath}/${model.brand_slug}/${model.series_slug}/${model.slug}`, 0.6, "daily")),
   ];
 }

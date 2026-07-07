@@ -26,7 +26,17 @@ function ModelImage({ name, imageUrl }: { name: string; imageUrl: string | null 
   );
 }
 
-export function SellModelsGrid({ models, noun }: { models: SellModelItem[]; noun: string }) {
+export function SellModelsGrid({
+  models,
+  noun,
+  ctaLabel = "Get instant quote",
+  searchLabel,
+}: {
+  models: SellModelItem[];
+  noun: string;
+  ctaLabel?: string;
+  searchLabel?: string;
+}) {
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
@@ -43,7 +53,7 @@ export function SellModelsGrid({ models, noun }: { models: SellModelItem[]; noun
         <Search className="ml-3 size-4 flex-shrink-0 text-gray-400" />
         <input
           type="text"
-          placeholder={`Search your ${noun} model...`}
+          placeholder={searchLabel ?? `Search your ${noun} model...`}
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           className="w-full bg-transparent p-2.5 text-[13px] font-medium text-gray-900 outline-none placeholder:text-gray-400"
@@ -67,7 +77,7 @@ export function SellModelsGrid({ models, noun }: { models: SellModelItem[]; noun
               <div className="min-w-0 flex-1">
                 <div className="truncate text-[12px] font-bold leading-tight text-gray-900">{model.name}</div>
                 <div className="mt-0.5 truncate text-[10px] font-semibold uppercase tracking-wide text-violet-500">
-                  Get instant quote
+                  {ctaLabel}
                 </div>
               </div>
               <ChevronRight className="size-4 shrink-0 text-gray-300 transition-colors group-hover:text-gray-500" />
