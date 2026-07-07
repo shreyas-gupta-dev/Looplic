@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, ArrowUpRight, Banknote, CalendarCheck, IndianRupee, Laptop, MapPin, Search, ShieldCheck, Smartphone, Truck } from "lucide-react";
+import { ArrowRight, ArrowUpRight, BadgeIndianRupee, Banknote, Headphones, IndianRupee, Laptop, Search, ShieldCheck, Smartphone, Sparkles, Tablet, Truck, Watch, Zap } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -9,6 +9,7 @@ import { HomepageNavbar } from "@/src/components/next/HomepageNavbar";
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { RepairSellToggle } from "@/src/components/next/RepairSellToggle";
 import { TrustSignals } from "@/src/components/next/TrustSignals";
+import { whatsappPhone } from "@/src/lib/company";
 
 export type SellSearchBrand = {
   id: string;
@@ -159,7 +160,57 @@ const sellCategories = [
     iconColor: "text-amber-500",
     iconBg: "bg-amber-50",
   },
-];
+  {
+    id: "sell-tablet",
+    title: "Sell Tablet",
+    description: "iPad & Android tablets",
+    badge: null,
+    whatsappMessage: "Hi! I want to sell my tablet. Can you give me a quote?",
+    icon: Tablet,
+    iconColor: "text-cyan-500",
+    iconBg: "bg-cyan-50",
+  },
+  {
+    id: "smartwatch",
+    title: "Smartwatch",
+    description: "Apple Watch, Galaxy Watch",
+    badge: null,
+    whatsappMessage: "Hi! I want to sell my smartwatch. Can you give me a quote?",
+    icon: Watch,
+    iconColor: "text-violet-500",
+    iconBg: "bg-violet-50",
+  },
+  {
+    id: "audio-buds",
+    title: "Audio & Buds",
+    description: "AirPods, headphones, buds",
+    badge: null,
+    whatsappMessage: "Hi! I want to sell my earbuds/headphones. Can you give me a quote?",
+    icon: Headphones,
+    iconColor: "text-pink-500",
+    iconBg: "bg-pink-50",
+  },
+  {
+    id: "bulk-corporate",
+    title: "Bulk / Corporate",
+    description: "Company IT asset buy-back",
+    badge: "B2B",
+    whatsappMessage: "Hi! I'm interested in bulk/corporate IT asset buy-back for my company.",
+    icon: BadgeIndianRupee,
+    iconColor: "text-emerald-500",
+    iconBg: "bg-emerald-50",
+  },
+] as Array<{
+  id: string;
+  title: string;
+  description: string;
+  badge: string | null;
+  href?: string;
+  whatsappMessage?: string;
+  icon: typeof Smartphone;
+  iconColor: string;
+  iconBg: string;
+}>;
 
 const howItWorks = [
   {
@@ -180,10 +231,54 @@ const howItWorks = [
 ];
 
 const whySell = [
-  { icon: IndianRupee, title: "Best price guaranteed", description: "Transparent condition-based pricing — no surprise last-minute cuts." },
-  { icon: MapPin, title: "Doorstep everything", description: "Quote, verification, pickup and payment all happen at your home." },
-  { icon: ShieldCheck, title: "Safe data wipe", description: "We help you factory-reset and securely erase your data before handover." },
-  { icon: CalendarCheck, title: "Same-day payment", description: "UPI or bank transfer completed on the spot, no waiting period." },
+  {
+    icon: Zap,
+    iconColor: "text-yellow-500",
+    iconBg: "bg-yellow-50",
+    badge: "FAST",
+    title: "Instant Quote",
+    description: "Real-time price in 30 seconds",
+  },
+  {
+    icon: Truck,
+    iconColor: "text-emerald-500",
+    iconBg: "bg-emerald-50",
+    badge: "FREE",
+    title: "Free Doorstep Pickup",
+    description: "We come to you — no shipping hassle",
+  },
+  {
+    icon: ShieldCheck,
+    iconColor: "text-sky-500",
+    iconBg: "bg-sky-50",
+    badge: null,
+    title: "Secure Data Wipe",
+    description: "Certified factory reset on the spot",
+  },
+  {
+    icon: BadgeIndianRupee,
+    iconColor: "text-amber-500",
+    iconBg: "bg-amber-50",
+    badge: "HOT",
+    title: "Best Price Promise",
+    description: "Beat any quote by ₹500 or ₹500 extra",
+  },
+  {
+    icon: Sparkles,
+    iconColor: "text-violet-500",
+    iconBg: "bg-violet-50",
+    badge: null,
+    title: "Same-Day Payment",
+    description: "UPI / IMPS the moment we pick up",
+  },
+  {
+    icon: Smartphone,
+    iconColor: "text-violet-400",
+    iconBg: "bg-violet-50",
+    badge: null,
+    title: "Any Condition",
+    description: "Broken screen? Dead battery? Still cash.",
+  },
 ];
 
 export function SellHomepageView({ searchBrands, searchModels }: { searchBrands: SellSearchBrand[]; searchModels: SellSearchModel[] }) {
@@ -221,12 +316,10 @@ export function SellHomepageView({ searchBrands, searchModels }: { searchBrands:
         <div className="grid grid-cols-2 gap-3 sm:gap-4">
           {sellCategories.map((category) => {
             const Icon = category.icon;
-            return (
-              <Link
-                key={category.id}
-                href={category.href}
-                className="group relative block rounded-[20px] border border-gray-200 bg-white p-3 shadow-[0_18px_50px_rgba(15,23,42,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_70px_rgba(15,23,42,0.12)] sm:rounded-3xl sm:p-5"
-              >
+            const cardClassName =
+              "group relative block rounded-[20px] border border-gray-200 bg-white p-3 shadow-[0_18px_50px_rgba(15,23,42,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_70px_rgba(15,23,42,0.12)] sm:rounded-3xl sm:p-5";
+            const cardBody = (
+              <>
                 <div
                   className="absolute inset-0 rounded-3xl opacity-[0.03]"
                   style={{
@@ -246,24 +339,168 @@ export function SellHomepageView({ searchBrands, searchModels }: { searchBrands:
                   <h3 className="mb-1 text-[15px] font-semibold leading-tight text-gray-900 sm:text-[17px] sm:leading-normal">
                     {category.title}
                   </h3>
-                  <p className="mb-4 text-[11px] leading-snug text-gray-500 sm:mb-6 sm:text-[13px] sm:leading-relaxed">
+                  <p className={`text-[11px] leading-snug text-gray-500 sm:text-[13px] sm:leading-relaxed ${category.badge ? "mb-4 sm:mb-6" : ""}`}>
                     {category.description}
                   </p>
 
-                  <div className="inline-block rounded-full border border-emerald-100 bg-emerald-50 px-2 py-1 sm:px-3 sm:py-1.5">
-                    <span className="text-[9px] font-bold uppercase tracking-wide text-emerald-600 sm:text-[10px]">
-                      {category.badge}
-                    </span>
-                  </div>
+                  {category.badge ? (
+                    <div className="inline-block rounded-full border border-emerald-100 bg-emerald-50 px-2 py-1 sm:px-3 sm:py-1.5">
+                      <span className="text-[9px] font-bold uppercase tracking-wide text-emerald-600 sm:text-[10px]">
+                        {category.badge}
+                      </span>
+                    </div>
+                  ) : null}
                 </div>
+              </>
+            );
+
+            return category.href ? (
+              <Link key={category.id} href={category.href} className={cardClassName}>
+                {cardBody}
               </Link>
+            ) : (
+              <a
+                key={category.id}
+                href={`https://wa.me/91${whatsappPhone}?text=${encodeURIComponent(category.whatsappMessage ?? "")}`}
+                target="_blank"
+                rel="noreferrer"
+                className={cardClassName}
+              >
+                {cardBody}
+              </a>
             );
           })}
         </div>
       </section>
 
-      {/* How It Works */}
+      {/* Why Looplic */}
       <section className="container mx-auto max-w-3xl px-4 py-6">
+        <div className="mb-6">
+          <div className="mb-2 flex items-center gap-2">
+            <div className="h-1 w-6 rounded-full bg-[#00D28E]"></div>
+            <span className="text-xs font-bold uppercase tracking-widest text-[#00B47D]">Why Looplic</span>
+          </div>
+          <h2 className="text-2xl font-semibold text-[#111827]">India&apos;s easiest way to sell</h2>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+          {whySell.map((item) => {
+            const Icon = item.icon;
+            return (
+              <div key={item.title} className="rounded-[20px] border border-gray-200 bg-white p-4 shadow-[0_18px_50px_rgba(15,23,42,0.08)] sm:rounded-3xl">
+                <div className="mb-3 flex items-start justify-between">
+                  <div className={`flex size-9 items-center justify-center rounded-xl ${item.iconBg} sm:size-10`}>
+                    <Icon className={`size-4 ${item.iconColor} sm:size-5`} />
+                  </div>
+                  {item.badge ? (
+                    <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-emerald-500">
+                      {item.badge}
+                    </span>
+                  ) : null}
+                </div>
+                <h3 className="mb-1 text-[13px] font-semibold leading-tight text-gray-900 sm:text-[14px]">{item.title}</h3>
+                <p className="text-[11px] leading-snug text-gray-500 sm:text-[12px]">{item.description}</p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Top Offers */}
+      <section className="container mx-auto max-w-3xl px-4 py-6">
+        <div className="mb-6">
+          <div className="mb-2 flex items-center gap-2">
+            <div className="h-1 w-6 rounded-full bg-[#8B3DFF]"></div>
+            <span className="text-xs font-bold uppercase tracking-widest text-[#8B3DFF]">Top Offers</span>
+          </div>
+          <h2 className="text-2xl font-semibold text-[#111827]">Get a quote in 60 seconds</h2>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+          {/* Offer 1: Sell Phone */}
+          <div className="flex flex-col rounded-[20px] border border-violet-100/60 bg-gradient-to-br from-violet-50/80 to-indigo-50/40 p-5 md:rounded-3xl md:p-6">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-white shadow-sm">
+                <Smartphone className="size-5 text-violet-400" />
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-gray-700 sm:text-xs">Sell Phone</span>
+            </div>
+
+            <h3 className="mb-2 text-[18px] font-semibold leading-tight text-gray-900 sm:text-[20px]">
+              Upgrading? Turn Your Old Phone Into Cash.
+            </h3>
+
+            <p className="mb-5 text-[13px] leading-relaxed text-gray-500 sm:text-[14px]">
+              Answer a few questions about its condition and get an exact price — paid the moment we pick it up.
+            </p>
+
+            <div className="mb-6 mt-auto flex flex-wrap gap-2">
+              <div className="flex items-center gap-1.5 rounded-full border border-white bg-white/60 px-2.5 py-1 sm:px-3 sm:py-1.5">
+                <Zap className="h-3 w-3 text-gray-400 sm:h-3.5 sm:w-3.5" />
+                <span className="text-[10px] font-medium text-gray-600 sm:text-[11px]">Instant quote</span>
+              </div>
+              <div className="flex items-center gap-1.5 rounded-full border border-white bg-white/60 px-2.5 py-1 sm:px-3 sm:py-1.5">
+                <Truck className="h-3 w-3 text-gray-400 sm:h-3.5 sm:w-3.5" />
+                <span className="text-[10px] font-medium text-gray-600 sm:text-[11px]">Free pickup</span>
+              </div>
+              <div className="flex items-center gap-1.5 rounded-full border border-white bg-white/60 px-2.5 py-1 sm:px-3 sm:py-1.5">
+                <IndianRupee className="h-3 w-3 text-gray-400 sm:h-3.5 sm:w-3.5" />
+                <span className="text-[10px] font-medium text-gray-600 sm:text-[11px]">Same-day UPI</span>
+              </div>
+            </div>
+
+            <Link
+              href="/sell/phone"
+              className="inline-flex items-center justify-center gap-2 self-start rounded-full bg-gradient-to-r from-[#4F46E5] to-[#8B3DFF] px-5 py-2.5 text-[12px] font-bold text-white shadow-sm shadow-violet-500/20 transition-all hover:opacity-90 sm:px-6 sm:py-3 sm:text-[13px]"
+            >
+              Get Instant Quote <ArrowRight className="size-3.5 sm:size-4" />
+            </Link>
+          </div>
+
+          {/* Offer 2: Sell Laptop */}
+          <div className="flex flex-col rounded-[20px] border border-amber-100/60 bg-gradient-to-br from-amber-50/80 to-orange-50/40 p-5 md:rounded-3xl md:p-6">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-white shadow-sm">
+                <Laptop className="size-5 text-amber-400" />
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-gray-700 sm:text-xs">Sell Laptop</span>
+            </div>
+
+            <h3 className="mb-2 text-[18px] font-semibold leading-tight text-gray-900 sm:text-[20px]">
+              Old Laptop Lying Around? It&apos;s Worth Money.
+            </h3>
+
+            <p className="mb-5 text-[13px] leading-relaxed text-gray-500 sm:text-[14px]">
+              Mac, Dell, HP, Lenovo — any age, any condition. Get a top-price quote and doorstep pickup.
+            </p>
+
+            <div className="mb-6 mt-auto flex flex-wrap gap-2">
+              <div className="flex items-center gap-1.5 rounded-full border border-white bg-white/60 px-2.5 py-1 sm:px-3 sm:py-1.5">
+                <BadgeIndianRupee className="h-3 w-3 text-gray-400 sm:h-3.5 sm:w-3.5" />
+                <span className="text-[10px] font-medium text-gray-600 sm:text-[11px]">Top price</span>
+              </div>
+              <div className="flex items-center gap-1.5 rounded-full border border-white bg-white/60 px-2.5 py-1 sm:px-3 sm:py-1.5">
+                <Truck className="h-3 w-3 text-gray-400 sm:h-3.5 sm:w-3.5" />
+                <span className="text-[10px] font-medium text-gray-600 sm:text-[11px]">Free pickup</span>
+              </div>
+              <div className="flex items-center gap-1.5 rounded-full border border-white bg-white/60 px-2.5 py-1 sm:px-3 sm:py-1.5">
+                <ShieldCheck className="h-3 w-3 text-gray-400 sm:h-3.5 sm:w-3.5" />
+                <span className="text-[10px] font-medium text-gray-600 sm:text-[11px]">Data wiped</span>
+              </div>
+            </div>
+
+            <Link
+              href="/sell/laptop"
+              className="inline-flex items-center justify-center gap-2 self-start rounded-full bg-gradient-to-r from-[#4F46E5] to-[#8B3DFF] px-5 py-2.5 text-[12px] font-bold text-white shadow-sm shadow-violet-500/20 transition-all hover:opacity-90 sm:px-6 sm:py-3 sm:text-[13px]"
+            >
+              Quote My Laptop <ArrowRight className="size-3.5 sm:size-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="container mx-auto max-w-3xl px-4 py-6 pb-12">
         <div className="mb-6">
           <div className="mb-2 flex items-center gap-2">
             <div className="h-1 w-6 rounded-full bg-[#4F46E5]"></div>
@@ -285,32 +522,6 @@ export function SellHomepageView({ searchBrands, searchModels }: { searchBrands:
                 </div>
                 <h3 className="mb-1 text-[14px] font-semibold text-gray-900 sm:text-[16px]">{step.title}</h3>
                 <p className="text-[12px] leading-relaxed text-gray-500 sm:text-[13px]">{step.description}</p>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Why Sell With Looplic */}
-      <section className="container mx-auto max-w-3xl px-4 py-6 pb-12">
-        <div className="mb-6">
-          <div className="mb-2 flex items-center gap-2">
-            <div className="h-1 w-6 rounded-full bg-[#00D28E]"></div>
-            <span className="text-xs font-bold uppercase tracking-widest text-[#00B47D]">Why Looplic</span>
-          </div>
-          <h2 className="text-2xl font-semibold text-[#111827]">Sell with total peace of mind</h2>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-          {whySell.map((item) => {
-            const Icon = item.icon;
-            return (
-              <div key={item.title} className="rounded-[20px] border border-gray-200 bg-white p-4 shadow-[0_18px_50px_rgba(15,23,42,0.08)] sm:rounded-3xl">
-                <div className="mb-3 flex size-9 items-center justify-center rounded-xl bg-emerald-50">
-                  <Icon className="size-5 text-emerald-500" />
-                </div>
-                <h3 className="mb-1 text-[13px] font-semibold leading-tight text-gray-900 sm:text-[14px]">{item.title}</h3>
-                <p className="text-[11px] leading-snug text-gray-500 sm:text-[12px]">{item.description}</p>
               </div>
             );
           })}
