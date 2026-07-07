@@ -27,6 +27,7 @@ type SellEvaluationFlowProps = {
   questions: BuybackQuestionRow[];
   optionsByQuestion: Record<string, BuybackOption[]>;
   serviceType?: string;
+  soldCount?: number;
 };
 
 // A wizard step is either a group of yes/no questions answered on one screen
@@ -90,7 +91,7 @@ function ModelHeader({ model, subtitle }: { model: SellEvaluationModel; subtitle
   );
 }
 
-export function SellEvaluationFlow({ model, variants, questions, optionsByQuestion, serviceType }: SellEvaluationFlowProps) {
+export function SellEvaluationFlow({ model, variants, questions, optionsByQuestion, serviceType, soldCount }: SellEvaluationFlowProps) {
   const [stage, setStage] = useState<"teaser" | "questions" | "result">("teaser");
   const [variantId, setVariantId] = useState<string | null>(variants.length === 1 ? variants[0].id : null);
   const [stepIndex, setStepIndex] = useState(0);
@@ -217,6 +218,11 @@ export function SellEvaluationFlow({ model, variants, questions, optionsByQuesti
 
           <div className="min-w-0 flex-1">
             <h2 className="text-[18px] font-semibold text-gray-900">{deviceDisplayName(model.brandName, model.name)}</h2>
+            {soldCount ? (
+              <p className="mt-1 text-[12px] text-gray-500">
+                <span className="font-bold text-teal-500">{soldCount.toLocaleString("en-IN")}+</span> already sold on Looplic
+              </p>
+            ) : null}
 
             {variants.length > 1 ? (
               <div className="mt-4 rounded-2xl border border-violet-200 bg-violet-50/40 p-4">

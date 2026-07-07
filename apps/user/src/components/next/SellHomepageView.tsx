@@ -302,6 +302,11 @@ export function SellHomepageView({ searchBrands, searchModels }: { searchBrands:
           </p>
 
           <SellSearchBox brands={searchBrands} models={searchModels} />
+
+          <p className="mt-4 text-[12px] text-gray-500">
+            Already sold a device?{" "}
+            <Link href="/sell/track" className="font-bold text-violet-600 hover:underline">Track your order</Link>
+          </p>
         </div>
       </section>
 

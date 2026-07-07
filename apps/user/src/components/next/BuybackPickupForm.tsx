@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowRight, CalendarCheck, CheckCircle, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { deviceDisplayName } from "@/src/lib/sell";
@@ -26,6 +27,7 @@ export function BuybackPickupForm({ mode, brandName, modelName, variantLabel, qu
   const [timeSlot, setTimeSlot] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
   const [bookingCode, setBookingCode] = useState<string | null>(null);
+  const router = useRouter();
 
   const device = `${deviceDisplayName(brandName, modelName)}${variantLabel ? ` (${variantLabel})` : ""}`;
 
@@ -55,7 +57,12 @@ export function BuybackPickupForm({ mode, brandName, modelName, variantLabel, qu
       });
       const result = await response.json().catch(() => null);
       if (response.ok && result?.ok) {
-        setBookingCode(typeof result.bookingCode === "string" ? result.bookingCode : null);
+        const code = typeof result.bookingCode === "string" ? result.bookingCode : null;
+        if (mode === "pickup" && code) {
+          router.push(`/sell/booked/${code}`);
+          return;
+        }
+        setBookingCode(code);
         setStatus("done");
       } else {
         setStatus("error");

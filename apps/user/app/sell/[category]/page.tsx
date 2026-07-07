@@ -21,9 +21,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!sellCategory) return {};
   const { label, noun } = SELL_CATEGORIES[sellCategory];
 
+  const oldLabel = label === "Phone" ? "Mobile Phone" : label;
   return buildPageMetadata({
-    title: `Sell Your ${label} for Instant Cash — Pick Your Brand`,
-    description: `Choose your ${noun} brand to get an instant buyback quote with free doorstep pickup and same-day payment in Bangalore.`,
+    title: `Sell Old ${oldLabel} in Bangalore for Instant Cash`,
+    description: `Sell your old ${noun} in Bangalore: instant online quote, free doorstep pickup, and same-day UPI or bank payment. Choose your brand to get started.`,
     pathname: `/sell/${sellCategory}`,
   });
 }
@@ -35,16 +36,54 @@ export default async function SellBrandsPage({ params }: PageProps) {
 
   const { serviceType, label, noun } = SELL_CATEGORIES[sellCategory];
   const brands = await getBrandsForListing(serviceType);
+  const oldLabel = label === "Phone" ? "Mobile Phone" : label;
+
+  const faqs = [
+    {
+      q: `How do I sell my old ${noun} on Looplic?`,
+      a: `Pick your brand and model, answer a few questions about its condition, and get an instant quote. Book a free doorstep pickup and our executive pays you on the spot via UPI or bank transfer.`,
+    },
+    {
+      q: "How is the price decided?",
+      a: `Every model has a best-condition price. Your answers about the screen, body, functionality and accessories adjust it — the final amount is confirmed after a quick physical check at pickup.`,
+    },
+    {
+      q: "Is pickup really free?",
+      a: "Yes. Doorstep pickup anywhere in Bangalore is free, with no obligation to sell if you change your mind.",
+    },
+    {
+      q: "When do I get paid?",
+      a: "Immediately at pickup — the executive transfers the amount via UPI, IMPS or bank transfer before leaving.",
+    },
+    {
+      q: "What about my data?",
+      a: `We help you factory-reset and securely erase your ${noun} before handover, and wipe it again at our facility.`,
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       <CatalogNavbar />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: faqs.map((f) => ({
+              "@type": "Question",
+              name: f.q,
+              acceptedAnswer: { "@type": "Answer", text: f.a },
+            })),
+          }),
+        }}
+      />
 
       <main className="container mx-auto max-w-3xl px-4 py-8">
         <nav aria-label="Breadcrumb" className="mb-5 text-[12px] text-gray-500">
-          <Link href="/sell" className="font-semibold text-violet-600 hover:underline">Sell</Link>
+          <Link href="/sell" className="font-semibold text-violet-600 hover:underline">Home</Link>
           <span className="mx-1.5">/</span>
-          <span>Sell {label}</span>
+          <span>Sell Old {oldLabel}</span>
         </nav>
 
         <div className="mb-6">
@@ -52,8 +91,11 @@ export default async function SellBrandsPage({ params }: PageProps) {
             <div className="h-1 w-6 rounded-full bg-[#8B3DFF]"></div>
             <span className="text-xs font-bold uppercase tracking-widest text-[#8B3DFF]">Sell {label}</span>
           </div>
-          <h1 className="text-2xl font-semibold text-[#111827]">Which brand is your {noun}?</h1>
-          <p className="mt-1 text-[13px] text-gray-500">Pick a brand to see models and get your instant quote.</p>
+          <h1 className="text-2xl font-semibold text-[#111827]">Sell Old {oldLabel} in Bangalore</h1>
+          <p className="mt-1 max-w-xl text-[13px] leading-relaxed text-gray-500">
+            Get an instant quote for your old {noun}, free doorstep pickup, and same-day payment via UPI or bank
+            transfer. Pick your brand to get started.
+          </p>
         </div>
 
         {brands.length === 0 ? (
@@ -84,6 +126,18 @@ export default async function SellBrandsPage({ params }: PageProps) {
             </Link>
           ))}
         </div>
+        {/* FAQs */}
+        <section className="mt-10">
+          <h2 className="mb-4 text-lg font-semibold text-[#111827]">Frequently asked questions</h2>
+          <div className="space-y-2.5">
+            {faqs.map((f) => (
+              <details key={f.q} className="group rounded-2xl border border-gray-200 bg-white p-4 shadow-[0_18px_50px_rgba(15,23,42,0.05)]">
+                <summary className="cursor-pointer list-none text-[13px] font-bold text-gray-900">{f.q}</summary>
+                <p className="mt-2 text-[13px] leading-relaxed text-gray-500">{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
       </main>
 
       <HomepageFooter />

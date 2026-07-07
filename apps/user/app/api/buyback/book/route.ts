@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/src/lib/db";
 import { buybackBookings } from "@/src/lib/db/schema";
 import { sendLeadEmail } from "@/src/lib/email/resend";
+import { getServerSupabase } from "@/src/lib/supabase/server";
 
 export const runtime = "nodejs";
 
@@ -44,6 +45,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: "Name, phone and device are required." }, { status: 400 });
     }
 
+    // Attach the logged-in user (if any) so the booking shows in /account.
+    let userId: string | null = null;
+    try {
+      const supabase = await getServerSupabase();
+      const { data } = await supabase.auth.getUser();
+      userId = data?.user?.id ?? null;
+    } catch {
+      // Anonymous booking is fine.
+    }
+
     const bookingCode = makeBookingCode();
     let saved = false;
 
@@ -62,6 +73,7 @@ export async function POST(request: Request) {
         pickupDate: pickupDate ?? null,
         timeSlot: timeSlot ?? null,
         status: mode === "pickup" ? "pending" : "quote_requested",
+        userId,
       });
       saved = true;
     } catch (err) {

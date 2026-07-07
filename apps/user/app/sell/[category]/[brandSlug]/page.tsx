@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!brand) return {};
 
   return buildPageMetadata({
-    title: `Sell Your ${brand.name} ${label} for Instant Cash`,
+    title: `Sell Old ${brand.name} ${label} for Instant Cash in Bangalore`,
     description: `Get an instant buyback quote for your ${brand.name} ${label.toLowerCase()} with free doorstep pickup and same-day payment in Bangalore.`,
     pathname: `/sell/${sellCategory}/${brand.slug}`,
   });
@@ -61,11 +61,11 @@ export default async function SellModelsPage({ params }: PageProps) {
 
       <main className="container mx-auto max-w-3xl px-4 py-8">
         <nav aria-label="Breadcrumb" className="mb-5 text-[12px] text-gray-500">
-          <Link href="/sell" className="font-semibold text-violet-600 hover:underline">Sell</Link>
+          <Link href="/sell" className="font-semibold text-violet-600 hover:underline">Home</Link>
           <span className="mx-1.5">/</span>
-          <Link href={`/sell/${sellCategory}`} className="font-semibold text-violet-600 hover:underline">Sell {label}</Link>
+          <Link href={`/sell/${sellCategory}`} className="font-semibold text-violet-600 hover:underline">Sell Old {label === "Phone" ? "Mobile Phone" : label}</Link>
           <span className="mx-1.5">/</span>
-          <span>{brand.name}</span>
+          <span>Sell Old {brand.name}</span>
         </nav>
 
         <div className="mb-6">
@@ -73,8 +73,8 @@ export default async function SellModelsPage({ params }: PageProps) {
             <div className="h-1 w-6 rounded-full bg-[#8B3DFF]"></div>
             <span className="text-xs font-bold uppercase tracking-widest text-[#8B3DFF]">Sell {brand.name} {label}</span>
           </div>
-          <h1 className="text-2xl font-semibold text-[#111827]">Which {brand.name} model do you have?</h1>
-          <p className="mt-1 text-[13px] text-gray-500">Pick your exact model to see its instant quote.</p>
+          <h1 className="text-2xl font-semibold text-[#111827]">Sell Old {brand.name} {label}</h1>
+          <p className="mt-1 text-[13px] text-gray-500">Pick your exact model to see its instant quote — free pickup and same-day payment in Bangalore.</p>
         </div>
 
         {models.length === 0 ? (
