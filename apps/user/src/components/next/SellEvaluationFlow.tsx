@@ -2,7 +2,7 @@
 
 import {
   ArrowLeft, ArrowRight, BadgeIndianRupee, BatteryLow, BellOff, Bluetooth, Camera, Check, ChevronDown, CircleAlert, Ear, Fan,
-  Fingerprint, HardDrive, Keyboard, MessageCircle, Mic, Monitor, Mouse, Package, PlugZap, Power, Radar, Receipt, RotateCcw,
+  Fingerprint, HardDrive, Keyboard, Mic, Monitor, Mouse, Package, PlugZap, Power, Radar, Receipt, RotateCcw,
   ScanFace, Smartphone, Truck, Usb, Vibrate, Volume1, Volume2, Wifi,
 } from "lucide-react";
 import Link from "next/link";
@@ -10,7 +10,7 @@ import { useMemo, useState } from "react";
 
 import { computeBuybackQuote, type BuybackOption, type BuybackQuestionRow } from "@/src/lib/buyback/calc";
 import type { BuybackVariant } from "@/src/lib/data/buyback";
-import { whatsappPhone } from "@/src/lib/company";
+import { BuybackPickupForm } from "@/src/components/next/BuybackPickupForm";
 
 export type SellEvaluationModel = {
   id: string;
@@ -94,6 +94,7 @@ export function SellEvaluationFlow({ model, variants, questions, optionsByQuesti
   const [stepIndex, setStepIndex] = useState(0);
   const [selected, setSelected] = useState<Record<string, string[]>>({});
   const [showBreakdown, setShowBreakdown] = useState(false);
+  const [bookingOpen, setBookingOpen] = useState(false);
 
   const answerableQuestions = useMemo(
     () => questions.filter((question) => (optionsByQuestion[question.id] ?? []).length > 0),
@@ -148,20 +149,15 @@ export function SellEvaluationFlow({ model, variants, questions, optionsByQuesti
     return (
       <div className="space-y-4">
         <ModelHeader model={model} subtitle={`Sell ${model.categoryLabel}`} />
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 text-center shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
-          <h2 className="text-[16px] font-semibold text-gray-900">Instant quote coming soon for this model</h2>
-          <p className="mx-auto mt-2 max-w-sm text-[13px] leading-relaxed text-gray-500">
-            We haven&apos;t priced the {model.brandName} {model.name} online yet — but we still buy it. Message us and
-            we&apos;ll quote it personally within a few minutes.
-          </p>
-          <a
-            href={`https://wa.me/91${whatsappPhone}?text=${encodeURIComponent(`Hi! I want to sell my ${model.brandName} ${model.name}. Can you give me a quote?`)}`}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#4F46E5] to-[#8B3DFF] px-6 py-3 text-[13px] font-bold text-white transition-all hover:opacity-90"
-          >
-            <MessageCircle className="size-4" /> Get a quote on WhatsApp
-          </a>
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
+          <div className="mb-5 text-center">
+            <h2 className="text-[16px] font-semibold text-gray-900">Instant quote coming soon for this model</h2>
+            <p className="mx-auto mt-2 max-w-sm text-[13px] leading-relaxed text-gray-500">
+              We haven&apos;t priced the {model.brandName} {model.name} online yet — but we still buy it. Leave your
+              number and we&apos;ll call you with our best price.
+            </p>
+          </div>
+          <BuybackPickupForm mode="quote" brandName={model.brandName} modelName={model.name} />
         </div>
       </div>
     );
@@ -200,6 +196,7 @@ export function SellEvaluationFlow({ model, variants, questions, optionsByQuesti
     setSelected({});
     setStepIndex(0);
     setShowBreakdown(false);
+    setBookingOpen(false);
     setStage("teaser");
   }
 
@@ -274,9 +271,6 @@ export function SellEvaluationFlow({ model, variants, questions, optionsByQuesti
   // ── Stage 3: final quote ────────────────────────────────────────────────────
   if (stage === "result") {
     const variantSuffix = selectedVariant?.label ? ` (${selectedVariant.label})` : "";
-    const whatsappMessage =
-      `Hi! I'd like to sell my ${model.brandName} ${model.name}${variantSuffix}. ` +
-      `Your website quoted me ${formatInr(quote.finalQuote)}. Please book my free doorstep pickup.`;
 
     return (
       <div className="space-y-4">
@@ -335,14 +329,26 @@ export function SellEvaluationFlow({ model, variants, questions, optionsByQuesti
               </div>
             </div>
 
-            <a
-              href={`https://wa.me/91${whatsappPhone}?text=${encodeURIComponent(whatsappMessage)}`}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#4F46E5] to-[#8B3DFF] px-6 py-3.5 text-[14px] font-bold text-white transition-all hover:opacity-90"
-            >
-              Book Free Pickup <ArrowRight className="size-4" />
-            </a>
+            {bookingOpen ? (
+              <div className="mt-4 rounded-2xl border border-gray-100 bg-gray-50/60 p-4">
+                <h3 className="mb-3 text-[14px] font-bold text-gray-900">Book your free pickup</h3>
+                <BuybackPickupForm
+                  mode="pickup"
+                  brandName={model.brandName}
+                  modelName={model.name}
+                  variantLabel={selectedVariant?.label || null}
+                  quoteAmount={quote.finalQuote}
+                />
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setBookingOpen(true)}
+                className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#4F46E5] to-[#8B3DFF] px-6 py-3.5 text-[14px] font-bold text-white transition-all hover:opacity-90"
+              >
+                Book Free Pickup <ArrowRight className="size-4" />
+              </button>
+            )}
 
             <div className="mt-3 flex items-center justify-center gap-4">
               <button type="button" onClick={restart} className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-gray-500 hover:text-gray-700">
