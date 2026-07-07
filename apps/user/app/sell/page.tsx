@@ -25,18 +25,23 @@ export const metadata: Metadata = buildPageMetadata({
   ],
 });
 
-const CATEGORY_BY_SERVICE = { mobile: "phone", laptop: "laptop" } as const;
+const CATEGORY_BY_SERVICE = {
+  mobile: "phone",
+  laptop: "laptop",
+  tablet: "tablet",
+  smartwatch: "smartwatch",
+  audio: "audio",
+} as const;
 
 export default async function SellHomePage() {
-  const [mobileIndex, laptopIndex] = await Promise.all([
-    getCatalogSearchIndex("mobile"),
-    getCatalogSearchIndex("laptop"),
-  ]);
+  const serviceTypes = Object.keys(CATEGORY_BY_SERVICE) as Array<keyof typeof CATEGORY_BY_SERVICE>;
+  const indexes = await Promise.all(serviceTypes.map((serviceType) => getCatalogSearchIndex(serviceType)));
 
   const searchBrands: SellSearchBrand[] = [];
   const searchModels: SellSearchModel[] = [];
 
-  for (const [serviceType, index] of [["mobile", mobileIndex], ["laptop", laptopIndex]] as const) {
+  for (const [i, serviceType] of serviceTypes.entries()) {
+    const index = indexes[i];
     const category = CATEGORY_BY_SERVICE[serviceType];
     for (const brand of index.brands) {
       searchBrands.push({

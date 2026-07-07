@@ -13,6 +13,21 @@ export const SELL_CATEGORIES = {
     label: "Laptop",
     noun: "laptop",
   },
+  tablet: {
+    serviceType: "tablet" as BuybackServiceType,
+    label: "Tablet",
+    noun: "tablet",
+  },
+  smartwatch: {
+    serviceType: "smartwatch" as BuybackServiceType,
+    label: "Smartwatch",
+    noun: "smartwatch",
+  },
+  audio: {
+    serviceType: "audio" as BuybackServiceType,
+    label: "Audio Device",
+    noun: "earbuds or headphones",
+  },
 } as const;
 
 export type SellCategory = keyof typeof SELL_CATEGORIES;

@@ -56,6 +56,15 @@ export default async function SellBrandsPage({ params }: PageProps) {
           <p className="mt-1 text-[13px] text-gray-500">Pick a brand to see models and get your instant quote.</p>
         </div>
 
+        {brands.length === 0 ? (
+          <div className="rounded-2xl border border-gray-200 bg-white p-6 text-center">
+            <p className="text-[13px] font-semibold text-gray-900">The {noun} catalog is being stocked.</p>
+            <p className="mt-1 text-[12px] text-gray-500">
+              We still buy them! <Link href="/contact-us" className="font-semibold text-violet-600 hover:underline">Contact us</Link> for a manual quote while we finish setting this up.
+            </p>
+          </div>
+        ) : null}
+
         <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 md:grid-cols-5 md:gap-3">
           {brands.map((brand) => (
             <Link

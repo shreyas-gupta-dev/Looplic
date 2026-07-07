@@ -5,7 +5,7 @@ import { db } from "@/src/lib/db";
 import { buybackModelPrices, buybackQuestionOptions, buybackQuestions } from "@/src/lib/db/schema";
 import type { BuybackEffectType, BuybackOption, BuybackQuestionRow } from "@/src/lib/buyback/calc";
 
-export type BuybackServiceType = "mobile" | "laptop";
+export type BuybackServiceType = "mobile" | "laptop" | "tablet" | "smartwatch" | "audio";
 
 export type BuybackQuestionSet = {
   questions: BuybackQuestionRow[];

@@ -11,10 +11,12 @@ import { RepairSellToggle } from "@/src/components/next/RepairSellToggle";
 import { TrustSignals } from "@/src/components/next/TrustSignals";
 import { whatsappPhone } from "@/src/lib/company";
 
+export type SellSearchCategory = "phone" | "laptop" | "tablet" | "smartwatch" | "audio";
+
 export type SellSearchBrand = {
   id: string;
   name: string;
-  category: "phone" | "laptop";
+  category: SellSearchCategory;
   href: string;
 };
 
@@ -23,7 +25,7 @@ export type SellSearchModel = {
   name: string;
   brandName: string;
   seriesName: string;
-  category: "phone" | "laptop";
+  category: SellSearchCategory;
   href: string;
 };
 
@@ -55,7 +57,7 @@ function SellSearchBox({ brands, models }: { brands: SellSearchBrand[]; models: 
       .map((brand) => ({
         id: `brand-${brand.id}`,
         title: brand.name,
-        subtitle: brand.category === "phone" ? "Sell phone — browse models" : "Sell laptop — browse models",
+        subtitle: `Sell ${brand.category} — browse models`,
         href: brand.href,
         kind: "Brand" as const,
         score: scoreMatch(normalized, brand.name),
@@ -165,7 +167,7 @@ const sellCategories = [
     title: "Sell Tablet",
     description: "iPad & Android tablets",
     badge: null,
-    whatsappMessage: "Hi! I want to sell my tablet. Can you give me a quote?",
+    href: "/sell/tablet",
     icon: Tablet,
     iconColor: "text-cyan-500",
     iconBg: "bg-cyan-50",
@@ -175,7 +177,7 @@ const sellCategories = [
     title: "Smartwatch",
     description: "Apple Watch, Galaxy Watch",
     badge: null,
-    whatsappMessage: "Hi! I want to sell my smartwatch. Can you give me a quote?",
+    href: "/sell/smartwatch",
     icon: Watch,
     iconColor: "text-violet-500",
     iconBg: "bg-violet-50",
@@ -185,7 +187,7 @@ const sellCategories = [
     title: "Audio & Buds",
     description: "AirPods, headphones, buds",
     badge: null,
-    whatsappMessage: "Hi! I want to sell my earbuds/headphones. Can you give me a quote?",
+    href: "/sell/audio",
     icon: Headphones,
     iconColor: "text-pink-500",
     iconBg: "bg-pink-50",
@@ -195,7 +197,7 @@ const sellCategories = [
     title: "Bulk / Corporate",
     description: "Company IT asset buy-back",
     badge: "B2B",
-    whatsappMessage: "Hi! I'm interested in bulk/corporate IT asset buy-back for my company.",
+    href: "/sell/corporate",
     icon: BadgeIndianRupee,
     iconColor: "text-emerald-500",
     iconBg: "bg-emerald-50",

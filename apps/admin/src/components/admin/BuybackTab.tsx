@@ -5,7 +5,7 @@ import { createClient } from "@/src/lib/data-client/client";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/components/ui/tabs";
 import {
-  Plus, Trash2, Pencil, Loader2, X, Check, Smartphone, Laptop, ChevronDown, ChevronUp, IndianRupee, Calculator, ListChecks, Search,
+  Plus, Trash2, Pencil, Loader2, X, Check, Smartphone, Laptop, Tablet, Watch, Headphones, ChevronDown, ChevronUp, IndianRupee, Calculator, ListChecks, Search,
 } from "lucide-react";
 import {
   BuybackEffectType, BuybackOption, BuybackQuestionRow, EFFECT_LABELS, computeBuybackQuote, formatEffect,
@@ -21,7 +21,7 @@ type Brand = { id: string; name: string; sort_order: number; service_type: strin
 type Series = { id: string; brand_id: string; name: string };
 type Model = { id: string; series_id: string; name: string };
 type ModelPrice = { id: string; model_id: string; base_price: number; active: boolean };
-type ServiceType = "mobile" | "laptop";
+type ServiceType = "mobile" | "laptop" | "tablet" | "smartwatch" | "audio";
 
 const EFFECT_TYPES: BuybackEffectType[] = ["deduct_fixed", "deduct_percent", "add_fixed", "add_percent"];
 
@@ -746,20 +746,28 @@ export default function BuybackTab({ canDelete = true }: { canDelete?: boolean }
   return (
     <div className="space-y-4 pt-4">
       <Tabs value={device} onValueChange={(v) => setDevice(v as ServiceType)} className="w-full">
-        <TabsList className="flex !h-auto w-full !justify-start gap-1 rounded-2xl p-1 sm:max-w-xs sm:grid sm:grid-cols-2">
+        <TabsList className="flex !h-auto w-full !justify-start gap-1 overflow-x-auto rounded-2xl p-1 sm:max-w-2xl sm:grid sm:grid-cols-5">
           <TabsTrigger value="mobile" className="flex-shrink-0 gap-1.5 px-4 py-2.5 text-xs">
             <Smartphone className="size-3.5" /> Mobile
           </TabsTrigger>
           <TabsTrigger value="laptop" className="flex-shrink-0 gap-1.5 px-4 py-2.5 text-xs">
             <Laptop className="size-3.5" /> Laptop
           </TabsTrigger>
+          <TabsTrigger value="tablet" className="flex-shrink-0 gap-1.5 px-4 py-2.5 text-xs">
+            <Tablet className="size-3.5" /> Tablet
+          </TabsTrigger>
+          <TabsTrigger value="smartwatch" className="flex-shrink-0 gap-1.5 px-4 py-2.5 text-xs">
+            <Watch className="size-3.5" /> Watch
+          </TabsTrigger>
+          <TabsTrigger value="audio" className="flex-shrink-0 gap-1.5 px-4 py-2.5 text-xs">
+            <Headphones className="size-3.5" /> Audio
+          </TabsTrigger>
         </TabsList>
-        <TabsContent value="mobile" className="pt-4">
-          {device === "mobile" ? <BuybackServicePanel serviceType="mobile" canDelete={canDelete} /> : null}
-        </TabsContent>
-        <TabsContent value="laptop" className="pt-4">
-          {device === "laptop" ? <BuybackServicePanel serviceType="laptop" canDelete={canDelete} /> : null}
-        </TabsContent>
+        {(["mobile", "laptop", "tablet", "smartwatch", "audio"] as ServiceType[]).map((serviceType) => (
+          <TabsContent key={serviceType} value={serviceType} className="pt-4">
+            {device === serviceType ? <BuybackServicePanel serviceType={serviceType} canDelete={canDelete} /> : null}
+          </TabsContent>
+        ))}
       </Tabs>
     </div>
   );
