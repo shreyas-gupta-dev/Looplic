@@ -1,12 +1,12 @@
 "use client";
 
 import {
-  ArrowLeft, ArrowRight, BadgeIndianRupee, BatteryLow, BellOff, Bluetooth, Camera, Check, ChevronDown, CircleAlert, Ear, Fan,
+  ArrowLeft, ArrowRight, BadgeIndianRupee, BatteryLow, BellOff, Bluetooth, Camera, Check, CircleAlert, Ear, Fan,
   Fingerprint, HardDrive, Keyboard, Mic, Monitor, Mouse, Package, PlugZap, Power, Radar, Receipt, RotateCcw,
   ScanFace, Smartphone, Truck, Usb, Vibrate, Volume1, Volume2, Wifi,
 } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { computeBuybackQuote, type BuybackOption, type BuybackQuestionRow } from "@/src/lib/buyback/calc";
 import type { BuybackVariant } from "@/src/lib/data/buyback";
@@ -96,8 +96,13 @@ export function SellEvaluationFlow({ model, variants, questions, optionsByQuesti
   const [variantId, setVariantId] = useState<string | null>(variants.length === 1 ? variants[0].id : null);
   const [stepIndex, setStepIndex] = useState(0);
   const [selected, setSelected] = useState<Record<string, string[]>>({});
-  const [showBreakdown, setShowBreakdown] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
+
+  // Each step/stage change scrolls back to the top — otherwise the next
+  // question opens wherever the previous (taller) screen left the viewport.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [stepIndex, stage]);
 
   const answerableQuestions = useMemo(
     () => questions.filter((question) => (optionsByQuestion[question.id] ?? []).length > 0),
@@ -198,7 +203,6 @@ export function SellEvaluationFlow({ model, variants, questions, optionsByQuesti
   function restart() {
     setSelected({});
     setStepIndex(0);
-    setShowBreakdown(false);
     setBookingOpen(false);
     setStage("teaser");
   }
@@ -292,41 +296,9 @@ export function SellEvaluationFlow({ model, variants, questions, optionsByQuesti
           </div>
 
           <div className="p-5">
-            <button
-              type="button"
-              onClick={() => setShowBreakdown((open) => !open)}
-              className="flex w-full items-center justify-between rounded-xl bg-gray-50 px-4 py-3 text-left"
-            >
-              <span className="text-[12px] font-bold text-gray-700">How we calculated this</span>
-              <ChevronDown className={`size-4 text-gray-400 transition-transform ${showBreakdown ? "rotate-180" : ""}`} />
-            </button>
-
-            {showBreakdown ? (
-              <div className="mt-3 space-y-2 px-1">
-                <div className="flex items-center justify-between text-[12px]">
-                  <span className="text-gray-500">Get Upto price{variantSuffix}</span>
-                  <span className="font-bold text-gray-900">{formatInr(quote.basePrice)}</span>
-                </div>
-                {quote.lines.length === 0 ? (
-                  <p className="text-[11px] text-gray-400">No adjustments — your device is in top shape!</p>
-                ) : (
-                  quote.lines.map((line) => (
-                    <div key={line.optionId} className="flex items-center justify-between gap-3 text-[12px]">
-                      <span className="min-w-0 truncate text-gray-500">{line.questionTitle}: {line.optionLabel}</span>
-                      <span className={`shrink-0 font-bold ${line.impact >= 0 ? "text-emerald-600" : "text-rose-500"}`}>
-                        {line.impact >= 0 ? "+" : "−"}{formatInr(Math.abs(line.impact))}
-                      </span>
-                    </div>
-                  ))
-                )}
-                <div className="flex items-center justify-between border-t border-gray-100 pt-2 text-[13px]">
-                  <span className="font-bold text-gray-900">Final quote</span>
-                  <span className="font-extrabold text-violet-600">{formatInr(quote.finalQuote)}</span>
-                </div>
-              </div>
-            ) : null}
-
-            <div className="mt-4 grid grid-cols-2 gap-2">
+            {/* The line-by-line deduction breakdown is intentionally NOT shown
+                to customers; it's stored with the booking for the admin. */}
+            <div className="grid grid-cols-2 gap-2">
               <div className="flex items-center gap-2 rounded-xl bg-emerald-50 px-3 py-2.5">
                 <Truck className="size-4 shrink-0 text-emerald-500" />
                 <span className="text-[11px] font-semibold text-emerald-700">Free doorstep pickup</span>
