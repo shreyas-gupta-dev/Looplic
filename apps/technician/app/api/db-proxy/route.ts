@@ -184,6 +184,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: { message: "Unknown operation" } }, { status: 400 });
   } catch (err: any) {
     console.error("DB proxy error:", err);
-    return NextResponse.json({ error: { message: err.message } }, { status: 500 });
+    // Drizzle wraps driver errors ("Failed query: ..."); the useful message
+    // (e.g. "duplicate key value violates unique constraint ...") is on the
+    // cause. Surface it so clients can branch on it.
+    const message = err?.cause?.message || err.message;
+    return NextResponse.json({ error: { message } }, { status: 500 });
   }
 }
