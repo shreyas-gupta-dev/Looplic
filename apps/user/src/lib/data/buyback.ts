@@ -2,7 +2,7 @@ import { unstable_cache } from "next/cache";
 import { and, asc, eq, inArray } from "drizzle-orm";
 
 import { db } from "@/src/lib/db";
-import { buybackModelPrices, buybackQuestionOptions, buybackQuestions } from "@/src/lib/db/schema";
+import { buybackModelPrices, buybackModelVariants, buybackQuestionOptions, buybackQuestions } from "@/src/lib/db/schema";
 import type { BuybackEffectType, BuybackOption, BuybackQuestionRow } from "@/src/lib/buyback/calc";
 
 export type BuybackServiceType = "mobile" | "laptop" | "tablet" | "smartwatch" | "audio";
@@ -62,6 +62,47 @@ export const getBuybackQuestionSet = unstable_cache(
     return { questions, optionsByQuestion };
   },
   ["buyback-question-set"],
+  { revalidate: BUYBACK_REVALIDATE_SECONDS, tags: ["buyback"] },
+);
+
+export type BuybackVariant = {
+  id: string;
+  label: string;
+  basePrice: number;
+};
+
+// Storage/spec variants for a model, each with its own base price. Falls back
+// to the flat buyback_model_prices row (as a single unlabelled variant) when
+// no variant rows exist, and [] when the model has no pricing at all — the
+// sell flow then shows the WhatsApp manual-quote fallback.
+export const getBuybackVariants = unstable_cache(
+  async (modelId: string): Promise<BuybackVariant[]> => {
+    let variantRows: Array<typeof buybackModelVariants.$inferSelect> = [];
+    try {
+      variantRows = await db
+        .select()
+        .from(buybackModelVariants)
+        .where(and(eq(buybackModelVariants.modelId, modelId), eq(buybackModelVariants.active, true)))
+        .orderBy(asc(buybackModelVariants.sortOrder), asc(buybackModelVariants.createdAt));
+    } catch (err) {
+      // 42P01 = undefined_table: the variants migration hasn't been run yet.
+      // Degrade to the flat model price instead of breaking the page; any
+      // other DB failure still throws (ISR keeps serving the last good page).
+      const e = err as { code?: string; cause?: { code?: string } };
+      const code = e?.code ?? e?.cause?.code;
+      if (code !== "42P01") throw err;
+    }
+
+    const variants = variantRows
+      .map((row) => ({ id: row.id, label: row.variantLabel, basePrice: Number(row.basePrice) }))
+      .filter((variant) => Number.isFinite(variant.basePrice) && variant.basePrice > 0);
+
+    if (variants.length > 0) return variants;
+
+    const flatPrice = await getBuybackBasePrice(modelId);
+    return flatPrice === null ? [] : [{ id: "base", label: "", basePrice: flatPrice }];
+  },
+  ["buyback-variants"],
   { revalidate: BUYBACK_REVALIDATE_SECONDS, tags: ["buyback"] },
 );
 

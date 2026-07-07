@@ -1,10 +1,15 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, BadgeIndianRupee, Check, ChevronDown, MessageCircle, RotateCcw, Smartphone, Truck } from "lucide-react";
+import {
+  ArrowLeft, ArrowRight, BadgeIndianRupee, BatteryLow, BellOff, Bluetooth, Camera, Check, ChevronDown, CircleAlert, Ear, Fan,
+  Fingerprint, HardDrive, Keyboard, MessageCircle, Mic, Monitor, Mouse, Package, PlugZap, Power, Radar, Receipt, RotateCcw,
+  ScanFace, Smartphone, Truck, Usb, Vibrate, Volume1, Volume2, Wifi,
+} from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { computeBuybackQuote, type BuybackOption, type BuybackQuestionRow } from "@/src/lib/buyback/calc";
+import type { BuybackVariant } from "@/src/lib/data/buyback";
 import { whatsappPhone } from "@/src/lib/company";
 
 export type SellEvaluationModel = {
@@ -17,13 +22,49 @@ export type SellEvaluationModel = {
 
 type SellEvaluationFlowProps = {
   model: SellEvaluationModel;
-  basePrice: number | null;
+  variants: BuybackVariant[];
   questions: BuybackQuestionRow[];
   optionsByQuestion: Record<string, BuybackOption[]>;
 };
 
+// A wizard step is either a group of yes/no questions answered on one screen
+// (Cashify's "Tell us more about your device?") or a single question screen.
+type WizardStep =
+  | { kind: "group"; questions: BuybackQuestionRow[] }
+  | { kind: "question"; question: BuybackQuestionRow };
+
 function formatInr(value: number) {
   return `₹${value.toLocaleString("en-IN")}`;
+}
+
+// Map a defect label to a lucide icon for the Cashify-style tile grids.
+function defectIcon(label: string) {
+  const l = label.toLowerCase();
+  if (/camera/.test(l)) return Camera;
+  if (/wi-?fi/.test(l)) return Wifi;
+  if (/bluetooth/.test(l)) return Bluetooth;
+  if (/battery/.test(l)) return BatteryLow;
+  if (/charger|charging/.test(l)) return PlugZap;
+  if (/port|usb/.test(l)) return Usb;
+  if (/receiver|earpiece|ear /.test(l)) return Ear;
+  if (/speaker|sound|audio/.test(l)) return Volume2;
+  if (/mic/.test(l)) return Mic;
+  if (/power/.test(l)) return Power;
+  if (/silent|mute/.test(l)) return BellOff;
+  if (/volume/.test(l)) return Volume1;
+  if (/finger/.test(l)) return Fingerprint;
+  if (/face/.test(l)) return ScanFace;
+  if (/vibrat/.test(l)) return Vibrate;
+  if (/sensor|proximity/.test(l)) return Radar;
+  if (/keyboard|key /.test(l)) return Keyboard;
+  if (/trackpad|touchpad/.test(l)) return Mouse;
+  if (/fan|heat/.test(l)) return Fan;
+  if (/storage|ram|ssd|hard/.test(l)) return HardDrive;
+  if (/screen|display|spot|line|discolor|graphics/.test(l)) return Monitor;
+  if (/body|panel|dent|frame|hinge|scratch/.test(l)) return Smartphone;
+  if (/box/.test(l)) return Package;
+  if (/bill|invoice/.test(l)) return Receipt;
+  return CircleAlert;
 }
 
 function ModelHeader({ model, subtitle }: { model: SellEvaluationModel; subtitle: string }) {
@@ -47,10 +88,11 @@ function ModelHeader({ model, subtitle }: { model: SellEvaluationModel; subtitle
   );
 }
 
-export function SellEvaluationFlow({ model, basePrice, questions, optionsByQuestion }: SellEvaluationFlowProps) {
+export function SellEvaluationFlow({ model, variants, questions, optionsByQuestion }: SellEvaluationFlowProps) {
+  const [stage, setStage] = useState<"teaser" | "questions" | "result">("teaser");
+  const [variantId, setVariantId] = useState<string | null>(variants.length === 1 ? variants[0].id : null);
   const [stepIndex, setStepIndex] = useState(0);
   const [selected, setSelected] = useState<Record<string, string[]>>({});
-  const [showResult, setShowResult] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
 
   const answerableQuestions = useMemo(
@@ -58,13 +100,51 @@ export function SellEvaluationFlow({ model, basePrice, questions, optionsByQuest
     [questions, optionsByQuestion],
   );
 
+  // Consecutive runs of 2-option single questions collapse into one grouped
+  // yes/no screen; everything else gets its own step.
+  const steps = useMemo<WizardStep[]>(() => {
+    const built: WizardStep[] = [];
+    for (const question of answerableQuestions) {
+      const options = optionsByQuestion[question.id] ?? [];
+      const isYesNo = question.question_type === "single" && options.length === 2;
+      const last = built[built.length - 1];
+      if (isYesNo) {
+        if (last?.kind === "group") {
+          last.questions.push(question);
+        } else {
+          built.push({ kind: "group", questions: [question] });
+        }
+      } else {
+        built.push({ kind: "question", question });
+      }
+    }
+    return built;
+  }, [answerableQuestions, optionsByQuestion]);
+
+  const selectedVariant = variants.find((variant) => variant.id === variantId) ?? null;
+  const basePrice = selectedVariant?.basePrice ?? 0;
+
   const quote = useMemo(
-    () => computeBuybackQuote(basePrice ?? 0, answerableQuestions, optionsByQuestion, selected),
+    () => computeBuybackQuote(basePrice, answerableQuestions, optionsByQuestion, selected),
     [basePrice, answerableQuestions, optionsByQuestion, selected],
   );
 
-  // No price configured for this model yet — offer a manual quote instead.
-  if (basePrice === null) {
+  const answeredSummary = useMemo(
+    () =>
+      answerableQuestions
+        .map((question) => {
+          const options = optionsByQuestion[question.id] ?? [];
+          const chosen = (selected[question.id] ?? [])
+            .map((id) => options.find((option) => option.id === id)?.label)
+            .filter(Boolean) as string[];
+          return { question, chosen };
+        })
+        .filter((entry) => entry.chosen.length > 0),
+    [answerableQuestions, optionsByQuestion, selected],
+  );
+
+  // ── No pricing configured at all → WhatsApp manual-quote fallback ──────────
+  if (variants.length === 0) {
     return (
       <div className="space-y-4">
         <ModelHeader model={model} subtitle={`Sell ${model.categoryLabel}`} />
@@ -87,59 +167,120 @@ export function SellEvaluationFlow({ model, basePrice, questions, optionsByQuest
     );
   }
 
-  const totalSteps = answerableQuestions.length;
-  const done = showResult || totalSteps === 0;
-  const currentQuestion = !done ? answerableQuestions[stepIndex] : null;
+  const totalSteps = steps.length;
 
-  function selectSingle(questionId: string, optionId: string) {
-    setSelected((prev) => ({ ...prev, [questionId]: [optionId] }));
-    if (stepIndex + 1 >= totalSteps) {
-      setShowResult(true);
-    } else {
-      setStepIndex(stepIndex + 1);
+  function isStepComplete(step: WizardStep) {
+    if (step.kind === "group") {
+      return step.questions.every((question) => (selected[question.id] ?? []).length > 0);
     }
+    // Multi questions may legitimately have zero selections ("none apply").
+    return true;
   }
 
-  function toggleMulti(questionId: string, optionId: string) {
-    setSelected((prev) => {
-      const current = prev[questionId] ?? [];
-      const next = current.includes(optionId) ? current.filter((id) => id !== optionId) : [...current, optionId];
-      return { ...prev, [questionId]: next };
-    });
-  }
-
-  function continueMulti() {
+  function advance() {
     if (stepIndex + 1 >= totalSteps) {
-      setShowResult(true);
+      setStage("result");
     } else {
       setStepIndex(stepIndex + 1);
     }
   }
 
   function goBack() {
-    if (showResult) {
-      setShowResult(false);
+    if (stage === "result") {
+      setStage(totalSteps === 0 ? "teaser" : "questions");
       setStepIndex(Math.max(0, totalSteps - 1));
     } else if (stepIndex > 0) {
       setStepIndex(stepIndex - 1);
+    } else {
+      setStage("teaser");
     }
   }
 
   function restart() {
     setSelected({});
     setStepIndex(0);
-    setShowResult(false);
     setShowBreakdown(false);
+    setStage("teaser");
   }
 
-  if (done) {
+  // ── Stage 1: variant picker + "Get Upto" teaser ─────────────────────────────
+  if (stage === "teaser") {
+    return (
+      <div className="rounded-3xl border border-gray-200 bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] sm:p-6">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+          <div className="flex shrink-0 items-center justify-center rounded-2xl bg-gray-50 p-4 sm:size-40">
+            {model.imageUrl ? (
+              <img src={model.imageUrl} alt={model.name} className="max-h-32 object-contain" />
+            ) : (
+              <Smartphone className="size-10 text-gray-300" />
+            )}
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <h2 className="text-[18px] font-semibold text-gray-900">{model.brandName} {model.name}</h2>
+
+            {variants.length > 1 ? (
+              <div className="mt-4 rounded-2xl border border-violet-200 bg-violet-50/40 p-4">
+                <div className="mb-3 text-[13px] font-bold text-gray-900">Choose a variant</div>
+                <div className="flex flex-wrap gap-2">
+                  {variants.map((variant) => {
+                    const isSelected = variantId === variant.id;
+                    return (
+                      <button
+                        key={variant.id}
+                        type="button"
+                        onClick={() => setVariantId(variant.id)}
+                        className={`flex items-center gap-2 rounded-xl border-2 bg-white px-4 py-2.5 text-[13px] font-semibold transition-all ${
+                          isSelected ? "border-violet-500 text-violet-700" : "border-gray-200 text-gray-700 hover:border-violet-300"
+                        }`}
+                      >
+                        <span
+                          className={`flex size-4 items-center justify-center rounded-full border-2 ${
+                            isSelected ? "border-violet-500 bg-violet-500" : "border-gray-300 bg-white"
+                          }`}
+                        >
+                          {isSelected ? <Check className="size-2.5 text-white" /> : null}
+                        </span>
+                        {variant.label || "Standard"}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
+
+            {selectedVariant ? (
+              <div className="mt-4">
+                <div className="text-[12px] font-semibold text-gray-500">Get Upto</div>
+                <div className="text-[34px] font-extrabold leading-tight text-violet-600">{formatInr(selectedVariant.basePrice)}</div>
+                <div className="text-[11px] text-gray-400">Exact value depends on your device&apos;s condition</div>
+              </div>
+            ) : null}
+
+            <button
+              type="button"
+              disabled={!selectedVariant}
+              onClick={() => setStage(totalSteps === 0 ? "result" : "questions")}
+              className="mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#4F46E5] to-[#8B3DFF] px-7 py-3 text-[14px] font-bold text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:from-gray-200 disabled:to-gray-200 disabled:text-gray-400"
+            >
+              Get Exact Value <ArrowRight className="size-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Stage 3: final quote ────────────────────────────────────────────────────
+  if (stage === "result") {
+    const variantSuffix = selectedVariant?.label ? ` (${selectedVariant.label})` : "";
     const whatsappMessage =
-      `Hi! I'd like to sell my ${model.brandName} ${model.name}. ` +
+      `Hi! I'd like to sell my ${model.brandName} ${model.name}${variantSuffix}. ` +
       `Your website quoted me ${formatInr(quote.finalQuote)}. Please book my free doorstep pickup.`;
 
     return (
       <div className="space-y-4">
-        <ModelHeader model={model} subtitle={`Sell ${model.categoryLabel} · Quote ready`} />
+        <ModelHeader model={model} subtitle={`Sell ${model.categoryLabel}${variantSuffix} · Quote ready`} />
 
         <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
           <div className="bg-gradient-to-r from-[#4F46E5] to-[#8B3DFF] px-5 py-6 text-center text-white">
@@ -161,7 +302,7 @@ export function SellEvaluationFlow({ model, basePrice, questions, optionsByQuest
             {showBreakdown ? (
               <div className="mt-3 space-y-2 px-1">
                 <div className="flex items-center justify-between text-[12px]">
-                  <span className="text-gray-500">Perfect-condition value</span>
+                  <span className="text-gray-500">Get Upto price{variantSuffix}</span>
                   <span className="font-bold text-gray-900">{formatInr(quote.basePrice)}</span>
                 </div>
                 {quote.lines.length === 0 ? (
@@ -204,11 +345,9 @@ export function SellEvaluationFlow({ model, basePrice, questions, optionsByQuest
             </a>
 
             <div className="mt-3 flex items-center justify-center gap-4">
-              {totalSteps > 0 ? (
-                <button type="button" onClick={restart} className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-gray-500 hover:text-gray-700">
-                  <RotateCcw className="size-3.5" /> Re-evaluate
-                </button>
-              ) : null}
+              <button type="button" onClick={restart} className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-gray-500 hover:text-gray-700">
+                <RotateCcw className="size-3.5" /> Re-evaluate
+              </button>
               <Link href="/sell" className="text-[12px] font-semibold text-gray-500 hover:text-gray-700">
                 Sell another device
               </Link>
@@ -219,83 +358,208 @@ export function SellEvaluationFlow({ model, basePrice, questions, optionsByQuest
     );
   }
 
-  const question = currentQuestion!;
-  const options = optionsByQuestion[question.id] ?? [];
-  const currentSelection = selected[question.id] ?? [];
-  const isMulti = question.question_type === "multi";
+  // ── Stage 2: question wizard with evaluation sidebar ────────────────────────
+  const step = steps[stepIndex];
+  const stepComplete = isStepComplete(step);
+
+  function selectSingle(questionId: string, optionId: string) {
+    setSelected((prev) => ({ ...prev, [questionId]: [optionId] }));
+  }
+
+  function toggleMulti(questionId: string, optionId: string) {
+    setSelected((prev) => {
+      const current = prev[questionId] ?? [];
+      const next = current.includes(optionId) ? current.filter((id) => id !== optionId) : [...current, optionId];
+      return { ...prev, [questionId]: next };
+    });
+  }
 
   return (
-    <div className="space-y-4">
-      <ModelHeader model={model} subtitle={`Sell ${model.categoryLabel} · Answer ${totalSteps} quick question${totalSteps === 1 ? "" : "s"}`} />
-
-      {/* Progress */}
-      <div>
-        <div className="mb-1.5 flex items-center justify-between text-[11px] font-semibold text-gray-500">
-          <span>Question {stepIndex + 1} of {totalSteps}</span>
-          <span>{Math.round((stepIndex / totalSteps) * 100)}%</span>
-        </div>
-        <div className="h-1.5 overflow-hidden rounded-full bg-gray-200">
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-[#4F46E5] to-[#8B3DFF] transition-all duration-300"
-            style={{ width: `${Math.max(4, (stepIndex / totalSteps) * 100)}%` }}
-          />
-        </div>
-      </div>
-
-      <div className="rounded-3xl border border-gray-200 bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
-        <h2 className="text-[17px] font-semibold leading-snug text-gray-900">{question.title}</h2>
-        {question.description ? <p className="mt-1 text-[12px] leading-relaxed text-gray-500">{question.description}</p> : null}
-        {isMulti ? <p className="mt-1 text-[11px] font-semibold text-violet-500">Select all that apply — skip if none do.</p> : null}
-
-        <div className="mt-4 space-y-2.5">
-          {options.map((option) => {
-            const isSelected = currentSelection.includes(option.id);
-            return (
-              <button
-                key={option.id}
-                type="button"
-                onClick={() => (isMulti ? toggleMulti(question.id, option.id) : selectSingle(question.id, option.id))}
-                className={`flex w-full items-center gap-3 rounded-2xl border-2 p-3.5 text-left transition-all ${
-                  isSelected ? "border-violet-500 bg-violet-50" : "border-gray-100 bg-white hover:border-violet-200 hover:bg-gray-50"
-                }`}
-              >
-                <span
-                  className={`flex size-5 shrink-0 items-center justify-center border-2 ${isMulti ? "rounded-md" : "rounded-full"} ${
-                    isSelected ? "border-violet-500 bg-violet-500" : "border-gray-300 bg-white"
-                  }`}
-                >
-                  {isSelected ? <Check className="size-3 text-white" /> : null}
-                </span>
-                <span className="min-w-0">
-                  <span className="block text-[13px] font-semibold text-gray-900">{option.label}</span>
-                  {option.description ? <span className="mt-0.5 block text-[11px] leading-snug text-gray-500">{option.description}</span> : null}
-                </span>
-              </button>
-            );
-          })}
+    <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
+      <div className="space-y-4">
+        {/* Progress */}
+        <div>
+          <div className="mb-1.5 flex items-center justify-between text-[11px] font-semibold text-gray-500">
+            <span>Step {stepIndex + 1} of {totalSteps}</span>
+            <span>{Math.round((stepIndex / Math.max(1, totalSteps)) * 100)}%</span>
+          </div>
+          <div className="h-1.5 overflow-hidden rounded-full bg-gray-200">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-[#4F46E5] to-[#8B3DFF] transition-all duration-300"
+              style={{ width: `${Math.max(4, (stepIndex / Math.max(1, totalSteps)) * 100)}%` }}
+            />
+          </div>
         </div>
 
-        <div className="mt-5 flex items-center justify-between">
-          <button
-            type="button"
-            onClick={goBack}
-            disabled={stepIndex === 0}
-            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-gray-500 transition-colors hover:text-gray-700 disabled:invisible"
-          >
-            <ArrowLeft className="size-3.5" /> Back
-          </button>
+        <div className="rounded-3xl border border-gray-200 bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] sm:p-6">
+          {step.kind === "group" ? (
+            <>
+              <h2 className="text-center text-[18px] font-semibold text-gray-900">Tell us more about your device</h2>
+              <p className="mt-1 text-center text-[12px] text-gray-500">Please answer a few questions about your device.</p>
 
-          {isMulti ? (
+              <div className="mt-6 space-y-6">
+                {step.questions.map((question) => {
+                  const options = optionsByQuestion[question.id] ?? [];
+                  const current = selected[question.id] ?? [];
+                  return (
+                    <div key={question.id}>
+                      <h3 className="text-[14px] font-bold text-gray-900">{question.title}</h3>
+                      {question.description ? <p className="mt-0.5 text-[12px] text-gray-500">{question.description}</p> : null}
+                      <div className="mt-2.5 grid grid-cols-2 gap-2.5 sm:max-w-sm">
+                        {options.map((option) => {
+                          const isSelected = current.includes(option.id);
+                          return (
+                            <button
+                              key={option.id}
+                              type="button"
+                              onClick={() => selectSingle(question.id, option.id)}
+                              className={`flex items-center gap-2.5 rounded-xl border-2 px-3.5 py-2.5 text-left transition-all ${
+                                isSelected ? "border-violet-500 bg-violet-50" : "border-gray-200 bg-white hover:border-violet-200"
+                              }`}
+                            >
+                              <span
+                                className={`flex size-4 shrink-0 items-center justify-center rounded-full border-2 ${
+                                  isSelected ? "border-violet-500 bg-violet-500" : "border-gray-300 bg-white"
+                                }`}
+                              >
+                                {isSelected ? <Check className="size-2.5 text-white" /> : null}
+                              </span>
+                              <span className="text-[13px] font-semibold text-gray-900">{option.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          ) : step.question.question_type === "multi" ? (
+            <>
+              <h2 className="text-center text-[18px] font-semibold text-gray-900">{step.question.title}</h2>
+              <p className="mt-1 text-center text-[12px] text-gray-500">
+                {step.question.description || "Select everything that applies — skip if none do."}
+              </p>
+
+              <div className="mt-6 grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4">
+                {(optionsByQuestion[step.question.id] ?? []).map((option) => {
+                  const isSelected = (selected[step.question.id] ?? []).includes(option.id);
+                  const Icon = defectIcon(option.label);
+                  return (
+                    <button
+                      key={option.id}
+                      type="button"
+                      onClick={() => toggleMulti(step.question.id, option.id)}
+                      title={option.description || undefined}
+                      className={`relative flex flex-col items-center gap-3 rounded-2xl border-2 p-4 text-center transition-all ${
+                        isSelected ? "border-violet-500 bg-violet-50" : "border-gray-200 bg-white hover:border-violet-200"
+                      }`}
+                    >
+                      {isSelected ? (
+                        <span className="absolute right-2 top-2 flex size-5 items-center justify-center rounded-full bg-violet-500">
+                          <Check className="size-3 text-white" />
+                        </span>
+                      ) : null}
+                      <span className={`flex size-12 items-center justify-center rounded-2xl ${isSelected ? "bg-violet-100" : "bg-gray-50"}`}>
+                        <Icon className={`size-6 ${isSelected ? "text-violet-600" : "text-gray-400"}`} />
+                      </span>
+                      <span className="text-[12px] font-semibold leading-snug text-gray-800">{option.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          ) : (
+            <>
+              <h2 className="text-[17px] font-semibold leading-snug text-gray-900">{step.question.title}</h2>
+              {step.question.description ? (
+                <p className="mt-1 text-[12px] leading-relaxed text-gray-500">{step.question.description}</p>
+              ) : null}
+
+              <div className="mt-4 space-y-2.5">
+                {(optionsByQuestion[step.question.id] ?? []).map((option) => {
+                  const isSelected = (selected[step.question.id] ?? []).includes(option.id);
+                  return (
+                    <button
+                      key={option.id}
+                      type="button"
+                      onClick={() => selectSingle(step.question.id, option.id)}
+                      className={`flex w-full items-center gap-3 rounded-2xl border-2 p-3.5 text-left transition-all ${
+                        isSelected ? "border-violet-500 bg-violet-50" : "border-gray-100 bg-white hover:border-violet-200 hover:bg-gray-50"
+                      }`}
+                    >
+                      <span
+                        className={`flex size-5 shrink-0 items-center justify-center rounded-full border-2 ${
+                          isSelected ? "border-violet-500 bg-violet-500" : "border-gray-300 bg-white"
+                        }`}
+                      >
+                        {isSelected ? <Check className="size-3 text-white" /> : null}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-[13px] font-semibold text-gray-900">{option.label}</span>
+                        {option.description ? (
+                          <span className="mt-0.5 block text-[11px] leading-snug text-gray-500">{option.description}</span>
+                        ) : null}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          <div className="mt-6 flex items-center justify-between">
             <button
               type="button"
-              onClick={continueMulti}
-              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#4F46E5] to-[#8B3DFF] px-6 py-2.5 text-[13px] font-bold text-white transition-all hover:opacity-90"
+              onClick={goBack}
+              className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-gray-500 transition-colors hover:text-gray-700"
             >
-              {currentSelection.length === 0 ? "None apply — Continue" : "Continue"} <ArrowRight className="size-3.5" />
+              <ArrowLeft className="size-3.5" /> Back
             </button>
-          ) : null}
+
+            <button
+              type="button"
+              disabled={!stepComplete}
+              onClick={advance}
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#4F46E5] to-[#8B3DFF] px-7 py-2.5 text-[13px] font-bold text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:from-gray-200 disabled:to-gray-200 disabled:text-gray-400"
+            >
+              Continue <ArrowRight className="size-3.5" />
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Device Evaluation sidebar */}
+      <aside className="hidden lg:block">
+        <div className="sticky top-20 space-y-4">
+          <ModelHeader
+            model={model}
+            subtitle={selectedVariant?.label ? `${selectedVariant.label} · Get Upto ${formatInr(basePrice)}` : `Get Upto ${formatInr(basePrice)}`}
+          />
+          <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
+            <h3 className="text-[14px] font-bold text-gray-900">Device Evaluation</h3>
+            {answeredSummary.length === 0 ? (
+              <p className="mt-2 text-[12px] text-gray-400">Your answers will appear here as you go.</p>
+            ) : (
+              <div className="mt-3 space-y-3">
+                {answeredSummary.map(({ question, chosen }) => (
+                  <div key={question.id}>
+                    <div className="text-[11px] font-bold uppercase tracking-wide text-gray-400">{question.title}</div>
+                    <ul className="mt-1 space-y-1">
+                      {chosen.map((label) => (
+                        <li key={label} className="flex items-start gap-1.5 text-[12px] text-gray-700">
+                          <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-emerald-400" />
+                          {label}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </aside>
     </div>
   );
 }

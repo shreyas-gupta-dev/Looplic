@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { CatalogNavbar } from "@/src/components/next/CatalogNavbar";
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { SellEvaluationFlow } from "@/src/components/next/SellEvaluationFlow";
-import { getBuybackBasePrice, getBuybackQuestionSet } from "@/src/lib/data/buyback";
+import { getBuybackQuestionSet, getBuybackVariants } from "@/src/lib/data/buyback";
 import { getBrandBySlug, getModelBySlug, getSeriesBySlug } from "@/src/lib/data/catalog";
 import { buildPageMetadata } from "@/src/lib/metadata";
 import { resolveSellCategory, SELL_CATEGORIES } from "@/src/lib/sell";
@@ -52,8 +52,8 @@ export default async function SellEvaluatePage({ params }: PageProps) {
   const { sellCategory, brand, model } = data;
   const { serviceType, label } = SELL_CATEGORIES[sellCategory];
 
-  const [basePrice, questionSet] = await Promise.all([
-    getBuybackBasePrice(model.id),
+  const [variants, questionSet] = await Promise.all([
+    getBuybackVariants(model.id),
     getBuybackQuestionSet(serviceType),
   ]);
 
@@ -61,7 +61,7 @@ export default async function SellEvaluatePage({ params }: PageProps) {
     <div className="min-h-screen bg-[#F8FAFC]">
       <CatalogNavbar />
 
-      <main className="container mx-auto max-w-xl px-4 py-8">
+      <main className="container mx-auto max-w-4xl px-4 py-8">
         <nav aria-label="Breadcrumb" className="mb-5 text-[12px] text-gray-500">
           <Link href="/sell" className="font-semibold text-violet-600 hover:underline">Sell</Link>
           <span className="mx-1.5">/</span>
@@ -80,7 +80,7 @@ export default async function SellEvaluatePage({ params }: PageProps) {
             imageUrl: model.image_url,
             categoryLabel: label,
           }}
-          basePrice={basePrice}
+          variants={variants}
           questions={questionSet.questions}
           optionsByQuestion={questionSet.optionsByQuestion}
         />
