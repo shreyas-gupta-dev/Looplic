@@ -75,25 +75,27 @@ export function ServiceAreasSection({
                 CCTV Installation
               </Link>
             </div>
-            <div className="mt-5 flex flex-wrap gap-2">
-              {bangaloreAreas.map((area) => {
-                const isActive = area.slug === currentAreaSlug;
+            {currentRepairServiceType ? (
+              <div className="mt-5 flex flex-wrap gap-2">
+                {bangaloreAreas.map((area) => {
+                  const isActive = area.slug === currentAreaSlug;
 
-                return (
-                  <Link
-                    key={`repair-${area.slug}`}
-                    href={currentRepairServiceType ? buildBangaloreAreaServiceRoute(area.slug, currentRepairServiceType) : buildBangaloreAreaRoute(area.slug)}
-                    className={`rounded-full border px-3 py-2 text-xs font-bold transition-all ${
-                      isActive
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border bg-secondary/60 text-foreground hover:border-primary/30 hover:text-primary"
-                    }`}
-                  >
-                    {area.name}
-                  </Link>
-                );
-              })}
-            </div>
+                  return (
+                    <Link
+                      key={`repair-${area.slug}`}
+                      href={buildBangaloreAreaServiceRoute(area.slug, currentRepairServiceType)}
+                      className={`rounded-full border px-3 py-2 text-xs font-bold transition-all ${
+                        isActive
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-secondary/60 text-foreground hover:border-primary/30 hover:text-primary"
+                      }`}
+                    >
+                      {area.name}
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
