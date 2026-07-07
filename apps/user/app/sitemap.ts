@@ -51,6 +51,17 @@ function buildRepairEntries(
   ];
 }
 
+function buildSellEntries(category: "phone" | "laptop", searchIndex: SearchIndex) {
+  const basePath = `/sell/${category}`;
+
+  return [
+    createEntry("/sell", 0.9, "daily"),
+    createEntry(basePath, 0.7, "daily"),
+    ...searchIndex.brands.map((brand) => createEntry(`${basePath}/${brand.slug}`, 0.6, "daily")),
+    ...searchIndex.models.map((model) => createEntry(`${basePath}/${model.brand_slug}/${model.series_slug}/${model.slug}`, 0.6, "daily")),
+  ];
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [mobileIndex, laptopIndex] = await Promise.all([getCatalogSearchIndex("mobile"), getCatalogSearchIndex("laptop")]);
 
@@ -74,6 +85,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...seoServicePages.map((page) => createEntry(`/${page.slug}`, 0.8, "weekly")),
     ...buildRepairEntries("mobile-repair", mobileIndex),
     ...buildRepairEntries("laptop-repair", laptopIndex),
+    ...buildSellEntries("phone", mobileIndex),
+    ...buildSellEntries("laptop", laptopIndex),
   ];
 
   const deduped = new Map(entries.map((entry) => [entry.url, entry]));

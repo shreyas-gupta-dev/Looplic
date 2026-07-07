@@ -3,6 +3,7 @@
 import { ArrowRight, ArrowUpRight, Camera, CheckCircle, Clock, Cpu, IndianRupee, Laptop, LifeBuoy, ServerCog, Smartphone } from "lucide-react";
 import Link from "next/link";
 import { HomepageNavbar } from "@/src/components/next/HomepageNavbar";
+import { RepairSellToggle } from "@/src/components/next/RepairSellToggle";
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { DeviceSearchBox } from "@/src/components/next/DeviceSearchBox";
 import { TrustSignals } from "@/src/components/next/TrustSignals";
@@ -121,7 +122,8 @@ export function NewHomepageView({
       {/* Hero Section */}
       <section className="bg-[#EEF4F8] pt-6 pb-8 px-4 sm:pt-8 sm:pb-10">
         <div className="container max-w-2xl mx-auto text-center">
-          <h1 className="text-[24px] sm:text-[28px] md:text-[44px] font-semibold text-[#111827] leading-[1.05] tracking-tight max-w-[21rem] sm:max-w-xl mx-auto">
+          <RepairSellToggle active="repair" />
+          <h1 className="mt-7 text-[24px] sm:text-[28px] md:text-[44px] font-semibold text-[#111827] leading-[1.05] tracking-tight max-w-[21rem] sm:max-w-xl mx-auto">
             <span className="block">Doorstep Mobile Repair,</span>
             <span className="block">
               <span className="text-[#0096FF]">Laptop Repair</span> & <span className="text-[#00D28E]">Tech Support</span> in 30 Minutes
