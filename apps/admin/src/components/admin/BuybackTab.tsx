@@ -683,6 +683,8 @@ function QuotePreviewSection({
   const [seriesId, setSeriesId] = useState("");
   const [modelId, setModelId] = useState("");
   const [price, setPrice] = useState<ModelPrice | null>(null);
+  const [previewVariants, setPreviewVariants] = useState<ModelVariant[]>([]);
+  const [previewVariantId, setPreviewVariantId] = useState("");
   const [selected, setSelected] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
@@ -711,13 +713,25 @@ function QuotePreviewSection({
   }, [seriesId]);
 
   useEffect(() => {
-    setPrice(null); setSelected({});
+    setPrice(null); setPreviewVariants([]); setPreviewVariantId(""); setSelected({});
     if (!modelId) return;
     (async () => {
-      const { data } = await dataClient.from("buyback_model_prices").select("*").eq("model_id", modelId).maybeSingle();
+      const [{ data }, { data: variantRows }] = await Promise.all([
+        dataClient.from("buyback_model_prices").select("*").eq("model_id", modelId).maybeSingle(),
+        dataClient.from("buyback_model_variants").select("*").eq("model_id", modelId).eq("active", true).order("sort_order").order("created_at"),
+      ]);
       setPrice(data ? { ...data, base_price: Number(data.base_price) } : null);
+      const mapped: ModelVariant[] = (variantRows || []).map((v: any) => ({ ...v, base_price: Number(v.base_price) }));
+      setPreviewVariants(mapped);
+      if (mapped.length > 0) setPreviewVariantId(mapped[0].id);
     })();
   }, [modelId]);
+
+  // Variants win over the flat model price, matching the customer flow.
+  const previewVariant = previewVariants.find((v) => v.id === previewVariantId) ?? null;
+  const effectiveBasePrice = previewVariants.length > 0
+    ? (previewVariant ? previewVariant.base_price : null)
+    : (price && price.active ? price.base_price : null);
 
   const pick = (q: BuybackQuestionRow, optionId: string) => {
     setSelected((s) => {
@@ -730,8 +744,8 @@ function QuotePreviewSection({
   };
 
   const quote = useMemo(
-    () => (price ? computeBuybackQuote(price.base_price, questions, optionsByQuestion, selected) : null),
-    [price, questions, optionsByQuestion, selected],
+    () => (effectiveBasePrice !== null ? computeBuybackQuote(effectiveBasePrice, questions, optionsByQuestion, selected) : null),
+    [effectiveBasePrice, questions, optionsByQuestion, selected],
   );
 
   return (
@@ -754,13 +768,31 @@ function QuotePreviewSection({
         </select>
       </div>
 
-      {modelId && !price && (
+      {previewVariants.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-bold text-foreground">Variant:</span>
+          {previewVariants.map((v) => (
+            <button
+              key={v.id}
+              onClick={() => { setPreviewVariantId(v.id); setSelected({}); }}
+              className={
+                "rounded-xl border px-3 py-2 text-xs font-semibold transition-colors " +
+                (previewVariantId === v.id ? "border-primary bg-primary/10 text-foreground" : "border-border bg-background text-muted-foreground hover:bg-secondary")
+              }
+            >
+              {v.variant_label} — ₹{v.base_price.toLocaleString("en-IN")}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {modelId && effectiveBasePrice === null && (
         <p className="rounded-2xl border border-dashed border-border py-6 text-center text-sm text-muted-foreground">
-          No buyback price set for this model yet — add one in the Prices section first.
+          No buyback price set for this model yet — add a price or variants in the Prices section first.
         </p>
       )}
 
-      {price && (
+      {effectiveBasePrice !== null && (
         <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
           <div className="space-y-3">
             {questions.map((q, idx) => (
