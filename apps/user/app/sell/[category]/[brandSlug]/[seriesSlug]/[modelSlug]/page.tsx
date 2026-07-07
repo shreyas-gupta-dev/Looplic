@@ -81,6 +81,7 @@ export default async function SellEvaluatePage({ params }: PageProps) {
             categoryLabel: label,
           }}
           variants={variants}
+          serviceType={serviceType}
           questions={questionSet.questions}
           optionsByQuestion={questionSet.optionsByQuestion}
         />

@@ -25,6 +25,7 @@ type SellEvaluationFlowProps = {
   variants: BuybackVariant[];
   questions: BuybackQuestionRow[];
   optionsByQuestion: Record<string, BuybackOption[]>;
+  serviceType?: string;
 };
 
 // A wizard step is either a group of yes/no questions answered on one screen
@@ -88,7 +89,7 @@ function ModelHeader({ model, subtitle }: { model: SellEvaluationModel; subtitle
   );
 }
 
-export function SellEvaluationFlow({ model, variants, questions, optionsByQuestion }: SellEvaluationFlowProps) {
+export function SellEvaluationFlow({ model, variants, questions, optionsByQuestion, serviceType }: SellEvaluationFlowProps) {
   const [stage, setStage] = useState<"teaser" | "questions" | "result">("teaser");
   const [variantId, setVariantId] = useState<string | null>(variants.length === 1 ? variants[0].id : null);
   const [stepIndex, setStepIndex] = useState(0);
@@ -157,7 +158,7 @@ export function SellEvaluationFlow({ model, variants, questions, optionsByQuesti
               number and we&apos;ll call you with our best price.
             </p>
           </div>
-          <BuybackPickupForm mode="quote" brandName={model.brandName} modelName={model.name} />
+          <BuybackPickupForm mode="quote" brandName={model.brandName} modelName={model.name} serviceType={serviceType} />
         </div>
       </div>
     );
@@ -338,6 +339,12 @@ export function SellEvaluationFlow({ model, variants, questions, optionsByQuesti
                   modelName={model.name}
                   variantLabel={selectedVariant?.label || null}
                   quoteAmount={quote.finalQuote}
+                  serviceType={serviceType}
+                  quoteBreakdown={[
+                    `Base ${formatInr(quote.basePrice)}`,
+                    ...quote.lines.map((line) => `${line.questionTitle}: ${line.optionLabel} (${line.impact >= 0 ? "+" : "−"}${formatInr(Math.abs(line.impact))})`),
+                    `Final ${formatInr(quote.finalQuote)}`,
+                  ].join(" | ")}
                 />
               </div>
             ) : (

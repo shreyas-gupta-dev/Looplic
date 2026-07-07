@@ -890,14 +890,164 @@ function BuybackServicePanel({ serviceType, canDelete }: { serviceType: ServiceT
   );
 }
 
+// ─── Buyback pickup orders ────────────────────────────────────────────────────
+type BuybackBookingRow = {
+  id: string;
+  booking_code: string;
+  service_type: string;
+  brand_name: string;
+  model_name: string;
+  variant_label: string | null;
+  quoted_amount: number | null;
+  quote_breakdown: string | null;
+  customer_name: string;
+  phone: string;
+  address: string | null;
+  pickup_date: string | null;
+  time_slot: string | null;
+  status: string;
+  created_at: string;
+};
+
+const BOOKING_STATUSES = ["pending", "quote_requested", "confirmed", "picked_up", "paid", "cancelled"] as const;
+
+const STATUS_STYLES: Record<string, string> = {
+  pending: "bg-amber-500/10 text-amber-600",
+  quote_requested: "bg-sky-500/10 text-sky-600",
+  confirmed: "bg-blue-500/10 text-blue-600",
+  picked_up: "bg-violet-500/10 text-violet-600",
+  paid: "bg-emerald-500/10 text-emerald-600",
+  cancelled: "bg-red-500/10 text-red-500",
+};
+
+function BuybackOrdersSection() {
+  const [rows, setRows] = useState<BuybackBookingRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const { data, error } = await dataClient
+      .from("buyback_bookings")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    setLoading(false);
+    if (error) {
+      const message = String(error.message || "");
+      if (message.includes("buyback_bookings")) {
+        toast.error("buyback_bookings table missing — run scripts/migrate-buyback-bookings.cjs");
+      } else {
+        toast.error(message || "Failed to load buyback orders");
+      }
+      return;
+    }
+    setRows((data || []).map((r: any) => ({ ...r, quoted_amount: r.quoted_amount === null ? null : Number(r.quoted_amount) })));
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const updateStatus = async (row: BuybackBookingRow, status: string) => {
+    setSavingId(row.id);
+    const { error } = await dataClient.from("buyback_bookings").update({ status }).eq("id", row.id);
+    setSavingId(null);
+    if (error) { toast.error(error.message || "Failed to update status"); return; }
+    setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, status } : r)));
+    toast.success(`Marked ${row.booking_code} as ${status.replace("_", " ")}`);
+  };
+
+  const visible = statusFilter ? rows.filter((r) => r.status === statusFilter) : rows;
+
+  return (
+    <div className="space-y-4 pt-2">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-xs text-muted-foreground">
+          Pickup bookings and quote requests from the customer sell flow, newest first.
+        </p>
+        <select className={selectClass + " w-44"} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+          <option value="">All statuses</option>
+          {BOOKING_STATUSES.map((s) => <option key={s} value={s}>{s.replace("_", " ")}</option>)}
+        </select>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-10 text-muted-foreground"><Loader2 className="size-5 animate-spin" /></div>
+      ) : visible.length === 0 ? (
+        <p className="py-8 text-center text-sm text-muted-foreground">No buyback orders yet.</p>
+      ) : (
+        <div className="space-y-2">
+          {visible.map((row) => {
+            const isExpanded = expandedId === row.id;
+            return (
+              <div key={row.id} className="rounded-2xl border border-border bg-card p-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-sm font-bold text-foreground">{row.booking_code}</span>
+                      <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${STATUS_STYLES[row.status] || "bg-secondary text-muted-foreground"}`}>
+                        {row.status.replace("_", " ")}
+                      </span>
+                    </div>
+                    <div className="mt-0.5 truncate text-xs text-muted-foreground">
+                      {row.brand_name} {row.model_name}{row.variant_label ? ` (${row.variant_label})` : ""} · {row.customer_name} · {row.phone}
+                    </div>
+                  </div>
+                  {row.quoted_amount !== null && (
+                    <span className="text-sm font-bold text-foreground">₹{row.quoted_amount.toLocaleString("en-IN")}</span>
+                  )}
+                  <button
+                    className="flex items-center gap-1 rounded-full bg-secondary px-3 py-1.5 text-[11px] font-bold text-foreground"
+                    onClick={() => setExpandedId(isExpanded ? null : row.id)}
+                  >
+                    Details {isExpanded ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
+                  </button>
+                </div>
+
+                {isExpanded && (
+                  <div className="mt-3 space-y-2 rounded-xl bg-secondary/40 p-3 text-xs text-foreground">
+                    <div><b>Placed:</b> {new Date(row.created_at).toLocaleString("en-IN")}</div>
+                    {row.address ? <div><b>Address:</b> {row.address}</div> : null}
+                    {(row.pickup_date || row.time_slot) ? (
+                      <div><b>Pickup:</b> {[row.pickup_date, row.time_slot].filter(Boolean).join(" · ")}</div>
+                    ) : null}
+                    {row.quote_breakdown ? <div className="text-muted-foreground"><b className="text-foreground">Quote breakdown:</b> {row.quote_breakdown}</div> : null}
+                    <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                      <span className="mr-1 font-bold">Set status:</span>
+                      {BOOKING_STATUSES.filter((s) => s !== row.status && s !== "quote_requested").map((s) => (
+                        <button
+                          key={s}
+                          disabled={savingId === row.id}
+                          onClick={() => updateStatus(row, s)}
+                          className={`rounded-full border border-border bg-card px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide transition-colors hover:border-primary/40 ${s === "cancelled" ? "text-red-500" : "text-foreground"}`}
+                        >
+                          {s.replace("_", " ")}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Top-level Buyback tab ────────────────────────────────────────────────────
 export default function BuybackTab({ canDelete = true }: { canDelete?: boolean }) {
-  const [device, setDevice] = useState<ServiceType>("mobile");
+  const [device, setDevice] = useState<ServiceType | "orders">("mobile");
 
   return (
     <div className="space-y-4 pt-4">
-      <Tabs value={device} onValueChange={(v) => setDevice(v as ServiceType)} className="w-full">
-        <TabsList className="flex !h-auto w-full !justify-start gap-1 overflow-x-auto rounded-2xl p-1 sm:max-w-2xl sm:grid sm:grid-cols-5">
+      <Tabs value={device} onValueChange={(v) => setDevice(v as ServiceType | "orders")} className="w-full">
+        <TabsList className="flex !h-auto w-full !justify-start gap-1 overflow-x-auto rounded-2xl p-1 sm:max-w-3xl sm:grid sm:grid-cols-6">
+          <TabsTrigger value="orders" className="flex-shrink-0 gap-1.5 px-4 py-2.5 text-xs">
+            <ListChecks className="size-3.5" /> Orders
+          </TabsTrigger>
           <TabsTrigger value="mobile" className="flex-shrink-0 gap-1.5 px-4 py-2.5 text-xs">
             <Smartphone className="size-3.5" /> Mobile
           </TabsTrigger>
@@ -914,6 +1064,9 @@ export default function BuybackTab({ canDelete = true }: { canDelete?: boolean }
             <Headphones className="size-3.5" /> Audio
           </TabsTrigger>
         </TabsList>
+        <TabsContent value="orders" className="pt-4">
+          {device === "orders" ? <BuybackOrdersSection /> : null}
+        </TabsContent>
         {(["mobile", "laptop", "tablet", "smartwatch", "audio"] as ServiceType[]).map((serviceType) => (
           <TabsContent key={serviceType} value={serviceType} className="pt-4">
             {device === serviceType ? <BuybackServicePanel serviceType={serviceType} canDelete={canDelete} /> : null}

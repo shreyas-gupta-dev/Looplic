@@ -3,8 +3,6 @@
 import { ArrowRight, CalendarCheck, CheckCircle, Loader2 } from "lucide-react";
 import { useState } from "react";
 
-import { notifyLeadSubmission } from "@/src/lib/leads/client";
-
 const TIME_SLOTS = ["10 AM – 1 PM", "1 PM – 4 PM", "4 PM – 7 PM"];
 
 type BuybackPickupFormProps = {
@@ -14,15 +12,18 @@ type BuybackPickupFormProps = {
   modelName: string;
   variantLabel?: string | null;
   quoteAmount?: number | null;
+  serviceType?: string;
+  quoteBreakdown?: string | null;
 };
 
-export function BuybackPickupForm({ mode, brandName, modelName, variantLabel, quoteAmount }: BuybackPickupFormProps) {
+export function BuybackPickupForm({ mode, brandName, modelName, variantLabel, quoteAmount, serviceType, quoteBreakdown }: BuybackPickupFormProps) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [pickupDate, setPickupDate] = useState("");
   const [timeSlot, setTimeSlot] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
+  const [bookingCode, setBookingCode] = useState<string | null>(null);
 
   const device = `${brandName} ${modelName}${variantLabel ? ` (${variantLabel})` : ""}`;
 
@@ -31,23 +32,35 @@ export function BuybackPickupForm({ mode, brandName, modelName, variantLabel, qu
     if (status === "submitting") return;
     setStatus("submitting");
 
-    const ok = await notifyLeadSubmission({
-      source: mode === "pickup" ? "buyback-pickup" : "buyback-quote-request",
-      title:
-        mode === "pickup"
-          ? `Buyback pickup — ${device}${quoteAmount ? ` @ ₹${quoteAmount.toLocaleString("en-IN")}` : ""}`
-          : `Buyback quote request — ${device}`,
-      customer: { name: name.trim() || null, phone: phone.trim() || null },
-      device: { brand: brandName, model: modelName },
-      schedule: { date: pickupDate || null, timeSlot: timeSlot || null },
-      address: address.trim() || null,
-      metadata: {
-        variant: variantLabel || null,
-        quotedAmount: quoteAmount ?? null,
-      },
-    });
-
-    setStatus(ok ? "done" : "error");
+    try {
+      const response = await fetch("/api/buyback/book", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode,
+          brandName,
+          modelName,
+          variantLabel: variantLabel || null,
+          quotedAmount: quoteAmount ?? null,
+          quoteBreakdown: quoteBreakdown || null,
+          serviceType: serviceType || "mobile",
+          name: name.trim(),
+          phone: phone.trim(),
+          address: address.trim() || null,
+          pickupDate: pickupDate || null,
+          timeSlot: timeSlot || null,
+        }),
+      });
+      const result = await response.json().catch(() => null);
+      if (response.ok && result?.ok) {
+        setBookingCode(typeof result.bookingCode === "string" ? result.bookingCode : null);
+        setStatus("done");
+      } else {
+        setStatus("error");
+      }
+    } catch {
+      setStatus("error");
+    }
   }
 
   if (status === "done") {
@@ -59,6 +72,9 @@ export function BuybackPickupForm({ mode, brandName, modelName, variantLabel, qu
         <h3 className="text-[16px] font-semibold text-gray-900">
           {mode === "pickup" ? "Pickup booked!" : "Quote request received!"}
         </h3>
+        {bookingCode ? (
+          <p className="mt-1 text-[13px] font-bold tracking-wide text-violet-600">Booking ID: {bookingCode}</p>
+        ) : null}
         <p className="mx-auto mt-1.5 max-w-sm text-[13px] leading-relaxed text-gray-600">
           {mode === "pickup"
             ? `Our executive will call ${phone.trim() || "you"} to confirm the visit, verify your ${device} on the spot, and pay instantly via UPI or bank transfer.`

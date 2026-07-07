@@ -375,6 +375,35 @@ DROP TRIGGER IF EXISTS trg_buyback_model_variants_updated_at ON buyback_model_va
 CREATE TRIGGER trg_buyback_model_variants_updated_at
 BEFORE UPDATE ON buyback_model_variants FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
+-- Customer buyback pickup bookings created by the sell flow's quote screen.
+-- status: pending -> confirmed -> picked_up -> paid (or cancelled).
+CREATE TABLE IF NOT EXISTS buyback_bookings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  booking_code TEXT NOT NULL UNIQUE,
+  service_type TEXT NOT NULL DEFAULT 'mobile',
+  brand_name TEXT NOT NULL,
+  model_name TEXT NOT NULL,
+  variant_label TEXT,
+  quoted_amount NUMERIC,
+  quote_breakdown TEXT,
+  customer_name TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  address TEXT,
+  pickup_date TEXT,
+  time_slot TEXT,
+  status TEXT NOT NULL DEFAULT 'pending',
+  user_id TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_buyback_bookings_status ON buyback_bookings(status);
+CREATE INDEX IF NOT EXISTS idx_buyback_bookings_created_at ON buyback_bookings(created_at);
+
+DROP TRIGGER IF EXISTS trg_buyback_bookings_updated_at ON buyback_bookings;
+CREATE TRIGGER trg_buyback_bookings_updated_at
+BEFORE UPDATE ON buyback_bookings FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
 -- Universal evaluation questions buyers answer; scoped per service type.
 CREATE TABLE IF NOT EXISTS buyback_questions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

@@ -249,6 +249,28 @@ export const buybackQuestionOptions = pgTable("buyback_question_options", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// Customer buyback pickup bookings created by the sell flow's quote screen.
+// status: pending → confirmed → picked_up → paid (or cancelled).
+export const buybackBookings = pgTable("buyback_bookings", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  bookingCode: text("booking_code").notNull().unique(),
+  serviceType: text("service_type").notNull().default("mobile"),
+  brandName: text("brand_name").notNull(),
+  modelName: text("model_name").notNull(),
+  variantLabel: text("variant_label"),
+  quotedAmount: numeric("quoted_amount"),
+  quoteBreakdown: text("quote_breakdown"),
+  customerName: text("customer_name").notNull(),
+  phone: text("phone").notNull(),
+  address: text("address"),
+  pickupDate: text("pickup_date"),
+  timeSlot: text("time_slot"),
+  status: text("status").notNull().default("pending"),
+  userId: text("user_id"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const technicianApplications = pgTable("technician_applications", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: text("user_id"),
@@ -288,5 +310,6 @@ export type BookingInspection = typeof bookingInspections.$inferSelect;
 export type TechnicianApplication = typeof technicianApplications.$inferSelect;
 export type BuybackModelPrice = typeof buybackModelPrices.$inferSelect;
 export type BuybackModelVariant = typeof buybackModelVariants.$inferSelect;
+export type BuybackBooking = typeof buybackBookings.$inferSelect;
 export type BuybackQuestion = typeof buybackQuestions.$inferSelect;
 export type BuybackQuestionOption = typeof buybackQuestionOptions.$inferSelect;

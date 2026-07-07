@@ -24,6 +24,7 @@ const TABLE_MAP: Record<string, any> = {
   technician_applications: schema.technicianApplications,
   buyback_model_prices: schema.buybackModelPrices,
   buyback_model_variants: schema.buybackModelVariants,
+  buyback_bookings: schema.buybackBookings,
   buyback_questions: schema.buybackQuestions,
   buyback_question_options: schema.buybackQuestionOptions,
 };
