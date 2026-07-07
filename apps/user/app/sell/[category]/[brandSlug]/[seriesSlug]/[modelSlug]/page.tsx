@@ -8,7 +8,7 @@ import { SellEvaluationFlow } from "@/src/components/next/SellEvaluationFlow";
 import { getBuybackQuestionSet, getBuybackVariants } from "@/src/lib/data/buyback";
 import { getBrandBySlug, getModelBySlug, getSeriesBySlug } from "@/src/lib/data/catalog";
 import { buildPageMetadata } from "@/src/lib/metadata";
-import { resolveSellCategory, SELL_CATEGORIES } from "@/src/lib/sell";
+import { deviceDisplayName, resolveSellCategory, SELL_CATEGORIES } from "@/src/lib/sell";
 
 export const revalidate = 300;
 
@@ -39,8 +39,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const { sellCategory, brand, series, model } = data;
   return buildPageMetadata({
-    title: `Sell ${brand.name} ${model.name} for Instant Cash`,
-    description: `Get an instant buyback quote for your ${brand.name} ${model.name} — free doorstep pickup and same-day UPI or bank payment in Bangalore.`,
+    title: `Sell ${deviceDisplayName(brand.name, model.name)} for Instant Cash`,
+    description: `Get an instant buyback quote for your ${deviceDisplayName(brand.name, model.name)} — free doorstep pickup and same-day UPI or bank payment in Bangalore.`,
     pathname: `/sell/${sellCategory}/${brand.slug}/${series.slug}/${model.slug}`,
   });
 }

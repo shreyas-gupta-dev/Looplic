@@ -3,6 +3,8 @@
 import { ArrowRight, CalendarCheck, CheckCircle, Loader2 } from "lucide-react";
 import { useState } from "react";
 
+import { deviceDisplayName } from "@/src/lib/sell";
+
 const TIME_SLOTS = ["10 AM – 1 PM", "1 PM – 4 PM", "4 PM – 7 PM"];
 
 type BuybackPickupFormProps = {
@@ -25,7 +27,7 @@ export function BuybackPickupForm({ mode, brandName, modelName, variantLabel, qu
   const [status, setStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
   const [bookingCode, setBookingCode] = useState<string | null>(null);
 
-  const device = `${brandName} ${modelName}${variantLabel ? ` (${variantLabel})` : ""}`;
+  const device = `${deviceDisplayName(brandName, modelName)}${variantLabel ? ` (${variantLabel})` : ""}`;
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

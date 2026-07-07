@@ -11,6 +11,7 @@ import { useMemo, useState } from "react";
 import { computeBuybackQuote, type BuybackOption, type BuybackQuestionRow } from "@/src/lib/buyback/calc";
 import type { BuybackVariant } from "@/src/lib/data/buyback";
 import { BuybackPickupForm } from "@/src/components/next/BuybackPickupForm";
+import { deviceDisplayName } from "@/src/lib/sell";
 
 export type SellEvaluationModel = {
   id: string;
@@ -82,7 +83,7 @@ function ModelHeader({ model, subtitle }: { model: SellEvaluationModel; subtitle
         </div>
       )}
       <div className="min-w-0">
-        <div className="truncate text-[14px] font-bold text-gray-900">{model.brandName} {model.name}</div>
+        <div className="truncate text-[14px] font-bold text-gray-900">{deviceDisplayName(model.brandName, model.name)}</div>
         <div className="truncate text-[11px] text-gray-500">{subtitle}</div>
       </div>
     </div>
@@ -154,7 +155,7 @@ export function SellEvaluationFlow({ model, variants, questions, optionsByQuesti
           <div className="mb-5 text-center">
             <h2 className="text-[16px] font-semibold text-gray-900">Instant quote coming soon for this model</h2>
             <p className="mx-auto mt-2 max-w-sm text-[13px] leading-relaxed text-gray-500">
-              We haven&apos;t priced the {model.brandName} {model.name} online yet — but we still buy it. Leave your
+              We haven&apos;t priced the {deviceDisplayName(model.brandName, model.name)} online yet — but we still buy it. Leave your
               number and we&apos;ll call you with our best price.
             </p>
           </div>
@@ -215,7 +216,7 @@ export function SellEvaluationFlow({ model, variants, questions, optionsByQuesti
           </div>
 
           <div className="min-w-0 flex-1">
-            <h2 className="text-[18px] font-semibold text-gray-900">{model.brandName} {model.name}</h2>
+            <h2 className="text-[18px] font-semibold text-gray-900">{deviceDisplayName(model.brandName, model.name)}</h2>
 
             {variants.length > 1 ? (
               <div className="mt-4 rounded-2xl border border-violet-200 bg-violet-50/40 p-4">

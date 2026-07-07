@@ -36,6 +36,14 @@ export function resolveSellCategory(category: string): SellCategory | null {
   return category in SELL_CATEGORIES ? (category as SellCategory) : null;
 }
 
+// Catalog model names often already include the brand ("Apple iPhone 11 Pro"),
+// so naively prefixing the brand renders "Apple Apple iPhone 11 Pro".
+export function deviceDisplayName(brandName: string, modelName: string) {
+  return modelName.trim().toLowerCase().startsWith(brandName.trim().toLowerCase())
+    ? modelName.trim()
+    : `${brandName.trim()} ${modelName.trim()}`;
+}
+
 export function buildSellBrandRoute(category: SellCategory, brandSlug: string) {
   return `/sell/${category}/${brandSlug}`;
 }
