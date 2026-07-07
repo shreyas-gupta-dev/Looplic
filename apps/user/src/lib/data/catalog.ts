@@ -4,6 +4,10 @@ import { withRedisCache } from "@/src/lib/redis";
 import { slugify } from "@/src/lib/slug";
 import { createPublicClient } from "@/src/lib/data-client/public";
 
+// Repair only supports mobile/laptop; the sell/buyback flow also covers
+// tablets, smartwatches and audio (brands rows with these service_type values).
+export type CatalogServiceType = "mobile" | "laptop" | "tablet" | "smartwatch" | "audio";
+
 export type CatalogBrand = {
   id: string;
   name: string;
@@ -155,7 +159,7 @@ async function getScreenGuardTypeImageMap() {
 }
 
 
-async function queryBrands(serviceType: "mobile" | "laptop") {
+async function queryBrands(serviceType: CatalogServiceType) {
   const dataClient = createPublicClient();
   const selectFieldsWithSlug = "id, name, slug, letter, gradient, image_url, service_type";
   const selectFieldsWithoutSlug = "id, name, letter, gradient, image_url, service_type";
@@ -207,7 +211,7 @@ async function queryBrands(serviceType: "mobile" | "laptop") {
   return fallback();
 }
 
-export const getBrandsForListing = unstable_cache(async (serviceType: "mobile" | "laptop" = "mobile"): Promise<CatalogBrand[]> => {
+export const getBrandsForListing = unstable_cache(async (serviceType: CatalogServiceType = "mobile"): Promise<CatalogBrand[]> => {
   return withRedisCache(`${CATALOG_REDIS_PREFIX}:brands:${serviceType}`, CATALOG_REVALIDATE_SECONDS, async () => {
     try {
       return await queryBrands(serviceType);
@@ -224,7 +228,7 @@ export const getBrandsForListing = unstable_cache(async (serviceType: "mobile" |
 // ISR routes Next caches that 404 for the whole revalidate window. So null must
 // mean the DB answered and the slug truly isn't there — a DB failure throws
 // instead, which makes ISR keep serving the last good page.
-export async function getBrandBySlug(brandSlug: string, serviceType?: "mobile" | "laptop"): Promise<CatalogBrand | null> {
+export async function getBrandBySlug(brandSlug: string, serviceType?: CatalogServiceType): Promise<CatalogBrand | null> {
   const resolvedServiceType = serviceType ?? "mobile";
   const normalizedBrandSlug = normalizeBrandSlug(brandSlug);
   const databaseBrandSlug = normalizedBrandSlug === "mi" ? "xiaomi" : normalizedBrandSlug;
@@ -530,7 +534,7 @@ export const getRepairSubcategories = unstable_cache(async (categoryIds: string[
   tags: ["catalog", "catalog-repair"],
 });
 
-export const getCatalogSearchIndex = unstable_cache(async (serviceType: "mobile" | "laptop"): Promise<CatalogSearchIndex> => {
+export const getCatalogSearchIndex = unstable_cache(async (serviceType: CatalogServiceType): Promise<CatalogSearchIndex> => {
   return withRedisCache(`${CATALOG_REDIS_PREFIX}:search-index:${serviceType}`, CATALOG_REVALIDATE_SECONDS, async () => {
     try {
       const brands = await getBrandsForListing(serviceType);

@@ -5,7 +5,7 @@ import { createClient } from "@/src/lib/data-client/client";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/components/ui/tabs";
 import {
-  Plus, Trash2, Pencil, Loader2, X, Check, Smartphone, Laptop, ChevronDown, ChevronUp, IndianRupee, Calculator, ListChecks, Search,
+  Plus, Trash2, Pencil, Loader2, X, Check, Smartphone, Laptop, Tablet, Watch, Headphones, ChevronDown, ChevronUp, IndianRupee, Calculator, ListChecks, Search,
 } from "lucide-react";
 import {
   BuybackEffectType, BuybackOption, BuybackQuestionRow, EFFECT_LABELS, computeBuybackQuote, formatEffect,
@@ -21,7 +21,8 @@ type Brand = { id: string; name: string; sort_order: number; service_type: strin
 type Series = { id: string; brand_id: string; name: string };
 type Model = { id: string; series_id: string; name: string };
 type ModelPrice = { id: string; model_id: string; base_price: number; active: boolean };
-type ServiceType = "mobile" | "laptop";
+type ModelVariant = { id: string; model_id: string; variant_label: string; base_price: number; sort_order: number; active: boolean };
+type ServiceType = "mobile" | "laptop" | "tablet" | "smartwatch" | "audio";
 
 const EFFECT_TYPES: BuybackEffectType[] = ["deduct_fixed", "deduct_percent", "add_fixed", "add_percent"];
 
@@ -190,11 +191,133 @@ function QuestionModal({
 }
 
 // ─── Buyback model prices section ─────────────────────────────────────────────
+// Per-model storage/spec variants (64 GB / 128 GB ...), each with its own
+// buyback base price. When a model has active variants the customer picks one
+// and its price becomes the quote base instead of the flat model price.
+function VariantsEditor({
+  modelId, variants, onChange, canDelete,
+}: {
+  modelId: string;
+  variants: ModelVariant[];
+  onChange: (next: ModelVariant[]) => void;
+  canDelete: boolean;
+}) {
+  const [newLabel, setNewLabel] = useState("");
+  const [newPrice, setNewPrice] = useState("");
+  const [priceDrafts, setPriceDrafts] = useState<Record<string, string>>(
+    () => Object.fromEntries(variants.map((v) => [v.id, String(v.base_price)])),
+  );
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const addVariant = async () => {
+    const label = newLabel.trim();
+    const price = Number(newPrice);
+    if (!label) { toast.error("Enter a variant label, e.g. 128 GB"); return; }
+    if (!Number.isFinite(price) || price < 0) { toast.error("Enter a valid price"); return; }
+    setBusyId("new");
+    const { data, error } = await dataClient
+      .from("buyback_model_variants")
+      .insert({ model_id: modelId, variant_label: label, base_price: price, sort_order: variants.length + 1, active: true })
+      .select()
+      .single();
+    setBusyId(null);
+    if (error) { toast.error(error.message || "Failed to add variant"); return; }
+    const added = { ...data, base_price: Number(data.base_price) };
+    onChange([...variants, added]);
+    setPriceDrafts((d) => ({ ...d, [added.id]: String(added.base_price) }));
+    setNewLabel(""); setNewPrice("");
+    toast.success("Variant added");
+  };
+
+  const saveVariantPrice = async (variant: ModelVariant) => {
+    const price = Number(priceDrafts[variant.id]);
+    if (!Number.isFinite(price) || price < 0) { toast.error("Enter a valid price"); return; }
+    setBusyId(variant.id);
+    const { error } = await dataClient.from("buyback_model_variants").update({ base_price: price }).eq("id", variant.id);
+    setBusyId(null);
+    if (error) { toast.error(error.message || "Failed to save"); return; }
+    onChange(variants.map((v) => (v.id === variant.id ? { ...v, base_price: price } : v)));
+    toast.success("Variant price saved");
+  };
+
+  const toggleVariantActive = async (variant: ModelVariant) => {
+    const next = !variant.active;
+    const { error } = await dataClient.from("buyback_model_variants").update({ active: next }).eq("id", variant.id);
+    if (error) { toast.error(error.message || "Failed to update"); return; }
+    onChange(variants.map((v) => (v.id === variant.id ? { ...v, active: next } : v)));
+  };
+
+  const removeVariant = async (variant: ModelVariant) => {
+    const { error } = await dataClient.from("buyback_model_variants").delete().eq("id", variant.id);
+    if (error) { toast.error(error.message || "Failed to remove"); return; }
+    onChange(variants.filter((v) => v.id !== variant.id));
+    toast.success("Variant removed");
+  };
+
+  return (
+    <div className="w-full space-y-2 rounded-xl bg-secondary/40 p-3">
+      <p className="text-[11px] text-muted-foreground">
+        Variants (e.g. 64 GB / 128 GB) each get their own base price. When variants exist, customers pick one and the flat model price above is ignored.
+      </p>
+      {variants.map((variant) => {
+        const dirty = priceDrafts[variant.id] !== String(variant.base_price);
+        return (
+          <div key={variant.id} className="flex flex-wrap items-center gap-2">
+            <span className="min-w-24 rounded-lg bg-card px-2.5 py-1.5 text-xs font-semibold text-foreground">{variant.variant_label}</span>
+            <div className="relative w-28">
+              <IndianRupee className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+              <input
+                className={inputClass + " pl-7"}
+                type="number"
+                min={0}
+                value={priceDrafts[variant.id] ?? ""}
+                onChange={(e) => setPriceDrafts((d) => ({ ...d, [variant.id]: e.target.value }))}
+              />
+            </div>
+            <button className={primaryBtn} disabled={busyId === variant.id || !dirty} onClick={() => saveVariantPrice(variant)}>
+              {busyId === variant.id ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
+            </button>
+            <button
+              className={"rounded-full px-2.5 py-1 text-[10px] font-bold " + (variant.active ? "bg-emerald-500/10 text-emerald-600" : "bg-secondary text-muted-foreground")}
+              onClick={() => toggleVariantActive(variant)}
+            >
+              {variant.active ? "Active" : "Inactive"}
+            </button>
+            {canDelete && (
+              <button className="rounded-lg p-1.5 text-red-500 hover:bg-red-500/10" onClick={() => removeVariant(variant)} title="Remove variant">
+                <Trash2 className="size-3.5" />
+              </button>
+            )}
+          </div>
+        );
+      })}
+      <div className="flex flex-wrap items-center gap-2 pt-1">
+        <input
+          className={inputClass + " w-32"}
+          placeholder="e.g. 128 GB"
+          value={newLabel}
+          onChange={(e) => setNewLabel(e.target.value)}
+        />
+        <div className="relative w-28">
+          <IndianRupee className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+          <input className={inputClass + " pl-7"} type="number" min={0} placeholder="Price" value={newPrice} onChange={(e) => setNewPrice(e.target.value)} />
+        </div>
+        <button className={primaryBtn} disabled={busyId === "new"} onClick={addVariant}>
+          {busyId === "new" ? <Loader2 className="size-3.5 animate-spin" /> : <Plus className="size-3.5" />}
+          Add variant
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function BuybackPricesSection({ serviceType, canDelete }: { serviceType: ServiceType; canDelete: boolean }) {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [seriesList, setSeriesList] = useState<Series[]>([]);
   const [modelsList, setModelsList] = useState<Model[]>([]);
   const [prices, setPrices] = useState<Record<string, ModelPrice>>({});
+  const [variants, setVariants] = useState<Record<string, ModelVariant[]>>({});
+  const [expandedModelId, setExpandedModelId] = useState<string | null>(null);
   const [brandId, setBrandId] = useState("");
   const [seriesId, setSeriesId] = useState("");
   const [drafts, setDrafts] = useState<Record<string, string>>({});
@@ -224,15 +347,24 @@ function BuybackPricesSection({ serviceType, canDelete }: { serviceType: Service
     const list: Model[] = models || [];
     setModelsList(list);
     if (list.length > 0) {
-      const { data: priceRows } = await dataClient.from("buyback_model_prices").select("*").in("model_id", list.map((m) => m.id));
+      const ids = list.map((m) => m.id);
+      const [{ data: priceRows }, { data: variantRows }] = await Promise.all([
+        dataClient.from("buyback_model_prices").select("*").in("model_id", ids),
+        dataClient.from("buyback_model_variants").select("*").in("model_id", ids).order("sort_order").order("created_at"),
+      ]);
       const map: Record<string, ModelPrice> = {};
       for (const p of priceRows || []) map[p.model_id] = { ...p, base_price: Number(p.base_price) };
       setPrices(map);
+      const vmap: Record<string, ModelVariant[]> = {};
+      for (const v of variantRows || []) {
+        (vmap[v.model_id] ??= []).push({ ...v, base_price: Number(v.base_price) });
+      }
+      setVariants(vmap);
       const d: Record<string, string> = {};
       for (const m of list) d[m.id] = map[m.id] ? String(map[m.id].base_price) : "";
       setDrafts(d);
     } else {
-      setPrices({}); setDrafts({});
+      setPrices({}); setDrafts({}); setVariants({});
     }
     setLoading(false);
   }, []);
@@ -314,6 +446,8 @@ function BuybackPricesSection({ serviceType, canDelete }: { serviceType: Service
           {visibleModels.map((m) => {
             const price = prices[m.id];
             const dirty = drafts[m.id] !== (price ? String(price.base_price) : "");
+            const modelVariants = variants[m.id] ?? [];
+            const isExpanded = expandedModelId === m.id;
             return (
               <div key={m.id} className="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-3">
                 <div className="min-w-0 flex-1">
@@ -321,6 +455,7 @@ function BuybackPricesSection({ serviceType, canDelete }: { serviceType: Service
                   {price && (
                     <div className="text-[11px] text-muted-foreground">
                       {price.active ? "Live for buyback" : "Hidden from buyback"}
+                      {modelVariants.length > 0 ? ` · ${modelVariants.length} variant${modelVariants.length === 1 ? "" : "s"}` : ""}
                     </div>
                   )}
                 </div>
@@ -352,6 +487,22 @@ function BuybackPricesSection({ serviceType, canDelete }: { serviceType: Service
                   <button className="p-1.5 rounded-lg text-red-500 hover:bg-red-500/10" onClick={() => clearPrice(m.id)} title="Remove buyback price">
                     <Trash2 className="size-4" />
                   </button>
+                )}
+                <button
+                  className="flex items-center gap-1 rounded-full bg-secondary px-3 py-1.5 text-[11px] font-bold text-foreground"
+                  onClick={() => setExpandedModelId(isExpanded ? null : m.id)}
+                  title="Per-variant prices (e.g. 64 GB / 128 GB)"
+                >
+                  Variants{modelVariants.length > 0 ? ` (${modelVariants.length})` : ""}
+                  {isExpanded ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
+                </button>
+                {isExpanded && (
+                  <VariantsEditor
+                    modelId={m.id}
+                    variants={modelVariants}
+                    canDelete={canDelete}
+                    onChange={(next) => setVariants((v) => ({ ...v, [m.id]: next }))}
+                  />
                 )}
               </div>
             );
@@ -532,6 +683,8 @@ function QuotePreviewSection({
   const [seriesId, setSeriesId] = useState("");
   const [modelId, setModelId] = useState("");
   const [price, setPrice] = useState<ModelPrice | null>(null);
+  const [previewVariants, setPreviewVariants] = useState<ModelVariant[]>([]);
+  const [previewVariantId, setPreviewVariantId] = useState("");
   const [selected, setSelected] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
@@ -560,13 +713,25 @@ function QuotePreviewSection({
   }, [seriesId]);
 
   useEffect(() => {
-    setPrice(null); setSelected({});
+    setPrice(null); setPreviewVariants([]); setPreviewVariantId(""); setSelected({});
     if (!modelId) return;
     (async () => {
-      const { data } = await dataClient.from("buyback_model_prices").select("*").eq("model_id", modelId).maybeSingle();
+      const [{ data }, { data: variantRows }] = await Promise.all([
+        dataClient.from("buyback_model_prices").select("*").eq("model_id", modelId).maybeSingle(),
+        dataClient.from("buyback_model_variants").select("*").eq("model_id", modelId).eq("active", true).order("sort_order").order("created_at"),
+      ]);
       setPrice(data ? { ...data, base_price: Number(data.base_price) } : null);
+      const mapped: ModelVariant[] = (variantRows || []).map((v: any) => ({ ...v, base_price: Number(v.base_price) }));
+      setPreviewVariants(mapped);
+      if (mapped.length > 0) setPreviewVariantId(mapped[0].id);
     })();
   }, [modelId]);
+
+  // Variants win over the flat model price, matching the customer flow.
+  const previewVariant = previewVariants.find((v) => v.id === previewVariantId) ?? null;
+  const effectiveBasePrice = previewVariants.length > 0
+    ? (previewVariant ? previewVariant.base_price : null)
+    : (price && price.active ? price.base_price : null);
 
   const pick = (q: BuybackQuestionRow, optionId: string) => {
     setSelected((s) => {
@@ -579,8 +744,8 @@ function QuotePreviewSection({
   };
 
   const quote = useMemo(
-    () => (price ? computeBuybackQuote(price.base_price, questions, optionsByQuestion, selected) : null),
-    [price, questions, optionsByQuestion, selected],
+    () => (effectiveBasePrice !== null ? computeBuybackQuote(effectiveBasePrice, questions, optionsByQuestion, selected) : null),
+    [effectiveBasePrice, questions, optionsByQuestion, selected],
   );
 
   return (
@@ -603,13 +768,31 @@ function QuotePreviewSection({
         </select>
       </div>
 
-      {modelId && !price && (
+      {previewVariants.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-bold text-foreground">Variant:</span>
+          {previewVariants.map((v) => (
+            <button
+              key={v.id}
+              onClick={() => { setPreviewVariantId(v.id); setSelected({}); }}
+              className={
+                "rounded-xl border px-3 py-2 text-xs font-semibold transition-colors " +
+                (previewVariantId === v.id ? "border-primary bg-primary/10 text-foreground" : "border-border bg-background text-muted-foreground hover:bg-secondary")
+              }
+            >
+              {v.variant_label} — ₹{v.base_price.toLocaleString("en-IN")}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {modelId && effectiveBasePrice === null && (
         <p className="rounded-2xl border border-dashed border-border py-6 text-center text-sm text-muted-foreground">
-          No buyback price set for this model yet — add one in the Prices section first.
+          No buyback price set for this model yet — add a price or variants in the Prices section first.
         </p>
       )}
 
-      {price && (
+      {effectiveBasePrice !== null && (
         <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
           <div className="space-y-3">
             {questions.map((q, idx) => (
@@ -739,27 +922,188 @@ function BuybackServicePanel({ serviceType, canDelete }: { serviceType: ServiceT
   );
 }
 
+// ─── Buyback pickup orders ────────────────────────────────────────────────────
+type BuybackBookingRow = {
+  id: string;
+  booking_code: string;
+  service_type: string;
+  brand_name: string;
+  model_name: string;
+  variant_label: string | null;
+  quoted_amount: number | null;
+  quote_breakdown: string | null;
+  customer_name: string;
+  phone: string;
+  address: string | null;
+  pickup_date: string | null;
+  time_slot: string | null;
+  status: string;
+  created_at: string;
+};
+
+const BOOKING_STATUSES = ["pending", "quote_requested", "confirmed", "picked_up", "paid", "cancelled"] as const;
+
+const STATUS_STYLES: Record<string, string> = {
+  pending: "bg-amber-500/10 text-amber-600",
+  quote_requested: "bg-sky-500/10 text-sky-600",
+  confirmed: "bg-blue-500/10 text-blue-600",
+  picked_up: "bg-violet-500/10 text-violet-600",
+  paid: "bg-emerald-500/10 text-emerald-600",
+  cancelled: "bg-red-500/10 text-red-500",
+};
+
+function BuybackOrdersSection() {
+  const [rows, setRows] = useState<BuybackBookingRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const { data, error } = await dataClient
+      .from("buyback_bookings")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    setLoading(false);
+    if (error) {
+      const message = String(error.message || "");
+      if (message.includes("buyback_bookings")) {
+        toast.error("buyback_bookings table missing — run scripts/migrate-buyback-bookings.cjs");
+      } else {
+        toast.error(message || "Failed to load buyback orders");
+      }
+      return;
+    }
+    setRows((data || []).map((r: any) => ({ ...r, quoted_amount: r.quoted_amount === null ? null : Number(r.quoted_amount) })));
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const updateStatus = async (row: BuybackBookingRow, status: string) => {
+    setSavingId(row.id);
+    const { error } = await dataClient.from("buyback_bookings").update({ status }).eq("id", row.id);
+    setSavingId(null);
+    if (error) { toast.error(error.message || "Failed to update status"); return; }
+    setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, status } : r)));
+    toast.success(`Marked ${row.booking_code} as ${status.replace("_", " ")}`);
+  };
+
+  const visible = statusFilter ? rows.filter((r) => r.status === statusFilter) : rows;
+
+  return (
+    <div className="space-y-4 pt-2">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-xs text-muted-foreground">
+          Pickup bookings and quote requests from the customer sell flow, newest first.
+        </p>
+        <select className={selectClass + " w-44"} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+          <option value="">All statuses</option>
+          {BOOKING_STATUSES.map((s) => <option key={s} value={s}>{s.replace("_", " ")}</option>)}
+        </select>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-10 text-muted-foreground"><Loader2 className="size-5 animate-spin" /></div>
+      ) : visible.length === 0 ? (
+        <p className="py-8 text-center text-sm text-muted-foreground">No buyback orders yet.</p>
+      ) : (
+        <div className="space-y-2">
+          {visible.map((row) => {
+            const isExpanded = expandedId === row.id;
+            return (
+              <div key={row.id} className="rounded-2xl border border-border bg-card p-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-sm font-bold text-foreground">{row.booking_code}</span>
+                      <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${STATUS_STYLES[row.status] || "bg-secondary text-muted-foreground"}`}>
+                        {row.status.replace("_", " ")}
+                      </span>
+                    </div>
+                    <div className="mt-0.5 truncate text-xs text-muted-foreground">
+                      {row.brand_name} {row.model_name}{row.variant_label ? ` (${row.variant_label})` : ""} · {row.customer_name} · {row.phone}
+                    </div>
+                  </div>
+                  {row.quoted_amount !== null && (
+                    <span className="text-sm font-bold text-foreground">₹{row.quoted_amount.toLocaleString("en-IN")}</span>
+                  )}
+                  <button
+                    className="flex items-center gap-1 rounded-full bg-secondary px-3 py-1.5 text-[11px] font-bold text-foreground"
+                    onClick={() => setExpandedId(isExpanded ? null : row.id)}
+                  >
+                    Details {isExpanded ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
+                  </button>
+                </div>
+
+                {isExpanded && (
+                  <div className="mt-3 space-y-2 rounded-xl bg-secondary/40 p-3 text-xs text-foreground">
+                    <div><b>Placed:</b> {new Date(row.created_at).toLocaleString("en-IN")}</div>
+                    {row.address ? <div><b>Address:</b> {row.address}</div> : null}
+                    {(row.pickup_date || row.time_slot) ? (
+                      <div><b>Pickup:</b> {[row.pickup_date, row.time_slot].filter(Boolean).join(" · ")}</div>
+                    ) : null}
+                    {row.quote_breakdown ? <div className="text-muted-foreground"><b className="text-foreground">Quote breakdown:</b> {row.quote_breakdown}</div> : null}
+                    <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                      <span className="mr-1 font-bold">Set status:</span>
+                      {BOOKING_STATUSES.filter((s) => s !== row.status && s !== "quote_requested").map((s) => (
+                        <button
+                          key={s}
+                          disabled={savingId === row.id}
+                          onClick={() => updateStatus(row, s)}
+                          className={`rounded-full border border-border bg-card px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide transition-colors hover:border-primary/40 ${s === "cancelled" ? "text-red-500" : "text-foreground"}`}
+                        >
+                          {s.replace("_", " ")}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Top-level Buyback tab ────────────────────────────────────────────────────
 export default function BuybackTab({ canDelete = true }: { canDelete?: boolean }) {
-  const [device, setDevice] = useState<ServiceType>("mobile");
+  const [device, setDevice] = useState<ServiceType | "orders">("mobile");
 
   return (
     <div className="space-y-4 pt-4">
-      <Tabs value={device} onValueChange={(v) => setDevice(v as ServiceType)} className="w-full">
-        <TabsList className="flex !h-auto w-full !justify-start gap-1 rounded-2xl p-1 sm:max-w-xs sm:grid sm:grid-cols-2">
+      <Tabs value={device} onValueChange={(v) => setDevice(v as ServiceType | "orders")} className="w-full">
+        <TabsList className="flex !h-auto w-full !justify-start gap-1 overflow-x-auto rounded-2xl p-1 sm:max-w-3xl sm:grid sm:grid-cols-6">
+          <TabsTrigger value="orders" className="flex-shrink-0 gap-1.5 px-4 py-2.5 text-xs">
+            <ListChecks className="size-3.5" /> Orders
+          </TabsTrigger>
           <TabsTrigger value="mobile" className="flex-shrink-0 gap-1.5 px-4 py-2.5 text-xs">
             <Smartphone className="size-3.5" /> Mobile
           </TabsTrigger>
           <TabsTrigger value="laptop" className="flex-shrink-0 gap-1.5 px-4 py-2.5 text-xs">
             <Laptop className="size-3.5" /> Laptop
           </TabsTrigger>
+          <TabsTrigger value="tablet" className="flex-shrink-0 gap-1.5 px-4 py-2.5 text-xs">
+            <Tablet className="size-3.5" /> Tablet
+          </TabsTrigger>
+          <TabsTrigger value="smartwatch" className="flex-shrink-0 gap-1.5 px-4 py-2.5 text-xs">
+            <Watch className="size-3.5" /> Watch
+          </TabsTrigger>
+          <TabsTrigger value="audio" className="flex-shrink-0 gap-1.5 px-4 py-2.5 text-xs">
+            <Headphones className="size-3.5" /> Audio
+          </TabsTrigger>
         </TabsList>
-        <TabsContent value="mobile" className="pt-4">
-          {device === "mobile" ? <BuybackServicePanel serviceType="mobile" canDelete={canDelete} /> : null}
+        <TabsContent value="orders" className="pt-4">
+          {device === "orders" ? <BuybackOrdersSection /> : null}
         </TabsContent>
-        <TabsContent value="laptop" className="pt-4">
-          {device === "laptop" ? <BuybackServicePanel serviceType="laptop" canDelete={canDelete} /> : null}
-        </TabsContent>
+        {(["mobile", "laptop", "tablet", "smartwatch", "audio"] as ServiceType[]).map((serviceType) => (
+          <TabsContent key={serviceType} value={serviceType} className="pt-4">
+            {device === serviceType ? <BuybackServicePanel serviceType={serviceType} canDelete={canDelete} /> : null}
+          </TabsContent>
+        ))}
       </Tabs>
     </div>
   );

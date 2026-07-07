@@ -209,8 +209,23 @@ export const buybackModelPrices = pgTable("buyback_model_prices", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// Optional per-variant buyback prices (e.g. 64 GB / 128 GB / 256 GB). When a
+// model has active variant rows the customer picks one and its price becomes
+// the quote base; otherwise buyback_model_prices supplies the single price.
+export const buybackModelVariants = pgTable("buyback_model_variants", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  modelId: uuid("model_id").notNull().references(() => models.id, { onDelete: "cascade" }),
+  variantLabel: text("variant_label").notNull(),
+  basePrice: numeric("base_price").notNull().default("0"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // Universal evaluation questions buyers answer; scoped per service type
-// (mobile/laptop), not per model — every model of that type shares them.
+// (mobile/laptop/tablet/smartwatch/audio), not per model — every model of that
+// type shares them.
 export const buybackQuestions = pgTable("buyback_questions", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   serviceType: text("service_type").notNull().default("mobile"),
@@ -232,6 +247,28 @@ export const buybackQuestionOptions = pgTable("buyback_question_options", {
   amount: numeric("amount").notNull().default("0"),
   sortOrder: integer("sort_order").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// Customer buyback pickup bookings created by the sell flow's quote screen.
+// status: pending → confirmed → picked_up → paid (or cancelled).
+export const buybackBookings = pgTable("buyback_bookings", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  bookingCode: text("booking_code").notNull().unique(),
+  serviceType: text("service_type").notNull().default("mobile"),
+  brandName: text("brand_name").notNull(),
+  modelName: text("model_name").notNull(),
+  variantLabel: text("variant_label"),
+  quotedAmount: numeric("quoted_amount"),
+  quoteBreakdown: text("quote_breakdown"),
+  customerName: text("customer_name").notNull(),
+  phone: text("phone").notNull(),
+  address: text("address"),
+  pickupDate: text("pickup_date"),
+  timeSlot: text("time_slot"),
+  status: text("status").notNull().default("pending"),
+  userId: text("user_id"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const technicianApplications = pgTable("technician_applications", {
@@ -272,5 +309,7 @@ export type ServiceBillInsert = typeof serviceBills.$inferInsert;
 export type BookingInspection = typeof bookingInspections.$inferSelect;
 export type TechnicianApplication = typeof technicianApplications.$inferSelect;
 export type BuybackModelPrice = typeof buybackModelPrices.$inferSelect;
+export type BuybackModelVariant = typeof buybackModelVariants.$inferSelect;
+export type BuybackBooking = typeof buybackBookings.$inferSelect;
 export type BuybackQuestion = typeof buybackQuestions.$inferSelect;
 export type BuybackQuestionOption = typeof buybackQuestionOptions.$inferSelect;

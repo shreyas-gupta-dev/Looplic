@@ -1,14 +1,25 @@
 "use client";
 
-import { ArrowRight, ArrowUpRight, Camera, CheckCircle, Clock, Cpu, IndianRupee, Laptop, LifeBuoy, ServerCog, Smartphone } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Camera, CheckCircle, Clock, Cpu, IndianRupee, Laptop, LifeBuoy, ServerCog, Shield, Smartphone } from "lucide-react";
 import Link from "next/link";
 import { HomepageNavbar } from "@/src/components/next/HomepageNavbar";
+import { RepairSellToggle } from "@/src/components/next/RepairSellToggle";
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { DeviceSearchBox } from "@/src/components/next/DeviceSearchBox";
 import { TrustSignals } from "@/src/components/next/TrustSignals";
 import type { CatalogBrand, SearchModel, SearchSeries } from "@/src/lib/data/catalog";
 
 const services = [
+  {
+    id: "screen-guard",
+    title: "Screen Guard",
+    description: "Doorstep tempered glass install",
+    badge: "FROM ₹99",
+    href: "/service/mobile-repair",
+    icon: Shield,
+    iconColor: "text-teal-500",
+    iconBg: "bg-teal-50",
+  },
   {
     id: "mobile-repair",
     title: "Mobile Repair",
@@ -121,12 +132,16 @@ export function NewHomepageView({
       {/* Hero Section */}
       <section className="bg-[#EEF4F8] pt-6 pb-8 px-4 sm:pt-8 sm:pb-10">
         <div className="container max-w-2xl mx-auto text-center">
-          <h1 className="text-[24px] sm:text-[28px] md:text-[44px] font-semibold text-[#111827] leading-[1.05] tracking-tight max-w-[21rem] sm:max-w-xl mx-auto">
-            <span className="block">Doorstep Mobile Repair,</span>
+          <RepairSellToggle active="repair" />
+          <h1 className="mt-7 text-[24px] sm:text-[28px] md:text-[44px] font-semibold text-[#111827] leading-[1.05] tracking-tight max-w-[21rem] sm:max-w-xl mx-auto">
+            <span className="block">Doorstep Mobile Repair &</span>
             <span className="block">
-              <span className="text-[#0096FF]">Laptop Repair</span> & <span className="text-[#00D28E]">Tech Support</span> in 30 Minutes
+              <span className="bg-gradient-to-r from-[#0096FF] to-[#00D28E] bg-clip-text text-transparent">Screen Guard Installation</span> in 30 Minutes
             </span>
           </h1>
+          <p className="mx-auto mt-4 max-w-md text-[14px] leading-relaxed text-gray-500 sm:text-[15px]">
+            Tempered glass, screen replacement, battery & laptop repair — at your home. From ₹99.
+          </p>
           <div className="max-w-xl mx-auto rounded-full bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-1.5 flex items-center mt-6">
             {/* We use DeviceSearchBox but override its wrapper style if possible, or just wrap it.
                 Since DeviceSearchBox renders its own relative div, we might need to modify DeviceSearchBox 
