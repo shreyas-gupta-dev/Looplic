@@ -5,9 +5,9 @@ import { notFound } from "next/navigation";
 import { CatalogNavbar } from "@/src/components/next/CatalogNavbar";
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { SellModelsGrid, type SellModelItem } from "@/src/components/next/SellModelsGrid";
-import { getBrandBySlug, getModelsForSeries, getSeriesForBrand } from "@/src/lib/data/catalog";
+import { getBrandBySlug, getSeriesForBrand } from "@/src/lib/data/catalog";
 import { buildPageMetadata } from "@/src/lib/metadata";
-import { buildSellModelRoute, resolveSellCategory, SELL_CATEGORIES } from "@/src/lib/sell";
+import { resolveSellCategory, SELL_CATEGORIES } from "@/src/lib/sell";
 
 export const revalidate = 300;
 
@@ -31,7 +31,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 }
 
-export default async function SellModelsPage({ params }: PageProps) {
+// Mirrors the repair flow's brand → series → models hierarchy: this page only
+// loads the brand's series list (a single small query) instead of eagerly
+// fetching every model of every series.
+export default async function SellSeriesPage({ params }: PageProps) {
   const { category, brandSlug } = await params;
   const sellCategory = resolveSellCategory(category);
   if (!sellCategory) notFound();
@@ -41,19 +44,14 @@ export default async function SellModelsPage({ params }: PageProps) {
   if (!brand) notFound();
 
   const seriesList = await getSeriesForBrand(brand.id);
-  const modelsBySeries = await Promise.all(seriesList.map((series) => getModelsForSeries(series.id)));
 
-  const models: SellModelItem[] = seriesList
-    .flatMap((series, index) =>
-      modelsBySeries[index].map((model) => ({
-        id: model.id,
-        name: model.name,
-        seriesName: series.name,
-        imageUrl: model.image_url,
-        href: buildSellModelRoute(sellCategory, brand.slug, series.slug, model.slug),
-      })),
-    )
-    .sort((a, b) => a.name.localeCompare(b.name));
+  const seriesItems: SellModelItem[] = seriesList.map((series) => ({
+    id: series.id,
+    name: series.name,
+    seriesName: brand.name,
+    imageUrl: series.image_url,
+    href: `/sell/${sellCategory}/${brand.slug}/${series.slug}`,
+  }));
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
@@ -74,18 +72,18 @@ export default async function SellModelsPage({ params }: PageProps) {
             <span className="text-xs font-bold uppercase tracking-widest text-[#8B3DFF]">Sell {brand.name} {label}</span>
           </div>
           <h1 className="text-2xl font-semibold text-[#111827]">Sell Old {brand.name} {label}</h1>
-          <p className="mt-1 text-[13px] text-gray-500">Pick your exact model to see its instant quote — free pickup and same-day payment in Bangalore.</p>
+          <p className="mt-1 text-[13px] text-gray-500">Pick your series, then your exact model — free pickup and same-day payment in Bangalore.</p>
         </div>
 
-        {models.length === 0 ? (
+        {seriesItems.length === 0 ? (
           <div className="rounded-2xl border border-gray-200 bg-white p-6 text-center">
-            <p className="text-[13px] font-semibold text-gray-900">No models listed for {brand.name} yet.</p>
+            <p className="text-[13px] font-semibold text-gray-900">No series listed for {brand.name} yet.</p>
             <p className="mt-1 text-[12px] text-gray-500">
               Check back soon, or <Link href="/contact-us" className="font-semibold text-violet-600 hover:underline">contact us</Link> for a manual quote.
             </p>
           </div>
         ) : (
-          <SellModelsGrid models={models} noun={noun} />
+          <SellModelsGrid models={seriesItems} noun={noun} ctaLabel="View models" searchLabel={`Search ${brand.name} series...`} />
         )}
       </main>
 
