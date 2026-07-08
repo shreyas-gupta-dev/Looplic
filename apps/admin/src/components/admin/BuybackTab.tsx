@@ -952,7 +952,7 @@ const STATUS_STYLES: Record<string, string> = {
   cancelled: "bg-red-500/10 text-red-500",
 };
 
-function BuybackOrdersSection() {
+function BuybackOrdersSection({ canDelete }: { canDelete: boolean }) {
   const [rows, setRows] = useState<BuybackBookingRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("");
@@ -988,6 +988,16 @@ function BuybackOrdersSection() {
     if (error) { toast.error(error.message || "Failed to update status"); return; }
     setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, status } : r)));
     toast.success(`Marked ${row.booking_code} as ${status.replace("_", " ")}`);
+  };
+
+  const deleteOrder = async (row: BuybackBookingRow) => {
+    if (!window.confirm(`Delete order ${row.booking_code}? This cannot be undone.`)) return;
+    setSavingId(row.id);
+    const { error } = await dataClient.from("buyback_bookings").delete().eq("id", row.id);
+    setSavingId(null);
+    if (error) { toast.error(error.message || "Failed to delete order"); return; }
+    setRows((prev) => prev.filter((r) => r.id !== row.id));
+    toast.success(`Deleted ${row.booking_code}`);
   };
 
   const visible = statusFilter ? rows.filter((r) => r.status === statusFilter) : rows;
@@ -1035,6 +1045,16 @@ function BuybackOrdersSection() {
                   >
                     Details {isExpanded ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
                   </button>
+                  {canDelete && (
+                    <button
+                      className="p-1.5 rounded-lg text-red-500 hover:bg-red-500/10"
+                      disabled={savingId === row.id}
+                      onClick={() => deleteOrder(row)}
+                      title="Delete order"
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
+                  )}
                 </div>
 
                 {isExpanded && (
@@ -1097,7 +1117,7 @@ export default function BuybackTab({ canDelete = true }: { canDelete?: boolean }
           </TabsTrigger>
         </TabsList>
         <TabsContent value="orders" className="pt-4">
-          {device === "orders" ? <BuybackOrdersSection /> : null}
+          {device === "orders" ? <BuybackOrdersSection canDelete={canDelete} /> : null}
         </TabsContent>
         {(["mobile", "laptop", "tablet", "smartwatch", "audio"] as ServiceType[]).map((serviceType) => (
           <TabsContent key={serviceType} value={serviceType} className="pt-4">

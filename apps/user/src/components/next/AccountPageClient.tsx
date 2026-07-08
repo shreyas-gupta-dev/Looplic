@@ -164,7 +164,7 @@ function canDownloadInvoice(booking: AccountBooking) {
   return booking.status === "completed" && Boolean(booking.invoice?.id);
 }
 
-export function AccountPageClient() {
+export function AccountPageClient({ buybackOrders }: { buybackOrders?: React.ReactNode }) {
   const router = useRouter();
   const dataClient = createClient();
   const [user, setUser] = useState<AppUser | null>(null);
@@ -742,6 +742,8 @@ export function AccountPageClient() {
                 ))}
               </div>
             )}
+
+            {buybackOrders}
           </div>
 
           <aside className="order-2 space-y-4">
