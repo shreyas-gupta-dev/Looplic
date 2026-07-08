@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, ArrowUpRight, Camera, CheckCircle, Clock, Cpu, IndianRupee, Laptop, LifeBuoy, ServerCog, Shield, Smartphone } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Camera, CheckCircle, Clock, Cpu, IndianRupee, Laptop, LifeBuoy, ServerCog, Smartphone } from "lucide-react";
 import Link from "next/link";
 import { HomepageNavbar } from "@/src/components/next/HomepageNavbar";
 import { RepairSellToggle } from "@/src/components/next/RepairSellToggle";
@@ -10,16 +10,6 @@ import { TrustSignals } from "@/src/components/next/TrustSignals";
 import type { CatalogBrand, SearchModel, SearchSeries } from "@/src/lib/data/catalog";
 
 const services = [
-  {
-    id: "screen-guard",
-    title: "Screen Guard",
-    description: "Doorstep tempered glass install",
-    badge: "FROM ₹99",
-    href: "/service/mobile-repair",
-    icon: Shield,
-    iconColor: "text-teal-500",
-    iconBg: "bg-teal-50",
-  },
   {
     id: "mobile-repair",
     title: "Mobile Repair",

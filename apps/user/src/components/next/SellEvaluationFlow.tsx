@@ -6,7 +6,7 @@ import {
   ScanFace, Smartphone, Truck, Usb, Vibrate, Volume1, Volume2, Wifi,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { computeBuybackQuote, type BuybackOption, type BuybackQuestionRow } from "@/src/lib/buyback/calc";
 import type { BuybackVariant } from "@/src/lib/data/buyback";
@@ -129,6 +129,68 @@ export function SellEvaluationFlow({ model, variants, questions, optionsByQuesti
     }
     return built;
   }, [answerableQuestions, optionsByQuestion]);
+
+  // ── Persist wizard progress to the URL ──────────────────────────────────────
+  // The evaluation wizard is entirely client-side, so a sign-in round-trip (the
+  // pickup form gates on auth) would otherwise drop the user's variant + answers
+  // and reset the quote. Mirror the meaningful state into the URL via
+  // replaceState and re-seed from it on mount, so signing in returns the user to
+  // the exact quote with the pickup form still open.
+  const didRestoreRef = useRef(false);
+  const persistMountRef = useRef(false);
+
+  useEffect(() => {
+    if (didRestoreRef.current || typeof window === "undefined") return;
+    didRestoreRef.current = true;
+    const sp = new URLSearchParams(window.location.search);
+    const v = sp.get("v");
+    if (v && variants.some((variant) => variant.id === v)) setVariantId(v);
+    const a = sp.get("a");
+    if (a) {
+      try {
+        const parsed = JSON.parse(a);
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          setSelected(parsed as Record<string, string[]>);
+        }
+      } catch {
+        // Ignore a malformed answers param — the user just re-answers.
+      }
+    }
+    const si = Number(sp.get("si"));
+    if (Number.isInteger(si) && si >= 0) setStepIndex(si);
+    const st = sp.get("st");
+    if (st === "questions" || st === "result") setStage(st);
+    if (sp.get("bk") === "1") setBookingOpen(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    // Skip the mount pass so we never wipe the params before restore reads them.
+    if (!persistMountRef.current) { persistMountRef.current = true; return; }
+    const sp = new URLSearchParams(window.location.search);
+    ["v", "st", "si", "a", "bk"].forEach((key) => sp.delete(key));
+    if (stage !== "teaser") {
+      if (variantId) sp.set("v", variantId);
+      sp.set("st", stage);
+      if (stage === "questions") sp.set("si", String(stepIndex));
+      const answered = Object.fromEntries(Object.entries(selected).filter(([, ids]) => ids.length > 0));
+      if (Object.keys(answered).length > 0) sp.set("a", JSON.stringify(answered));
+      if (bookingOpen) sp.set("bk", "1");
+    }
+    const qs = sp.toString();
+    const target = window.location.pathname + (qs ? `?${qs}` : "");
+    const current = window.location.pathname + window.location.search;
+    if (target !== current) window.history.replaceState(window.history.state, "", target);
+  }, [stage, variantId, stepIndex, selected, bookingOpen]);
+
+  // A restored step index can land past the end if the question set changed
+  // since the URL was written; clamp it so steps[stepIndex] can't be undefined.
+  useEffect(() => {
+    if (stage === "questions" && steps.length > 0 && stepIndex >= steps.length) {
+      setStepIndex(steps.length - 1);
+    }
+  }, [stage, stepIndex, steps.length]);
 
   const selectedVariant = variants.find((variant) => variant.id === variantId) ?? null;
   const basePrice = selectedVariant?.basePrice ?? 0;
