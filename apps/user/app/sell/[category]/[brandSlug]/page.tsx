@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { CatalogNavbar } from "@/src/components/next/CatalogNavbar";
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
@@ -44,6 +44,13 @@ export default async function SellSeriesPage({ params }: PageProps) {
   if (!brand) notFound();
 
   const seriesList = await getSeriesForBrand(brand.id);
+
+  // Brands with a single (usually catch-all "All Models") series don't need a
+  // series-picker step — a page with one card is just an extra click. Send the
+  // customer straight to that series' models.
+  if (seriesList.length === 1) {
+    redirect(`/sell/${sellCategory}/${brand.slug}/${seriesList[0].slug}`);
+  }
 
   const seriesItems: SellModelItem[] = seriesList.map((series) => ({
     id: series.id,
