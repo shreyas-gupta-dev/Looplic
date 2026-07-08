@@ -36,8 +36,8 @@ async function BuybackOrdersSection() {
   if (bookings.length === 0) return null;
 
   return (
-    <section className="container mx-auto w-full max-w-4xl px-4 pb-12">
-      <h2 className="mb-4 text-xl font-semibold text-foreground">My Buyback Orders</h2>
+    <section>
+      <h2 className="mb-4 text-lg font-semibold tracking-tight text-foreground">My Buyback Orders</h2>
       <div className="grid gap-4 md:grid-cols-2">
         {bookings.map((booking) => (
           <div key={booking.bookingCode} className="rounded-3xl border border-border bg-card p-5">
@@ -75,8 +75,7 @@ export default function AccountPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <CatalogNavbar />
-      <AccountPageClient />
-      <BuybackOrdersSection />
+      <AccountPageClient buybackOrders={<BuybackOrdersSection />} />
       <HomepageFooter />
     </div>
   );
