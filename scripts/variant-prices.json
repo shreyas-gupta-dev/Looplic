@@ -1,0 +1,43 @@
+[
+  { "brand": "Apple", "model": "iPhone 17 Pro Max", "variants": { "256 GB": 102000, "512 GB": 115000, "1 TB": 128000, "2 TB": 148000 } },
+  { "brand": "Apple", "model": "iPhone 17 Pro", "variants": { "256 GB": 92000, "512 GB": 105000, "1 TB": 118000 } },
+  { "brand": "Apple", "model": "iPhone 17", "variants": { "128 GB": 78000, "256 GB": 86000 } },
+  { "brand": "Apple", "model": "iPhone 16 Pro Max", "variants": { "256 GB": 92000, "512 GB": 102000, "1 TB": 112000 } },
+  { "brand": "Apple", "model": "iPhone 16 Pro", "variants": { "256 GB": 82000, "512 GB": 92000, "1 TB": 102000 } },
+  { "brand": "Apple", "model": "iPhone 16", "variants": { "128 GB": 62000, "256 GB": 70000, "512 GB": 80000 } },
+  { "brand": "Apple", "model": "iPhone 15 Pro Max", "variants": { "256 GB": 82000, "512 GB": 90000, "1 TB": 98000 } },
+  { "brand": "Apple", "model": "iPhone 15 Pro", "variants": { "128 GB": 72000, "256 GB": 78000, "512 GB": 85000, "1 TB": 92000 } },
+  { "brand": "Apple", "model": "iPhone 15", "variants": { "128 GB": 52000, "256 GB": 58000, "512 GB": 65000 } },
+  { "brand": "Apple", "model": "iPhone 14", "variants": { "128 GB": 40000, "256 GB": 45000, "512 GB": 51000 } },
+  { "brand": "Apple", "model": "iPhone 13", "variants": { "128 GB": 30000, "256 GB": 34000, "512 GB": 39000 } },
+  { "brand": "Apple", "model": "iPhone SE (2022)", "variants": { "64 GB": 14000, "128 GB": 16000, "256 GB": 18000 } },
+
+  { "brand": "Samsung", "model": "Galaxy S24 Ultra", "variants": { "256 GB": 68000, "512 GB": 76000, "1 TB": 84000 } },
+  { "brand": "Samsung", "model": "Galaxy S24+", "variants": { "128 GB": 52000, "256 GB": 58000, "512 GB": 64000 } },
+  { "brand": "Samsung", "model": "Galaxy S24", "variants": { "128 GB": 46000, "256 GB": 52000 } },
+  { "brand": "Samsung", "model": "Galaxy S23 Ultra", "variants": { "256 GB": 52000, "512 GB": 58000, "1 TB": 64000 } },
+  { "brand": "Samsung", "model": "Galaxy S23", "variants": { "128 GB": 36000, "256 GB": 41000 } },
+  { "brand": "Samsung", "model": "Galaxy Z Fold 6", "variants": { "256 GB": 88000, "512 GB": 98000, "1 TB": 108000 } },
+  { "brand": "Samsung", "model": "Galaxy Z Flip 6", "variants": { "256 GB": 62000, "512 GB": 70000 } },
+  { "brand": "Samsung", "model": "Galaxy A55", "variants": { "128 GB": 22000, "256 GB": 25000 } },
+  { "brand": "Samsung", "model": "Galaxy A35", "variants": { "128 GB": 17000, "256 GB": 20000 } },
+  { "brand": "Samsung", "model": "Galaxy A15", "variants": { "128 GB": 9000, "256 GB": 11000 } },
+
+  { "brand": "OnePlus", "model": "OnePlus 12", "variants": { "128 GB": 38000, "256 GB": 43000, "512 GB": 48000 } },
+  { "brand": "OnePlus", "model": "OnePlus 12R", "variants": { "128 GB": 26000, "256 GB": 30000 } },
+  { "brand": "OnePlus", "model": "OnePlus 11", "variants": { "128 GB": 28000, "256 GB": 32000, "512 GB": 36000 } },
+  { "brand": "OnePlus", "model": "OnePlus Nord 4", "variants": { "128 GB": 20000, "256 GB": 23000 } },
+  { "brand": "OnePlus", "model": "OnePlus Nord CE 4", "variants": { "128 GB": 14000, "256 GB": 16000 } },
+
+  { "brand": "Xiaomi", "model": "Xiaomi 14", "variants": { "128 GB": 34000, "256 GB": 39000, "512 GB": 44000 } },
+  { "brand": "Redmi", "model": "Redmi Note 13 Pro+", "variants": { "128 GB": 18000, "256 GB": 21000, "512 GB": 24000 } },
+  { "brand": "Redmi", "model": "Redmi Note 13 Pro", "variants": { "128 GB": 14000, "256 GB": 16000 } },
+  { "brand": "POCO", "model": "POCO X6 Pro", "variants": { "128 GB": 15000, "256 GB": 18000 } },
+  { "brand": "POCO", "model": "POCO F6", "variants": { "128 GB": 19000, "256 GB": 22000 } },
+
+  { "brand": "Google", "model": "Pixel 8 Pro", "variants": { "256 GB": 48000, "512 GB": 54000 } },
+  { "brand": "Google", "model": "Pixel 8", "variants": { "128 GB": 38000, "256 GB": 43000 } },
+  { "brand": "Vivo", "model": "Vivo X100 Pro", "variants": { "256 GB": 52000, "512 GB": 58000 } },
+  { "brand": "Oppo", "model": "Oppo Find X7 Ultra", "variants": { "256 GB": 50000, "512 GB": 56000 } },
+  { "brand": "realme", "model": "realme GT 6", "variants": { "128 GB": 26000, "256 GB": 30000 } }
+]
