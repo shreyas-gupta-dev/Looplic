@@ -1,0 +1,30 @@
+[
+  {
+    "brand": "Apple",
+    "model": "iPhone 17 Pro",
+    "variants": {
+      "256 GB": 92000,
+      "512 GB": 105000,
+      "1 TB": 118000
+    }
+  },
+  {
+    "brand": "Apple",
+    "model": "iPhone 17 Pro Max",
+    "variants": {
+      "256 GB": 102000,
+      "512 GB": 115000,
+      "1 TB": 128000,
+      "2 TB": 148000
+    }
+  },
+  {
+    "brand": "Samsung",
+    "model": "Galaxy S24 Ultra",
+    "variants": {
+      "256 GB": 68000,
+      "512 GB": 76000,
+      "1 TB": 84000
+    }
+  }
+]
