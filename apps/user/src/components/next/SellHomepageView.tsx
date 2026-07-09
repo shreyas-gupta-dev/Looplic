@@ -297,8 +297,8 @@ export function SellHomepageView({ searchBrands, searchModels }: { searchBrands:
             Sell Your Phone or Laptop.{" "}
             <span className="bg-gradient-to-r from-[#7C3AED] to-[#F59E0B] bg-clip-text text-transparent">Instant Cash</span> at Your Door.
           </h1>
-          <p className="mx-auto mt-4 max-w-md text-[14px] leading-relaxed text-gray-500 sm:text-[15px]">
-            Free doorstep pickup, instant quote, same-day payment via UPI or bank. Best price guaranteed.
+          <p className="mx-auto mt-4 max-w-3xl text-[14px] leading-relaxed text-gray-500 sm:text-[15px]">
+            Free doorstep pickup, instant quote &amp; same-day payment.
           </p>
 
           <SellSearchBox brands={searchBrands} models={searchModels} />
