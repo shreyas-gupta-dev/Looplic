@@ -4,11 +4,16 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { CatalogNavbar } from "@/src/components/next/CatalogNavbar";
+import { CmsArticle } from "@/src/components/next/CmsArticle";
 import { CrawlableInternalLinks } from "@/src/components/next/CrawlableInternalLinks";
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { blogPosts, getBlogPost } from "@/src/lib/blog";
+import { getPublishedPost } from "@/src/lib/data/blog-db";
 import { buildPageMetadata } from "@/src/lib/metadata";
 import { siteConfig } from "@/src/lib/site";
+
+// CMS posts live in the DB and render on-demand; keep them fresh with ISR.
+export const revalidate = 300;
 
 type BlogDetailPageProps = {
   params: Promise<{
@@ -22,6 +27,18 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: BlogDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
+
+  // CMS-authored posts take precedence over the legacy hardcoded ones.
+  const dbPost = await getPublishedPost(slug);
+  if (dbPost) {
+    return buildPageMetadata({
+      title: dbPost.seo_title || dbPost.title,
+      description: dbPost.seo_description || dbPost.excerpt,
+      pathname: `/blog/${dbPost.slug}`,
+      keywords: dbPost.tags ?? undefined,
+    });
+  }
+
   const post = getBlogPost(slug);
 
   if (!post) {
@@ -51,6 +68,13 @@ function formatDate(date: string) {
 
 export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
   const { slug } = await params;
+
+  // A CMS post at this slug wins; otherwise fall back to the legacy static post.
+  const dbPost = await getPublishedPost(slug);
+  if (dbPost) {
+    return <CmsArticle post={dbPost} />;
+  }
+
   const post = getBlogPost(slug);
 
   if (!post) {

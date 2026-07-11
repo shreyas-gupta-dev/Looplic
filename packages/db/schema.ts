@@ -289,6 +289,31 @@ export const technicianApplications = pgTable("technician_applications", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// Blog / CMS. Posts are authored in the admin back-office (rich-text -> HTML)
+// and rendered on the public site. `status` is "draft" | "published"; a
+// published_at in the future acts as a scheduled post (filtered out of public
+// listings until its time passes).
+export const blogPosts = pgTable("blog_posts", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  slug: text("slug").notNull().unique(),
+  title: text("title").notNull(),
+  excerpt: text("excerpt").notNull().default(""),
+  bodyHtml: text("body_html").notNull().default(""),
+  coverImageUrl: text("cover_image_url"),
+  coverImageAlt: text("cover_image_alt").notNull().default(""),
+  status: text("status").notNull().default("draft"),
+  publishedAt: timestamp("published_at", { withTimezone: true }),
+  author: text("author").notNull().default(""),
+  category: text("category").notNull().default(""),
+  tags: text("tags").array(),
+  readingTime: text("reading_time").notNull().default(""),
+  seoTitle: text("seo_title").notNull().default(""),
+  seoDescription: text("seo_description").notNull().default(""),
+  ogImageUrl: text("og_image_url"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export type AppRole = "admin" | "operation" | "technician" | "user";
 export type Brand = typeof brands.$inferSelect;
 export type BrandInsert = typeof brands.$inferInsert;
@@ -313,3 +338,5 @@ export type BuybackModelVariant = typeof buybackModelVariants.$inferSelect;
 export type BuybackBooking = typeof buybackBookings.$inferSelect;
 export type BuybackQuestion = typeof buybackQuestions.$inferSelect;
 export type BuybackQuestionOption = typeof buybackQuestionOptions.$inferSelect;
+export type BlogPost = typeof blogPosts.$inferSelect;
+export type BlogPostInsert = typeof blogPosts.$inferInsert;

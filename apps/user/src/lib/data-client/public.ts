@@ -28,6 +28,7 @@ const TABLE_MAP: Record<string, any> = {
   service_bills: schema.serviceBills,
   booking_inspections: schema.bookingInspections,
   technician_applications: schema.technicianApplications,
+  blog_posts: schema.blogPosts,
 };
 
 class PublicQueryBuilder {

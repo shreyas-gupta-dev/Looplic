@@ -6,7 +6,10 @@ import { CatalogNavbar } from "@/src/components/next/CatalogNavbar";
 import { CrawlableInternalLinks } from "@/src/components/next/CrawlableInternalLinks";
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { blogPosts } from "@/src/lib/blog";
+import { getPublishedPosts } from "@/src/lib/data/blog-db";
 import { buildPageMetadata } from "@/src/lib/metadata";
+
+export const revalidate = 300;
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Mobile & Laptop Repair Guides",
@@ -15,9 +18,10 @@ export const metadata: Metadata = buildPageMetadata({
   keywords: ["Looplic blog", "mobile repair blog", "Bangalore phone repair guide", "doorstep mobile repair"],
 });
 
-export default function BlogPage() {
+export default async function BlogPage() {
   const featuredPost = blogPosts[0];
   const remainingPosts = blogPosts.slice(1);
+  const cmsPosts = await getPublishedPosts();
 
   return (
     <div className="min-h-screen bg-background">
@@ -120,6 +124,42 @@ export default function BlogPage() {
             ) : null}
           </div>
         </section>
+
+        {cmsPosts.length > 0 ? (
+          <section className="pb-8 sm:pb-12">
+            <div className="container max-w-6xl px-4 sm:px-6">
+              <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">Latest articles</h2>
+              <div className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {cmsPosts.map((post) => (
+                  <article key={post.id} className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+                    {post.cover_image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={post.cover_image_url} alt={post.cover_image_alt || post.title} className="h-40 w-full object-cover" />
+                    ) : null}
+                    <div className="flex flex-1 flex-col p-5">
+                      {post.category ? (
+                        <div className="text-xs font-bold uppercase tracking-[0.16em] text-primary">{post.category}</div>
+                      ) : null}
+                      <h3 className="mt-2 text-lg font-semibold tracking-tight text-foreground">
+                        <Link href={`/blog/${post.slug}`} className="transition-colors hover:text-primary">
+                          {post.title}
+                        </Link>
+                      </h3>
+                      {post.excerpt ? <p className="mt-2 flex-1 text-sm leading-6 text-muted-foreground">{post.excerpt}</p> : null}
+                      <Link
+                        href={`/blog/${post.slug}`}
+                        className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-primary transition-opacity hover:opacity-80"
+                      >
+                        Read article
+                        <ArrowRight className="size-4" />
+                      </Link>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         <CrawlableInternalLinks
           title="Explore Looplic"
