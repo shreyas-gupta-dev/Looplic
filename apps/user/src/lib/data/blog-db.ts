@@ -34,8 +34,10 @@ export async function getPublishedPosts(): Promise<DbBlogPost[]> {
   const client = createPublicClient();
   const { data } = await client.from("blog_posts").select("*").eq("status", "published").order("published_at");
   const rows = ((data ?? []) as DbBlogPost[]).filter(isLive);
-  // Newest first. published_at is an ISO string, so a string compare orders correctly.
-  return rows.sort((a, b) => (b.published_at ?? "").localeCompare(a.published_at ?? ""));
+  // Newest first. published_at arrives as a Date from the pg driver, so compare
+  // by timestamp (a null/missing date sorts to the bottom).
+  const ts = (v: DbBlogPost["published_at"]) => (v ? new Date(v).getTime() : 0);
+  return rows.sort((a, b) => ts(b.published_at) - ts(a.published_at));
 }
 
 export async function getPublishedPost(slug: string): Promise<DbBlogPost | null> {
