@@ -1,9 +1,10 @@
 "use client";
 
-import { CalendarCheck, CreditCard, Laptop, LogOut, Recycle, Smartphone, UserRoundCheck } from "lucide-react";
+import { CalendarCheck, CreditCard, Laptop, LogOut, Newspaper, Recycle, Smartphone, UserRoundCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import BlogTab from "@/src/components/admin/BlogTab";
 import BookingsTab from "@/src/components/admin/BookingsTab";
 import BuybackTab from "@/src/components/admin/BuybackTab";
 import PaymentsTab from "@/src/components/admin/PaymentsTab";
@@ -57,7 +58,7 @@ export function AdminDashboardClient() {
 
       <div className="container py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="flex !h-auto w-full max-w-full !justify-start gap-1 overflow-x-auto rounded-2xl p-1 sm:grid sm:max-w-4xl sm:grid-cols-6 sm:overflow-visible">
+          <TabsList className="flex !h-auto w-full max-w-full !justify-start gap-1 overflow-x-auto rounded-2xl p-1 sm:grid sm:max-w-5xl sm:grid-cols-7 sm:overflow-visible">
             <TabsTrigger value="mobile-repair" className="min-w-[104px] flex-shrink-0 gap-1.5 px-3 py-2.5 text-xs sm:min-w-0">
               <Smartphone className="size-3.5" />
               <span className="hidden sm:inline">Mobile Repair</span>
@@ -86,6 +87,10 @@ export function AdminDashboardClient() {
               <span className="hidden sm:inline">Technicians</span>
               <span className="sm:hidden">Techs</span>
             </TabsTrigger>
+            <TabsTrigger value="blog" className="min-w-[104px] flex-shrink-0 gap-1.5 px-3 py-2.5 text-xs sm:min-w-0">
+              <Newspaper className="size-3.5" />
+              Blog
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="mobile-repair">
@@ -110,6 +115,10 @@ export function AdminDashboardClient() {
 
           <TabsContent value="technicians">
             {activeTab === "technicians" ? <TechniciansTab /> : null}
+          </TabsContent>
+
+          <TabsContent value="blog">
+            {activeTab === "blog" ? <BlogTab /> : null}
           </TabsContent>
         </Tabs>
       </div>

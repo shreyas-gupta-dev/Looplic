@@ -27,6 +27,7 @@ const TABLE_MAP: Record<string, any> = {
   buyback_bookings: schema.buybackBookings,
   buyback_questions: schema.buybackQuestions,
   buyback_question_options: schema.buybackQuestionOptions,
+  blog_posts: schema.blogPosts,
 };
 
 const PUBLIC_READ_TABLES = new Set([
