@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { isValidPhoneNumber, isValidPincode, parseBookingLocation } from "@/src/lib/bookings";
 import { createClient } from "@/src/lib/data-client/client";
+import { trackGoogleAdsConversion } from "@/src/lib/gtag";
 import { buildCustomerProfileInsert } from "@/src/lib/profile";
 import { deviceDisplayName } from "@/src/lib/sell";
 
@@ -318,6 +319,15 @@ export function BuybackPickupForm({ mode, brandName, modelName, variantLabel, qu
       });
       const result = await response.json().catch(() => null);
       if (response.ok && result?.ok) {
+        trackGoogleAdsConversion("sell_form_submit", {
+          page_path: window.location.pathname,
+          mode,
+          service_type: serviceType || "mobile",
+          brand: brandName,
+          model: modelName,
+          value: quoteAmount ?? undefined,
+          currency: quoteAmount != null ? "INR" : undefined,
+        });
         const code = typeof result.bookingCode === "string" ? result.bookingCode : null;
         if (isPickup && code) {
           router.push(`/sell/booked/${code}`);
