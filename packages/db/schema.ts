@@ -225,10 +225,12 @@ export const buybackModelVariants = pgTable("buyback_model_variants", {
 
 // Universal evaluation questions buyers answer; scoped per service type
 // (mobile/laptop/tablet/smartwatch/audio), not per model — every model of that
-// type shares them.
+// type shares them. os_segment further scopes a question to Apple devices or
+// Android/other devices ('all' = asked for every brand).
 export const buybackQuestions = pgTable("buyback_questions", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   serviceType: text("service_type").notNull().default("mobile"),
+  osSegment: text("os_segment").notNull().default("all"), // all | apple | android
   title: text("title").notNull(),
   description: text("description"),
   questionType: text("question_type").notNull().default("single"), // single | multi

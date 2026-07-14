@@ -8,7 +8,8 @@ import {
   Plus, Trash2, Pencil, Loader2, X, Check, Smartphone, Laptop, Tablet, Watch, Headphones, ChevronDown, ChevronUp, IndianRupee, Calculator, ListChecks, Search,
 } from "lucide-react";
 import {
-  BuybackEffectType, BuybackOption, BuybackQuestionRow, EFFECT_LABELS, computeBuybackQuote, formatEffect,
+  BuybackEffectType, BuybackOption, BuybackOsSegment, BuybackQuestionRow, EFFECT_LABELS,
+  brandOsSegment, computeBuybackQuote, formatEffect, questionMatchesSegment,
 } from "@/src/lib/buyback/calc";
 
 const dataClient = new Proxy({} as any, {
@@ -25,6 +26,20 @@ type ModelVariant = { id: string; model_id: string; variant_label: string; base_
 type ServiceType = "mobile" | "laptop" | "tablet" | "smartwatch" | "audio";
 
 const EFFECT_TYPES: BuybackEffectType[] = ["deduct_fixed", "deduct_percent", "add_fixed", "add_percent"];
+
+// Which brands a question applies to. Apple devices and Android/other devices
+// can have different evaluation questions (and deduction prices); 'all'
+// questions are asked for every brand.
+const OS_SEGMENTS: Array<{ value: BuybackOsSegment; label: string }> = [
+  { value: "all", label: "All devices" },
+  { value: "apple", label: "Apple only" },
+  { value: "android", label: "Android / other only" },
+];
+
+const segmentChipClass = (segment: string) =>
+  segment === "apple"
+    ? "rounded-full bg-sky-500/10 px-2 py-0.5 text-[10px] font-semibold text-sky-600"
+    : "rounded-full bg-lime-500/10 px-2 py-0.5 text-[10px] font-semibold text-lime-600";
 
 const inputClass =
   "w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary";
@@ -141,18 +156,20 @@ function QuestionModal({
   open: boolean;
   onClose: () => void;
   initial?: Partial<BuybackQuestionRow> | null;
-  onSave: (data: { title: string; description: string; question_type: "single" | "multi" }) => void;
+  onSave: (data: { title: string; description: string; question_type: "single" | "multi"; os_segment: BuybackOsSegment }) => void;
   saving: boolean;
 }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [questionType, setQuestionType] = useState<"single" | "multi">("single");
+  const [osSegment, setOsSegment] = useState<BuybackOsSegment>("all");
 
   useEffect(() => {
     if (open) {
       setTitle(initial?.title ?? "");
       setDescription(initial?.description ?? "");
       setQuestionType((initial?.question_type as "single" | "multi") ?? "single");
+      setOsSegment((initial?.os_segment as BuybackOsSegment) || "all");
     }
   }, [open, initial]);
 
@@ -174,12 +191,23 @@ function QuestionModal({
             <option value="multi">Multi-select — customer can pick several</option>
           </select>
         </div>
+        <div>
+          <label className="mb-1 block text-xs font-semibold text-muted-foreground">Applies to</label>
+          <select className={selectClass} value={osSegment} onChange={(e) => setOsSegment(e.target.value as BuybackOsSegment)}>
+            {OS_SEGMENTS.map((s) => (
+              <option key={s.value} value={s.value}>{s.label}</option>
+            ))}
+          </select>
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            Apple-only questions show for Apple devices; Android/other for every other brand. &quot;All devices&quot; questions show for both.
+          </p>
+        </div>
         <div className="flex justify-end gap-2 pt-2">
           <button className={ghostBtn} onClick={onClose}>Cancel</button>
           <button
             className={primaryBtn}
             disabled={saving || !title.trim()}
-            onClick={() => onSave({ title: title.trim(), description: description.trim(), question_type: questionType })}
+            onClick={() => onSave({ title: title.trim(), description: description.trim(), question_type: questionType, os_segment: osSegment })}
           >
             {saving ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
             {initial?.id ? "Save" : "Add"}
@@ -525,10 +553,18 @@ function BuybackQuestionsSection({
 }) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState(false);
+  // Which flow is being curated: everything, or exactly what Apple / Android
+  // customers see ('all' questions + that segment's own questions).
+  const [segmentView, setSegmentView] = useState<"everything" | "apple" | "android">("everything");
   const [questionModal, setQuestionModal] = useState<{ open: boolean; initial: Partial<BuybackQuestionRow> | null }>({ open: false, initial: null });
   const [optionModal, setOptionModal] = useState<{ open: boolean; questionId: string; initial: Partial<BuybackOption> | null }>({ open: false, questionId: "", initial: null });
 
-  const saveQuestion = async (data: { title: string; description: string; question_type: "single" | "multi" }) => {
+  const visibleQuestions = useMemo(
+    () => (segmentView === "everything" ? questions : questions.filter((q) => questionMatchesSegment(q, segmentView))),
+    [questions, segmentView],
+  );
+
+  const saveQuestion = async (data: { title: string; description: string; question_type: "single" | "multi"; os_segment: BuybackOsSegment }) => {
     setSaving(true);
     const initial = questionModal.initial;
     let error;
@@ -539,7 +575,15 @@ function BuybackQuestionsSection({
       ({ error } = await dataClient.from("buyback_questions").insert({ ...data, service_type: serviceType, sort_order: sortOrder, active: true }));
     }
     setSaving(false);
-    if (error) { toast.error(error.message || "Failed to save question"); return; }
+    if (error) {
+      const message = String(error.message || "");
+      if (message.includes("os_segment")) {
+        toast.error("os_segment column missing — run scripts/migrate-buyback-question-segments.cjs");
+      } else {
+        toast.error(message || "Failed to save question");
+      }
+      return;
+    }
     setQuestionModal({ open: false, initial: null });
     toast.success(initial?.id ? "Question updated" : "Question added");
     await reload();
@@ -588,13 +632,41 @@ function BuybackQuestionsSection({
         </button>
       </div>
 
-      {questions.length === 0 && (
-        <p className="rounded-2xl border border-dashed border-border py-8 text-center text-sm text-muted-foreground">
-          No evaluation questions yet. Add one to start building the {serviceType} buyback flow.
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="mr-1 text-[11px] font-bold text-muted-foreground">View:</span>
+        {([
+          ["everything", "All questions"],
+          ["apple", "Apple flow"],
+          ["android", "Android / other flow"],
+        ] as const).map(([value, label]) => (
+          <button
+            key={value}
+            onClick={() => setSegmentView(value)}
+            className={
+              "rounded-full border px-3 py-1.5 text-[11px] font-bold transition-colors " +
+              (segmentView === value ? "border-primary bg-primary/10 text-foreground" : "border-border bg-card text-muted-foreground hover:bg-secondary")
+            }
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      {segmentView !== "everything" && (
+        <p className="text-[11px] text-muted-foreground">
+          Showing exactly what a customer selling {segmentView === "apple" ? "an Apple device" : "an Android / other-brand device"} is asked
+          (&quot;All devices&quot; questions plus {segmentView === "apple" ? "Apple" : "Android"}-only ones).
         </p>
       )}
 
-      {questions.map((q, idx) => {
+      {visibleQuestions.length === 0 && (
+        <p className="rounded-2xl border border-dashed border-border py-8 text-center text-sm text-muted-foreground">
+          {questions.length === 0
+            ? `No evaluation questions yet. Add one to start building the ${serviceType} buyback flow.`
+            : "No questions in this view yet — add one and set who it applies to."}
+        </p>
+      )}
+
+      {visibleQuestions.map((q, idx) => {
         const opts = optionsByQuestion[q.id] || [];
         const isOpen = expanded[q.id] ?? idx === 0;
         return (
@@ -602,6 +674,11 @@ function BuybackQuestionsSection({
             <div className="flex items-center gap-2.5">
               <span className="flex size-6 flex-shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-bold text-foreground">{idx + 1}</span>
               <span className="min-w-0 flex-1 truncate text-sm font-bold text-foreground">{q.title}</span>
+              {(q.os_segment === "apple" || q.os_segment === "android") && (
+                <span className={segmentChipClass(q.os_segment)}>
+                  {q.os_segment === "apple" ? "Apple only" : "Android / other"}
+                </span>
+              )}
               <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
                 {q.question_type === "multi" ? "Multi-select" : "Single"}
               </span>
@@ -733,6 +810,15 @@ function QuotePreviewSection({
     ? (previewVariant ? previewVariant.base_price : null)
     : (price && price.active ? price.base_price : null);
 
+  // Only the questions this brand's customers actually see, matching the sell
+  // flow: Apple brands get 'all' + Apple-only, everything else 'all' + Android.
+  const previewBrand = brands.find((b) => b.id === brandId) ?? null;
+  const previewSegment = previewBrand ? brandOsSegment(previewBrand.name) : null;
+  const segmentQuestions = useMemo(
+    () => (previewSegment ? questions.filter((q) => questionMatchesSegment(q, previewSegment)) : questions),
+    [questions, previewSegment],
+  );
+
   const pick = (q: BuybackQuestionRow, optionId: string) => {
     setSelected((s) => {
       const current = s[q.id] || [];
@@ -744,8 +830,8 @@ function QuotePreviewSection({
   };
 
   const quote = useMemo(
-    () => (effectiveBasePrice !== null ? computeBuybackQuote(effectiveBasePrice, questions, optionsByQuestion, selected) : null),
-    [effectiveBasePrice, questions, optionsByQuestion, selected],
+    () => (effectiveBasePrice !== null ? computeBuybackQuote(effectiveBasePrice, segmentQuestions, optionsByQuestion, selected) : null),
+    [effectiveBasePrice, segmentQuestions, optionsByQuestion, selected],
   );
 
   return (
@@ -792,10 +878,16 @@ function QuotePreviewSection({
         </p>
       )}
 
+      {effectiveBasePrice !== null && previewSegment && (
+        <p className="text-[11px] text-muted-foreground">
+          Previewing the <b>{previewSegment === "apple" ? "Apple" : "Android / other"}</b> question flow for {previewBrand?.name}.
+        </p>
+      )}
+
       {effectiveBasePrice !== null && (
         <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
           <div className="space-y-3">
-            {questions.map((q, idx) => (
+            {segmentQuestions.map((q, idx) => (
               <div key={q.id} className="rounded-2xl border border-border bg-card p-4">
                 <div className="mb-2 flex items-center gap-2">
                   <span className="flex size-5 items-center justify-center rounded-full bg-secondary text-[10px] font-bold">{idx + 1}</span>

@@ -405,9 +405,11 @@ CREATE TRIGGER trg_buyback_bookings_updated_at
 BEFORE UPDATE ON buyback_bookings FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 -- Universal evaluation questions buyers answer; scoped per service type.
+-- os_segment scopes a question to Apple or Android/other devices ('all' = every brand).
 CREATE TABLE IF NOT EXISTS buyback_questions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   service_type TEXT NOT NULL DEFAULT 'mobile',
+  os_segment TEXT NOT NULL DEFAULT 'all', -- all | apple | android
   title TEXT NOT NULL,
   description TEXT,
   question_type TEXT NOT NULL DEFAULT 'single', -- single | multi
