@@ -31,15 +31,30 @@ export type BuybackOption = {
   sort_order: number;
 };
 
+export type BuybackOsSegment = "all" | "apple" | "android";
+
 export type BuybackQuestionRow = {
   id: string;
   service_type: string;
+  /** 'all' = every brand; 'apple' / 'android' scope the question to that segment. Optional so rows predating the os_segment migration still type-check. */
+  os_segment?: string | null;
   title: string;
   description?: string | null;
   question_type: "single" | "multi";
   sort_order: number;
   active: boolean;
 };
+
+// Which segment a brand's devices evaluate under: Apple is its own segment,
+// every other brand falls in the Android/other bucket.
+export function brandOsSegment(brandName: string): Exclude<BuybackOsSegment, "all"> {
+  return brandName.trim().toLowerCase() === "apple" ? "apple" : "android";
+}
+
+export function questionMatchesSegment(question: BuybackQuestionRow, segment: Exclude<BuybackOsSegment, "all">): boolean {
+  const scope = question.os_segment || "all";
+  return scope === "all" || scope === segment;
+}
 
 export type QuoteLine = {
   optionId: string;

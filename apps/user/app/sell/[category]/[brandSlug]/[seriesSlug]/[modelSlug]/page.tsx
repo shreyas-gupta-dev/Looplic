@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { CatalogNavbar } from "@/src/components/next/CatalogNavbar";
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { SellEvaluationFlow } from "@/src/components/next/SellEvaluationFlow";
+import { brandOsSegment } from "@/src/lib/buyback/calc";
 import { getBuybackQuestionSet, getBuybackVariants } from "@/src/lib/data/buyback";
 import { BrandLogo } from "@/src/components/next/BrandLogo";
 import { getBrandBySlug, getBrandsForListing, getModelBySlug, getSeriesBySlug } from "@/src/lib/data/catalog";
@@ -55,7 +56,9 @@ export default async function SellEvaluatePage({ params }: PageProps) {
 
   const [variants, questionSet, brands] = await Promise.all([
     getBuybackVariants(model.id),
-    getBuybackQuestionSet(serviceType),
+    // Apple devices get the Apple question set ('all' + 'apple'), every other
+    // brand gets the Android/other set ('all' + 'android').
+    getBuybackQuestionSet(serviceType, brandOsSegment(brand.name)),
     getBrandsForListing(serviceType),
   ]);
 

@@ -3,7 +3,7 @@ import { and, asc, eq, inArray } from "drizzle-orm";
 
 import { db } from "@/src/lib/db";
 import { buybackModelPrices, buybackModelVariants, buybackQuestionOptions, buybackQuestions } from "@/src/lib/db/schema";
-import type { BuybackEffectType, BuybackOption, BuybackQuestionRow } from "@/src/lib/buyback/calc";
+import type { BuybackEffectType, BuybackOption, BuybackOsSegment, BuybackQuestionRow } from "@/src/lib/buyback/calc";
 
 export type BuybackServiceType = "mobile" | "laptop" | "tablet" | "smartwatch" | "audio";
 
@@ -14,20 +14,55 @@ export type BuybackQuestionSet = {
 
 export const BUYBACK_REVALIDATE_SECONDS = 300;
 
-// Active evaluation questions (with options) for a device category, in admin
-// sort order. Throws on DB failure so ISR keeps serving the last good page
-// instead of caching an empty questionnaire (same convention as catalog.ts).
+// Active evaluation questions (with options) for a device category and OS
+// segment (Apple vs Android/other — 'all'-scoped questions apply to both), in
+// admin sort order. Throws on DB failure so ISR keeps serving the last good
+// page instead of caching an empty questionnaire (same convention as
+// catalog.ts).
 export const getBuybackQuestionSet = unstable_cache(
-  async (serviceType: BuybackServiceType): Promise<BuybackQuestionSet> => {
-    const questionRows = await db
-      .select()
-      .from(buybackQuestions)
-      .where(and(eq(buybackQuestions.serviceType, serviceType), eq(buybackQuestions.active, true)))
-      .orderBy(asc(buybackQuestions.sortOrder), asc(buybackQuestions.createdAt));
+  async (serviceType: BuybackServiceType, osSegment: Exclude<BuybackOsSegment, "all">): Promise<BuybackQuestionSet> => {
+    type QuestionSelect = {
+      id: string; serviceType: string; osSegment: string; title: string;
+      description: string | null; questionType: string; sortOrder: number; active: boolean;
+    };
+    let questionRows: QuestionSelect[];
+    try {
+      questionRows = await db
+        .select()
+        .from(buybackQuestions)
+        .where(and(
+          eq(buybackQuestions.serviceType, serviceType),
+          eq(buybackQuestions.active, true),
+          inArray(buybackQuestions.osSegment, ["all", osSegment]),
+        ))
+        .orderBy(asc(buybackQuestions.sortOrder), asc(buybackQuestions.createdAt));
+    } catch (err) {
+      // 42703 = undefined_column: the os_segment migration hasn't run yet.
+      // Degrade to the unsegmented question set (everything applies to every
+      // brand, the pre-segment behaviour); any other DB failure still throws.
+      const e = err as { code?: string; cause?: { code?: string } };
+      const code = e?.code ?? e?.cause?.code;
+      if (code !== "42703") throw err;
+      const legacyRows = await db
+        .select({
+          id: buybackQuestions.id,
+          serviceType: buybackQuestions.serviceType,
+          title: buybackQuestions.title,
+          description: buybackQuestions.description,
+          questionType: buybackQuestions.questionType,
+          sortOrder: buybackQuestions.sortOrder,
+          active: buybackQuestions.active,
+        })
+        .from(buybackQuestions)
+        .where(and(eq(buybackQuestions.serviceType, serviceType), eq(buybackQuestions.active, true)))
+        .orderBy(asc(buybackQuestions.sortOrder), asc(buybackQuestions.createdAt));
+      questionRows = legacyRows.map((row) => ({ ...row, osSegment: "all" }));
+    }
 
     const questions: BuybackQuestionRow[] = questionRows.map((row) => ({
       id: row.id,
       service_type: row.serviceType,
+      os_segment: row.osSegment,
       title: row.title,
       description: row.description,
       question_type: row.questionType === "multi" ? "multi" : "single",
