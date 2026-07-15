@@ -25,15 +25,16 @@ type ModelPrice = { id: string; model_id: string; base_price: number; active: bo
 type ModelVariant = { id: string; model_id: string; variant_label: string; base_price: number; sort_order: number; active: boolean };
 type ServiceType = "mobile" | "laptop" | "tablet" | "smartwatch" | "audio";
 
-// Storage size implied by a variant label (e.g. "64 GB" -> 64, "1 TB" -> 1024),
-// in GB, so variants always display smallest-to-largest regardless of the
-// order they were added in, instead of relying on a manually-set sort_order.
-// Labels without a recognizable size sort last.
+// Storage size implied by a variant label (e.g. "64 GB" -> 64, "1 TB" -> 1024,
+// bare "64" or "6/128" -> the last number, in GB), so variants always display
+// smallest-to-largest regardless of the order they were added in, instead of
+// relying on a manually-set sort_order. Labels without a number sort last.
 function storageSortValue(label: string): number {
-  const match = label.match(/(\d+(?:\.\d+)?)\s*(GB|TB)/i);
-  if (!match) return Number.POSITIVE_INFINITY;
-  const size = parseFloat(match[1]);
-  return match[2].toUpperCase() === "TB" ? size * 1024 : size;
+  const tb = label.match(/(\d+(?:\.\d+)?)\s*TB/i);
+  if (tb) return parseFloat(tb[1]) * 1024;
+  const numbers = label.match(/\d+(?:\.\d+)?/g);
+  if (!numbers || numbers.length === 0) return Number.POSITIVE_INFINITY;
+  return parseFloat(numbers[numbers.length - 1]);
 }
 
 function sortVariants<T extends { variant_label: string }>(list: T[]): T[] {

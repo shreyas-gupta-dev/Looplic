@@ -106,14 +106,22 @@ export type BuybackVariant = {
   basePrice: number;
 };
 
-// Storage size implied by a variant label (e.g. "64 GB" -> 64, "1 TB" -> 1024),
-// in GB, so variants always sort smallest-to-largest regardless of the order
-// they were added in Admin. Labels without a recognizable size sort last.
-export function storageSortValue(label: string): number {
-  const match = label.match(/(\d+(?:\.\d+)?)\s*(GB|TB)/i);
-  if (!match) return Number.POSITIVE_INFINITY;
-  const size = parseFloat(match[1]);
-  return match[2].toUpperCase() === "TB" ? size * 1024 : size;
+// Admin-entered variant labels are free text — bare numbers ("64"), RAM/storage
+// pairs ("6/128"), or already-unit-ed ("1 TB"). Bare numeric forms mean GB.
+function formatVariantLabel(label: string): string {
+  const trimmed = label.trim();
+  if (/^\d+$/.test(trimmed) || /^\d+\s*\/\s*\d+$/.test(trimmed)) return `${trimmed} GB`;
+  return trimmed;
+}
+
+// Capacity in GB for sorting, taken from the label's storage figure (the last
+// number; TB scaled to GB). Unparseable labels sort last in DB order.
+function variantCapacityGb(label: string): number | null {
+  const tb = label.match(/(\d+(?:\.\d+)?)\s*TB/i);
+  if (tb) return Number(tb[1]) * 1024;
+  const numbers = label.match(/\d+(?:\.\d+)?/g);
+  if (!numbers || numbers.length === 0) return null;
+  return Number(numbers[numbers.length - 1]);
 }
 
 // Storage/spec variants for a model, each with its own base price. Falls back
@@ -139,9 +147,18 @@ export const getBuybackVariants = unstable_cache(
     }
 
     const variants = variantRows
-      .map((row) => ({ id: row.id, label: row.variantLabel, basePrice: Number(row.basePrice) }))
+      .map((row) => ({ id: row.id, label: formatVariantLabel(row.variantLabel), basePrice: Number(row.basePrice) }))
       .filter((variant) => Number.isFinite(variant.basePrice) && variant.basePrice > 0)
-      .sort((a, b) => storageSortValue(a.label) - storageSortValue(b.label));
+      // Smallest capacity first (64 GB before 128 GB); labels without a
+      // parseable capacity keep their DB order after the parseable ones.
+      .sort((a, b) => {
+        const capA = variantCapacityGb(a.label);
+        const capB = variantCapacityGb(b.label);
+        if (capA === null && capB === null) return 0;
+        if (capA === null) return 1;
+        if (capB === null) return -1;
+        return capA - capB;
+      });
 
     if (variants.length > 0) return variants;
 
