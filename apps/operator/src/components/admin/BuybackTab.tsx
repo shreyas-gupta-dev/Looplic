@@ -25,6 +25,21 @@ type ModelPrice = { id: string; model_id: string; base_price: number; active: bo
 type ModelVariant = { id: string; model_id: string; variant_label: string; base_price: number; sort_order: number; active: boolean };
 type ServiceType = "mobile" | "laptop" | "tablet" | "smartwatch" | "audio";
 
+// Storage size implied by a variant label (e.g. "64 GB" -> 64, "1 TB" -> 1024),
+// in GB, so variants always display smallest-to-largest regardless of the
+// order they were added in, instead of relying on a manually-set sort_order.
+// Labels without a recognizable size sort last.
+function storageSortValue(label: string): number {
+  const match = label.match(/(\d+(?:\.\d+)?)\s*(GB|TB)/i);
+  if (!match) return Number.POSITIVE_INFINITY;
+  const size = parseFloat(match[1]);
+  return match[2].toUpperCase() === "TB" ? size * 1024 : size;
+}
+
+function sortVariants<T extends { variant_label: string }>(list: T[]): T[] {
+  return [...list].sort((a, b) => storageSortValue(a.variant_label) - storageSortValue(b.variant_label));
+}
+
 const EFFECT_TYPES: BuybackEffectType[] = ["deduct_fixed", "deduct_percent", "add_fixed", "add_percent"];
 
 // Which brands a question applies to. Apple devices and Android/other devices
@@ -251,7 +266,7 @@ function VariantsEditor({
     setBusyId(null);
     if (error) { toast.error(error.message || "Failed to add variant"); return; }
     const added = { ...data, base_price: Number(data.base_price) };
-    onChange([...variants, added]);
+    onChange(sortVariants([...variants, added]));
     setPriceDrafts((d) => ({ ...d, [added.id]: String(added.base_price) }));
     setNewLabel(""); setNewPrice("");
     toast.success("Variant added");
@@ -387,6 +402,7 @@ function BuybackPricesSection({ serviceType, canDelete }: { serviceType: Service
       for (const v of variantRows || []) {
         (vmap[v.model_id] ??= []).push({ ...v, base_price: Number(v.base_price) });
       }
+      for (const modelId of Object.keys(vmap)) vmap[modelId] = sortVariants(vmap[modelId]);
       setVariants(vmap);
       const d: Record<string, string> = {};
       for (const m of list) d[m.id] = map[m.id] ? String(map[m.id].base_price) : "";
@@ -798,7 +814,7 @@ function QuotePreviewSection({
         dataClient.from("buyback_model_variants").select("*").eq("model_id", modelId).eq("active", true).order("sort_order").order("created_at"),
       ]);
       setPrice(data ? { ...data, base_price: Number(data.base_price) } : null);
-      const mapped: ModelVariant[] = (variantRows || []).map((v: any) => ({ ...v, base_price: Number(v.base_price) }));
+      const mapped: ModelVariant[] = sortVariants((variantRows || []).map((v: any) => ({ ...v, base_price: Number(v.base_price) })));
       setPreviewVariants(mapped);
       if (mapped.length > 0) setPreviewVariantId(mapped[0].id);
     })();
