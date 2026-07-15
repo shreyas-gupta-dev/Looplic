@@ -106,6 +106,16 @@ export type BuybackVariant = {
   basePrice: number;
 };
 
+// Storage size implied by a variant label (e.g. "64 GB" -> 64, "1 TB" -> 1024),
+// in GB, so variants always sort smallest-to-largest regardless of the order
+// they were added in Admin. Labels without a recognizable size sort last.
+export function storageSortValue(label: string): number {
+  const match = label.match(/(\d+(?:\.\d+)?)\s*(GB|TB)/i);
+  if (!match) return Number.POSITIVE_INFINITY;
+  const size = parseFloat(match[1]);
+  return match[2].toUpperCase() === "TB" ? size * 1024 : size;
+}
+
 // Storage/spec variants for a model, each with its own base price. Falls back
 // to the flat buyback_model_prices row (as a single unlabelled variant) when
 // no variant rows exist, and [] when the model has no pricing at all — the
@@ -130,7 +140,8 @@ export const getBuybackVariants = unstable_cache(
 
     const variants = variantRows
       .map((row) => ({ id: row.id, label: row.variantLabel, basePrice: Number(row.basePrice) }))
-      .filter((variant) => Number.isFinite(variant.basePrice) && variant.basePrice > 0);
+      .filter((variant) => Number.isFinite(variant.basePrice) && variant.basePrice > 0)
+      .sort((a, b) => storageSortValue(a.label) - storageSortValue(b.label));
 
     if (variants.length > 0) return variants;
 
