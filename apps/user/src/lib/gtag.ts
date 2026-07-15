@@ -1,7 +1,12 @@
-export const GOOGLE_ADS_ID = "AW-18186396144";
+// Every ID listed here receives the page views and conversion events below.
+// Remove an entry if its Google Ads account is retired.
+export const GOOGLE_ADS_IDS = ["AW-18323182413", "AW-18186396144"] as const;
+
+// The gtag.js loader script is shared across accounts, so the URL only needs one ID.
+export const GOOGLE_ADS_ID = GOOGLE_ADS_IDS[0];
 
 type GtagCommand = "js" | "config" | "event";
-type GtagParams = Record<string, string | number | boolean | null | undefined>;
+type GtagParams = Record<string, string | number | boolean | null | undefined | readonly string[]>;
 
 declare global {
   interface Window {
@@ -16,9 +21,19 @@ export function trackGoogleAdsEvent(eventName: string, params: GtagParams = {}) 
   }
 
   window.gtag("event", eventName, {
-    send_to: GOOGLE_ADS_ID,
+    send_to: GOOGLE_ADS_IDS,
     ...params,
   });
+}
+
+export function trackGoogleAdsPageView(pagePath: string) {
+  if (typeof window === "undefined" || typeof window.gtag !== "function") {
+    return;
+  }
+
+  for (const id of GOOGLE_ADS_IDS) {
+    window.gtag("config", id, { page_path: pagePath });
+  }
 }
 
 export function trackGoogleAdsConversion(conversionName: string, params: GtagParams = {}) {
@@ -27,7 +42,7 @@ export function trackGoogleAdsConversion(conversionName: string, params: GtagPar
   }
 
   window.gtag("event", "conversion", {
-    send_to: GOOGLE_ADS_ID,
+    send_to: GOOGLE_ADS_IDS,
     event_category: "lead",
     event_label: conversionName,
     ...params,
