@@ -4,7 +4,7 @@ import Script from "next/script";
 
 import "@/app/globals.css";
 import { AppProviders } from "@/components/Providers";
-import { GOOGLE_ADS_ID, GOOGLE_ADS_IDS } from "@/src/lib/gtag";
+import { GOOGLE_ADS_ID, GTAG_IDS } from "@/src/lib/gtag";
 import { siteConfig } from "@/src/lib/site";
 
 const nunito = Nunito({
@@ -66,7 +66,7 @@ export default function RootLayout({
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            ${GOOGLE_ADS_IDS.map((id) => `gtag('config', '${id}');`).join("\n            ")}
+            ${GTAG_IDS.map((id) => `gtag('config', '${id}');`).join("\n            ")}
           `}
         </Script>
         <Script id="looplic-pwa-install" strategy="beforeInteractive">
