@@ -4,7 +4,7 @@ import Image from "next/image";
 
 import { ContactLeadForm } from "@/src/components/next/ContactLeadForm";
 import { InfoPageLayout } from "@/src/components/next/InfoPageLayout";
-import { companyName, supportEmail, supportPhone, supportPhoneDisplay, whatsappPhoneDisplay, whatsappUrl } from "@/src/lib/company";
+import { companyAddress, companyAddressMapUrl, companyName, supportEmail, supportPhone, supportPhoneDisplay, whatsappPhoneDisplay, whatsappUrl } from "@/src/lib/company";
 import { buildPageMetadata } from "@/src/lib/metadata";
 
 export const metadata: Metadata = buildPageMetadata({
@@ -66,7 +66,12 @@ export default function ContactUsPage() {
           <div className="mt-4 space-y-4 text-sm leading-7 text-muted-foreground">
             <div className="flex gap-3">
               <MapPin className="mt-1 size-4 shrink-0 text-primary" />
-              <p>{companyName} operates online support and booking channels for doorstep service coordination.</p>
+              <div>
+                <div className="font-semibold text-foreground">Visit us</div>
+                <a href={companyAddressMapUrl} target="_blank" rel="noreferrer" className="transition-colors hover:text-primary">
+                  {companyAddress}
+                </a>
+              </div>
             </div>
             <div>
               <div className="font-semibold text-foreground">Email</div>
