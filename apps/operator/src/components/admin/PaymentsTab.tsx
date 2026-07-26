@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CreditCard, Download, FileText, IndianRupee, Loader2, Plus, ReceiptText, Search, Trash2 } from "lucide-react";
+import { CreditCard, Download, FileText, IndianRupee, Loader2, Mail, Plus, ReceiptText, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Input } from "@/src/components/ui/input";
@@ -16,6 +16,9 @@ type Bill = {
   invoice_number: string;
   customer_name: string;
   customer_phone: string | null;
+  customer_email: string | null;
+  customer_address: string | null;
+  invoice_emailed_at: string | null;
   service_type: string;
   repair_category_id: string | null;
   repair_subcategory_id: string | null;
@@ -72,6 +75,8 @@ export default function PaymentsTab({ role = "operation", canDelete }: PaymentsT
   const [bookingId, setBookingId] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [customerAddress, setCustomerAddress] = useState("");
   const [serviceType, setServiceType] = useState("mobile_repair");
   const [categoryId, setCategoryId] = useState("");
   const [subcategoryId, setSubcategoryId] = useState("");
@@ -157,6 +162,8 @@ export default function PaymentsTab({ role = "operation", canDelete }: PaymentsT
     setBookingId("");
     setCustomerName("");
     setCustomerPhone("");
+    setCustomerEmail("");
+    setCustomerAddress("");
     setServiceType("mobile_repair");
     setCategoryId("");
     setSubcategoryId("");
@@ -179,6 +186,8 @@ export default function PaymentsTab({ role = "operation", canDelete }: PaymentsT
     }
     setCustomerName(booking.customer_name || "");
     setCustomerPhone(booking.customer_phone || "");
+    const bookingLocation = [booking.location, booking.pincode].filter(Boolean).join(" - ");
+    if (bookingLocation) setCustomerAddress(bookingLocation);
     setServiceType(booking.service_type || "mobile_repair");
     setCategoryId(booking.repair_category_id || "");
     setSubcategoryId(booking.repair_subcategory_id || "");
@@ -214,6 +223,8 @@ export default function PaymentsTab({ role = "operation", canDelete }: PaymentsT
       booking_id: bookingId || null,
       customer_name: customerName.trim(),
       customer_phone: customerPhone.trim() || null,
+      customer_email: customerEmail.trim() || null,
+      customer_address: customerAddress.trim() || null,
       service_type: serviceType,
       repair_category_id: categoryId || null,
       repair_subcategory_id: subcategoryId || null,
@@ -226,9 +237,15 @@ export default function PaymentsTab({ role = "operation", canDelete }: PaymentsT
       ...warrantyFields,
       created_by: userData?.user?.id || null,
     };
-    const { error } = existingBill
-      ? await dataClient.from("service_bills").update(billPayload).eq("id", existingBill.id)
-      : await dataClient.from("service_bills").insert({ ...billPayload, invoice_number: "" });
+    let savedBillId = existingBill?.id || "";
+    let error: { message?: string } | null = null;
+    if (existingBill) {
+      ({ error } = await dataClient.from("service_bills").update(billPayload).eq("id", existingBill.id));
+    } else {
+      const inserted = await dataClient.from("service_bills").insert({ ...billPayload, invoice_number: "" }).select("id").single();
+      error = inserted.error;
+      savedBillId = inserted.data?.id || "";
+    }
 
     setSaving(false);
     if (error) {
@@ -239,7 +256,38 @@ export default function PaymentsTab({ role = "operation", canDelete }: PaymentsT
     toast.success(existingBill ? "Bill updated." : "Bill generated.");
     setShowCreate(false);
     resetForm();
+    // A bill created/updated straight to "paid" emails the invoice immediately.
+    if (paymentStatus === "paid" && savedBillId) {
+      void emailInvoice(savedBillId, { silent: true });
+    }
     fetchData();
+  }
+
+  // Emails the final invoice PDF for a paid bill. The server route re-checks the
+  // paid status and only sends once, so double clicks and repeated status flips
+  // never send duplicates. `silent` suppresses the "no email on file" toast for
+  // automatic sends (e.g. right after marking paid).
+  async function emailInvoice(billId: string, options?: { silent?: boolean; force?: boolean }) {
+    try {
+      const response = await fetch("/api/bills/send-invoice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ billId, force: options?.force }),
+      });
+      const data = await response.json().catch(() => null);
+      if (!response.ok || !data?.ok) {
+        if (!options?.silent) toast.error(data?.error || "Unable to email the invoice.");
+        return;
+      }
+      if (data.emailed) {
+        toast.success(`Invoice emailed to ${data.to}.`);
+        fetchData();
+      } else if (!options?.silent) {
+        toast.message(data.message || "Invoice was not emailed.");
+      }
+    } catch (err) {
+      if (!options?.silent) toast.error(err instanceof Error ? err.message : "Unable to email the invoice.");
+    }
   }
 
   async function updatePaymentStatus(bill: Bill, nextStatus: string) {
@@ -251,6 +299,10 @@ export default function PaymentsTab({ role = "operation", canDelete }: PaymentsT
       return;
     }
     toast.success("Payment updated.");
+    // Marking a bill paid triggers the automatic invoice email to the customer.
+    if (nextStatus === "paid") {
+      void emailInvoice(bill.id, { silent: true });
+    }
   }
 
   async function deleteBill(bill: Bill) {
@@ -357,6 +409,9 @@ export default function PaymentsTab({ role = "operation", canDelete }: PaymentsT
                   <button type="button" onClick={() => downloadInvoicePdf(bill)} className="inline-flex size-9 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:border-primary/30 hover:text-primary" title="Download invoice PDF">
                     <Download className="size-4" />
                   </button>
+                  <button type="button" onClick={() => emailInvoice(bill.id, { force: Boolean(bill.invoice_emailed_at) })} className="inline-flex size-9 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:border-primary/30 hover:text-primary" title={bill.invoice_emailed_at ? `Invoice emailed ${new Date(bill.invoice_emailed_at).toLocaleString("en-IN")} — click to resend` : "Email invoice PDF to customer"}>
+                    <Mail className={`size-4 ${bill.invoice_emailed_at ? "text-emerald-600" : ""}`} />
+                  </button>
                   {canDeleteBills ? (
                     <button type="button" onClick={() => deleteBill(bill)} className="inline-flex size-9 items-center justify-center rounded-lg border border-rose-200 text-rose-600 transition-colors hover:bg-rose-50" title="Delete invoice">
                       <Trash2 className="size-4" />
@@ -398,6 +453,14 @@ export default function PaymentsTab({ role = "operation", canDelete }: PaymentsT
               <label htmlFor="field-paymentstab-375" className="space-y-1">
                 <span className="text-xs font-bold text-muted-foreground">Phone</span>
                 <Input id="field-paymentstab-375" value={customerPhone} onChange={(event) => setCustomerPhone(event.target.value)} />
+              </label>
+              <label htmlFor="field-paymentstab-email" className="space-y-1">
+                <span className="text-xs font-bold text-muted-foreground">Email (for invoice delivery)</span>
+                <Input id="field-paymentstab-email" type="email" value={customerEmail} onChange={(event) => setCustomerEmail(event.target.value)} placeholder="customer@example.com" />
+              </label>
+              <label htmlFor="field-paymentstab-address" className="space-y-1 sm:col-span-2">
+                <span className="text-xs font-bold text-muted-foreground">Billing address</span>
+                <Input id="field-paymentstab-address" value={customerAddress} onChange={(event) => setCustomerAddress(event.target.value)} placeholder="Service / billing address for the invoice" />
               </label>
               <label className="space-y-1">
                 <span className="text-xs font-bold text-muted-foreground">Service</span>

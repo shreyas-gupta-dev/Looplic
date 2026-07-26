@@ -1,7 +1,42 @@
 import { NextResponse } from "next/server";
 
-import { sendCustomerBookingConfirmation, sendLeadEmail } from "@/src/lib/email/resend";
+import { sendCustomerBookingConfirmation, sendLeadEmail, type EmailPdfAttachment } from "@/src/lib/email/resend";
+import { createBookingConfirmationPdfBytes } from "@/src/lib/invoice-pdf";
 import type { LeadPayload } from "@/src/lib/leads/types";
+
+export const runtime = "nodejs";
+
+// The confirmation PDF is best-effort: a rendering bug must never block the
+// confirmation email itself.
+function buildBookingConfirmationAttachment(payload: LeadPayload): EmailPdfAttachment | undefined {
+  try {
+    const pdf = createBookingConfirmationPdfBytes({
+      bookingCode: payload.bookingCode,
+      customerName: payload.customer?.name || "Customer",
+      customerPhone: payload.customer?.phone || "",
+      customerEmail: payload.customer?.email,
+      serviceType: payload.service?.type || "",
+      serviceLabel: payload.service?.label || payload.service?.type || "Service booking",
+      price: payload.service?.price,
+      brand: payload.device?.brand,
+      series: payload.device?.series,
+      model: payload.device?.model,
+      scheduledDate: payload.schedule?.date,
+      timeSlot: payload.schedule?.timeSlot,
+      address: payload.address,
+      city: payload.city,
+      pincode: payload.pincode,
+      notes: payload.notes,
+    });
+    return {
+      pdfBase64: Buffer.from(pdf, "binary").toString("base64"),
+      pdfFilename: `${payload.bookingCode || "looplic-booking"}-confirmation.pdf`.replace(/[^a-zA-Z0-9._-]+/g, "-"),
+    };
+  } catch (error) {
+    console.warn("Booking confirmation PDF generation failed (email sent without attachment)", error);
+    return undefined;
+  }
+}
 
 function cleanString(value: unknown, maxLength = 500) {
   if (value === null || value === undefined) {
@@ -65,7 +100,7 @@ export async function POST(request: Request) {
     }
 
     if (payload.source === "booking") {
-      const confirmationResult = await sendCustomerBookingConfirmation(payload);
+      const confirmationResult = await sendCustomerBookingConfirmation(payload, buildBookingConfirmationAttachment(payload));
       if (!confirmationResult.ok) {
         console.error(
           "Customer booking confirmation failed",

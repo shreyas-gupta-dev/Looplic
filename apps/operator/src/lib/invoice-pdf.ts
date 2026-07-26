@@ -1,13 +1,26 @@
 import { formatBookingServiceType } from "@/src/lib/bookings";
-import { companyName, supportEmail, supportPhoneDisplay } from "@/src/lib/company";
+import {
+  companyGstin,
+  companyName,
+  companyRegisteredAddress,
+  companyWebsite,
+  supportEmail,
+  supportPhoneDisplay,
+} from "@/src/lib/company";
 import { siteConfig } from "@/src/lib/site";
 import { getVisitingChargePolicy } from "@/src/lib/visiting-charge";
 
-type InvoiceBill = {
+export type InvoiceBill = {
   id: string;
   invoice_number: string | null;
+  // Overrides the default "TAX INVOICE"/"INVOICE" heading, e.g. buyback
+  // payment receipts pass "PAYMENT RECEIPT".
+  document_title?: string;
   customer_name: string;
   customer_phone: string | null;
+  customer_email?: string | null;
+  customer_address?: string | null;
+  booking_code?: string | null;
   service_type: string;
   description: string | null;
   amount: number;
@@ -23,13 +36,16 @@ type InvoiceBill = {
   created_at: string;
 };
 
-type BookingConfirmationPdf = {
+export type BookingConfirmationPdf = {
   bookingCode?: string | null;
   customerName: string;
   customerPhone: string;
+  customerEmail?: string | null;
   serviceType: string;
   serviceLabel: string;
   price?: string | number | null;
+  priceLabel?: string;
+  documentTitle?: string;
   brand?: string | null;
   series?: string | null;
   model?: string | null;
@@ -91,6 +107,26 @@ function addText(lines: string[], text: string, x: number, y: number, size = 10,
   lines.push(`BT /${font} ${size} Tf ${color} rg ${x} ${y} Td (${sanitizePdfText(text)}) Tj ET`);
 }
 
+// Right-aligns text at rightX using an approximate Helvetica advance width.
+// Widths lean slightly wide so right-aligned text never overshoots rightX.
+function estimateTextWidth(text: string, size: number, font: string) {
+  let em = 0;
+  for (const char of text) {
+    if (/[iljtfI.,:;'"()\[\]|! -]/.test(char)) em += 0.34;
+    else if (/[mwMW@]/.test(char)) em += 0.9;
+    else if (/[0-9]/.test(char)) em += 0.58;
+    else if (/[A-Z]/.test(char)) em += 0.72;
+    else em += 0.56;
+  }
+  return em * size * (font === "F2" ? 1.05 : 1);
+}
+
+function addTextRight(lines: string[], text: string, rightX: number, y: number, size = 10, color = colors.slate900, font = "F1") {
+  const clean = String(text ?? "").replace(/[^\x20-\x7E]/g, "");
+  const x = rightX - estimateTextWidth(clean, size, font);
+  addText(lines, clean, x, y, size, color, font);
+}
+
 function addRect(lines: string[], x: number, y: number, width: number, height: number, color: string) {
   lines.push(`${color} rg ${x} ${y} ${width} ${height} re f`);
 }
@@ -126,6 +162,73 @@ function addWrappedText(lines: string[], text: string, x: number, y: number, max
   return y - rows.length * lineHeight;
 }
 
+// Shared page frame + branded company header. Every Looplic document carries
+// the full company identity: name, registered address, contacts, website, and
+// (when configured) GSTIN. Returns nothing; content should start below y=706.
+function addCompanyHeader(lines: string[], documentTitle: string, headerRight: Array<[string, string]> = []) {
+  addRect(lines, 0, 0, 595, 842, colors.page);
+  addRect(lines, 36, 36, 523, 770, colors.white);
+  addRect(lines, 36, 716, 523, 90, colors.brand);
+  addText(lines, companyName, 58, 770, 24, colors.white, "F2");
+  addText(lines, companyRegisteredAddress, 58, 753, 8, colors.white);
+  addText(lines, `Phone: ${supportPhoneDisplay}  |  ${supportEmail}  |  ${companyWebsite}`, 58, 740, 8, colors.white);
+  if (companyGstin) {
+    addText(lines, `GSTIN: ${companyGstin}`, 58, 727, 8, colors.white, "F2");
+  }
+
+  addTextRight(lines, documentTitle, 537, 772, 13, colors.white, "F2");
+  let rightY = 755;
+  headerRight.forEach(([label, value]) => {
+    addTextRight(lines, `${label}: ${value}`, 537, rightY, 8, colors.white);
+    rightY -= 13;
+  });
+}
+
+// Four-column meta strip under the header (labels + bold values).
+function addMetaStrip(lines: string[], entries: Array<[string, string]>) {
+  addRect(lines, 58, 664, 479, 36, colors.slate100);
+  const columnX = [74, 195, 316, 437];
+  entries.slice(0, 4).forEach(([label, value], index) => {
+    addText(lines, label.toUpperCase(), columnX[index], 686, 7, colors.slate500, "F2");
+    addText(lines, value, columnX[index], 671, 9, colors.slate900, "F2");
+  });
+}
+
+// Two-column Bill To / From block. Returns the lowest y it used.
+function addPartiesBlock(
+  lines: string[],
+  billTo: { name: string; phone?: string | null; email?: string | null; address?: string | null },
+) {
+  addText(lines, "BILL TO", 58, 640, 8, colors.slate500, "F2");
+  addText(lines, billTo.name || "Customer", 58, 622, 12, colors.slate900, "F2");
+  let leftY = 607;
+  if (billTo.phone) {
+    addText(lines, `Phone: ${billTo.phone}`, 58, leftY, 9, colors.slate900);
+    leftY -= 13;
+  }
+  if (billTo.email) {
+    addText(lines, billTo.email, 58, leftY, 9, colors.slate900);
+    leftY -= 13;
+  }
+  if (billTo.address) {
+    leftY = addWrappedText(lines, billTo.address, 58, leftY, 52, 9, colors.slate600, 12);
+  }
+
+  addText(lines, "FROM", 350, 640, 8, colors.slate500, "F2");
+  addText(lines, companyName, 350, 622, 12, colors.slate900, "F2");
+  addText(lines, companyRegisteredAddress, 350, 607, 9, colors.slate600);
+  addText(lines, `Phone: ${supportPhoneDisplay}`, 350, 594, 9, colors.slate900);
+  addText(lines, supportEmail, 350, 581, 9, colors.slate900);
+  addText(lines, companyWebsite, 350, 568, 9, colors.slate900);
+  let rightY = 555;
+  if (companyGstin) {
+    addText(lines, `GSTIN: ${companyGstin}`, 350, rightY, 9, colors.slate900, "F2");
+    rightY -= 13;
+  }
+
+  return Math.min(leftY, rightY);
+}
+
 function addCustomerTermsNoticeCard(lines: string[], topY: number) {
   const cardX = 58;
   const cardY = topY - 136;
@@ -146,87 +249,8 @@ function addCustomerTermsNoticeCard(lines: string[], topY: number) {
   addText(lines, `Full terms: ${termsUrl}`, contentX, Math.max(cardY + 12, termsY - 4), 8, colors.slate600, "F2");
 }
 
-function createInvoicePdfBytes(bill: InvoiceBill) {
-  const invoiceNumber = bill.invoice_number || bill.id;
-  const createdAt = bill.created_at ? new Date(bill.created_at).toLocaleString("en-IN") : new Date().toLocaleString("en-IN");
-  const warrantyLabel = bill.warranty_label || "";
-  const lines: string[] = [];
-
-  addRect(lines, 0, 0, 595, 842, colors.page);
-  addRect(lines, 36, 36, 523, 770, colors.white);
-  addRect(lines, 36, 742, 523, 64, colors.brand);
-  addText(lines, companyName, 58, 778, 22, colors.white, "F2");
-  addText(lines, "SERVICE INVOICE", 58, 759, 10, colors.white, "F2");
-  addText(lines, `Invoice: ${invoiceNumber}`, 320, 778, 8, colors.white, "F2");
-  addText(lines, `Date: ${createdAt}`, 320, 759, 8, colors.white);
-
-  addText(lines, "Bill To", 58, 706, 10, colors.slate900, "F2");
-  addLine(lines, 58, 698, 246, 698, colors.slate200);
-  addText(lines, bill.customer_name || "Customer", 58, 678, 14, colors.slate900, "F2");
-  addText(lines, `Phone: ${bill.customer_phone || "-"}`, 58, 660, 10, colors.slate900);
-
-  addText(lines, "Looplic Support", 350, 706, 10, colors.slate900, "F2");
-  addLine(lines, 350, 698, 537, 698, colors.slate200);
-  addText(lines, supportPhoneDisplay, 350, 678, 10, colors.slate900, "F2");
-  addText(lines, supportEmail, 350, 660, 10, colors.slate900);
-
-  addRect(lines, 58, 595, 479, 36, colors.slate100);
-  addText(lines, "Service", 78, 609, 10, colors.slate900, "F2");
-  addText(lines, "Description", 214, 609, 10, colors.slate900, "F2");
-  addText(lines, "Amount", 464, 609, 10, colors.slate900, "F2");
-
-  addText(lines, formatBookingServiceType(bill.service_type), 78, 564, 11, colors.slate900, "F2");
-  addWrappedText(lines, bill.description || "Service work", 214, 564, 48, 9, colors.slate900, 11);
-  addText(lines, money(bill.amount), 464, 564, 11, colors.slate900, "F2");
-  addLine(lines, 58, 538, 537, 538);
-
-  const totals = [
-    ["Subtotal", money(bill.amount)],
-    ["Discount", money(bill.discount)],
-    ["Tax", money(bill.tax)],
-  ];
-
-  let totalY = 495;
-  totals.forEach(([label, value]) => {
-    addText(lines, label, 352, totalY, 10, colors.slate600);
-    addText(lines, value, 464, totalY, 10, colors.slate900, "F2");
-    totalY -= 24;
-  });
-
-  addRect(lines, 336, 395, 201, 48, colors.emerald);
-  addText(lines, "Total", 356, 415, 12, colors.white, "F2");
-  addText(lines, money(bill.total_amount), 442, 415, 14, colors.white, "F2");
-
-  addText(lines, "Payment", 58, 428, 10, colors.slate900, "F2");
-  addLine(lines, 58, 420, 246, 420, colors.slate200);
-  addText(lines, `Status: ${bill.payment_status}`, 58, 398, 11, colors.slate900, "F2");
-  addText(lines, `Mode: ${bill.payment_mode || "-"}`, 58, 380, 10, colors.slate900);
-
-  if (warrantyLabel) {
-    addRect(lines, 58, 340, 188, 52, colors.emerald50);
-    addStrokeRect(lines, 58, 340, 188, 52, colors.slate200, 1);
-    addText(lines, "Warranty", 78, 372, 9, colors.emerald, "F2");
-    addText(lines, warrantyLabel, 78, 354, 11, colors.slate900, "F2");
-  }
-
-  if (bill.notes) {
-    addText(lines, "NOTES", 58, warrantyLabel ? 314 : 345, 9, colors.slate500, "F2");
-    addText(lines, bill.notes, 58, warrantyLabel ? 296 : 325, 10, colors.slate600);
-  }
-
-  addLine(lines, 58, 170, 537, 170);
-  addText(lines, "Important customer terms", 58, 148, 10, colors.slate900, "F2");
-  let termsY = 132;
-  termsY = addWrappedText(lines, "1. Do not deal directly with any technician outside Looplic. If you cancel, pay, or repair outside Looplic, Looplic will not be responsible for service issues, warranty, guarantee, spare parts, damage, data concerns, payments, or follow-up support.", 58, termsY, 116, 8, colors.slate500, 10);
-  termsY = addWrappedText(lines, "2. If a technician offers a lower amount, asks you to cancel the Looplic order, or requests direct payment, share valid proof with Looplic. After verification, you may be eligible for full free-of-cost service for that reported order.", 58, termsY - 4, 116, 8, colors.slate500, 10);
-  const invoiceVisitingChargePolicy = getVisitingChargePolicy(bill.service_type);
-  if (invoiceVisitingChargePolicy) {
-    termsY = addWrappedText(lines, `3. ${invoiceVisitingChargePolicy}`, 58, termsY - 4, 116, 8, colors.slate500, 10);
-  }
-  addText(lines, `Full terms: ${new URL("/terms-and-conditions#customer-terms", siteConfig.url).toString()}`, 58, termsY - 4, 8, colors.slate500);
-  addText(lines, "Thank you for choosing Looplic.", 58, 54, 10, colors.slate900, "F2");
-  addText(lines, "This is a computer-generated invoice for your service order.", 58, 40, 8, colors.slate500);
-
+// Wraps the accumulated content stream into a complete single-page PDF file.
+function finishPdf(lines: string[]) {
   const stream = lines.join("\n");
   const objects = [
     "<< /Type /Catalog /Pages 2 0 R >>",
@@ -253,51 +277,135 @@ function createInvoicePdfBytes(bill: InvoiceBill) {
   return pdf;
 }
 
-function createBookingConfirmationPdfBytes(booking: BookingConfirmationPdf) {
+function formatPaymentSummary(status: string, mode?: string | null) {
+  const cleanStatus = (status || "unpaid").toUpperCase();
+  return mode ? `${cleanStatus} - ${mode}` : cleanStatus;
+}
+
+export function createInvoicePdfBytes(bill: InvoiceBill) {
+  const invoiceNumber = bill.invoice_number || "Pending assignment";
+  const invoiceDate = bill.created_at ? new Date(bill.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  const warrantyLabel = bill.warranty_label || "";
+  const documentTitle = bill.document_title || (companyGstin ? "TAX INVOICE" : "INVOICE");
+  const refWord = documentTitle.toUpperCase().includes("RECEIPT") ? "Receipt" : "Invoice";
+  const lines: string[] = [];
+
+  addCompanyHeader(lines, documentTitle, [[refWord, invoiceNumber]]);
+  addMetaStrip(lines, [
+    [`${refWord} No`, invoiceNumber],
+    [`${refWord} Date`, invoiceDate],
+    ["Order Code", bill.booking_code || "-"],
+    ["Payment", formatPaymentSummary(bill.payment_status, bill.payment_mode)],
+  ]);
+
+  addPartiesBlock(lines, {
+    name: bill.customer_name,
+    phone: bill.customer_phone,
+    email: bill.customer_email,
+    address: bill.customer_address,
+  });
+
+  addRect(lines, 58, 500, 479, 28, colors.slate100);
+  addText(lines, "#", 70, 510, 9, colors.slate900, "F2");
+  addText(lines, "DESCRIPTION", 100, 510, 9, colors.slate900, "F2");
+  addTextRight(lines, "AMOUNT (INR)", 521, 510, 9, colors.slate900, "F2");
+
+  addText(lines, "1", 70, 478, 10, colors.slate900);
+  addText(lines, formatBookingServiceType(bill.service_type), 100, 478, 11, colors.slate900, "F2");
+  addWrappedText(lines, bill.description || "Service work", 100, 462, 62, 9, colors.slate600, 11);
+  addTextRight(lines, money(bill.amount), 521, 478, 11, colors.slate900, "F2");
+  addLine(lines, 58, 432, 537, 432);
+
+  const totals: Array<[string, string]> = [
+    ["Subtotal", money(bill.amount)],
+    ["Discount", `- ${money(bill.discount)}`],
+    ["Tax", money(bill.tax)],
+  ];
+  let totalY = 410;
+  totals.forEach(([label, value]) => {
+    addText(lines, label, 352, totalY, 10, colors.slate600);
+    addTextRight(lines, value, 521, totalY, 10, colors.slate900, "F2");
+    totalY -= 18;
+  });
+  addRect(lines, 330, 320, 207, 40, colors.emerald);
+  addText(lines, "GRAND TOTAL", 344, 335, 10, colors.white, "F2");
+  addTextRight(lines, money(bill.total_amount), 521, 333, 13, colors.white, "F2");
+
+  addText(lines, "PAYMENT", 58, 410, 8, colors.slate500, "F2");
+  addText(lines, (bill.payment_status || "unpaid").toUpperCase(), 58, 393, 11, colors.slate900, "F2");
+  addText(lines, `Mode: ${bill.payment_mode || "-"}`, 58, 378, 9, colors.slate600);
+
+  if (warrantyLabel) {
+    addRect(lines, 58, 320, 200, 44, colors.emerald50);
+    addStrokeRect(lines, 58, 320, 200, 44, colors.slate200, 1);
+    addText(lines, "WARRANTY", 70, 347, 8, colors.emerald, "F2");
+    addText(lines, warrantyLabel, 70, 330, 10, colors.slate900, "F2");
+  }
+
+  if (bill.notes) {
+    addText(lines, "NOTES", 58, 292, 8, colors.slate500, "F2");
+    addWrappedText(lines, bill.notes, 58, 277, 110, 9, colors.slate600, 11);
+  }
+
+  addLine(lines, 58, 226, 537, 226);
+  addText(lines, "Important customer terms", 58, 208, 9, colors.slate900, "F2");
+  let termsY = 193;
+  termsY = addWrappedText(lines, "1. Do not deal directly with any technician outside Looplic. If you cancel, pay, or repair outside Looplic, Looplic will not be responsible for service issues, warranty, guarantee, spare parts, damage, data concerns, payments, or follow-up support.", 58, termsY, 116, 8, colors.slate500, 10);
+  termsY = addWrappedText(lines, "2. If a technician offers a lower amount, asks you to cancel the Looplic order, or requests direct payment, share valid proof with Looplic. After verification, you may be eligible for full free-of-cost service for that reported order.", 58, termsY - 4, 116, 8, colors.slate500, 10);
+  const invoiceVisitingChargePolicy = getVisitingChargePolicy(bill.service_type);
+  if (invoiceVisitingChargePolicy) {
+    termsY = addWrappedText(lines, `3. ${invoiceVisitingChargePolicy}`, 58, termsY - 4, 116, 8, colors.slate500, 10);
+  }
+  addText(lines, `Full terms: ${new URL("/terms-and-conditions#customer-terms", siteConfig.url).toString()}`, 58, termsY - 4, 8, colors.slate500);
+  addText(lines, "Thank you for choosing Looplic.", 58, 58, 10, colors.slate900, "F2");
+  addText(lines, "This is a computer-generated invoice and does not require a signature.", 58, 44, 8, colors.slate500);
+
+  return finishPdf(lines);
+}
+
+export function createBookingConfirmationPdfBytes(booking: BookingConfirmationPdf) {
   const confirmationNumber = booking.bookingCode || `LOOPLIC-${Date.now()}`;
-  const createdAt = new Date().toLocaleString("en-IN");
+  const createdAt = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
   const device = [booking.brand, booking.series, booking.model].filter(Boolean).join(" ") || "-";
   const address = [booking.address, booking.city, booking.pincode].filter(Boolean).join(", ") || "-";
   const visitingChargePolicy = getVisitingChargePolicy(booking.serviceType);
+  const documentTitle = booking.documentTitle || "BOOKING CONFIRMATION";
   const lines: string[] = [];
 
-  addRect(lines, 0, 0, 595, 842, colors.page);
-  addRect(lines, 36, 36, 523, 770, colors.white);
-  addRect(lines, 36, 742, 523, 64, colors.brand);
-  addText(lines, companyName, 58, 778, 22, colors.white, "F2");
-  addText(lines, "BOOKING CONFIRMATION INVOICE", 58, 759, 10, colors.white, "F2");
-  addText(lines, `Booking: ${confirmationNumber}`, 320, 778, 8, colors.white, "F2");
-  addText(lines, `Date: ${createdAt}`, 320, 759, 8, colors.white);
+  addCompanyHeader(lines, documentTitle, [["Booking", confirmationNumber]]);
+  addMetaStrip(lines, [
+    ["Booking Code", confirmationNumber],
+    ["Booking Date", createdAt],
+    ["Service Type", formatBookingServiceType(booking.serviceType)],
+    ["Status", "RECEIVED"],
+  ]);
 
-  addText(lines, "Customer", 58, 706, 10, colors.slate900, "F2");
-  addLine(lines, 58, 698, 246, 698, colors.slate200);
-  addText(lines, booking.customerName || "Customer", 58, 678, 14, colors.slate900, "F2");
-  addText(lines, `Phone: ${booking.customerPhone || "-"}`, 58, 660, 10, colors.slate900);
+  const partiesBottom = addPartiesBlock(lines, {
+    name: booking.customerName,
+    phone: booking.customerPhone,
+    email: booking.customerEmail,
+    address,
+  });
 
-  addText(lines, "Looplic Support", 350, 706, 10, colors.slate900, "F2");
-  addLine(lines, 350, 698, 537, 698, colors.slate200);
-  addText(lines, supportPhoneDisplay, 350, 678, 10, colors.slate900, "F2");
-  addText(lines, supportEmail, 350, 660, 10, colors.slate900);
-
-  addRect(lines, 58, 590, 479, 40, colors.slate100);
-  addText(lines, "Booking details", 78, 606, 11, colors.slate900, "F2");
+  const tableTop = Math.min(528, partiesBottom - 12);
+  addRect(lines, 58, tableTop - 28, 479, 28, colors.slate100);
+  addText(lines, "BOOKING DETAILS", 70, tableTop - 18, 9, colors.slate900, "F2");
 
   const details = [
     ["Service", booking.serviceLabel || formatBookingServiceType(booking.serviceType)],
-    ["Service type", formatBookingServiceType(booking.serviceType)],
     ["Device", device],
-    ["Price / estimate", booking.price ? money(booking.price) : "To be confirmed"],
+    [booking.priceLabel || "Price / estimate", booking.price ? money(booking.price) : "To be confirmed"],
     ["Scheduled date", booking.scheduledDate || "-"],
     ["Preferred time", booking.timeSlot || "-"],
-    ["Address", address],
+    ["Service address", address],
     ["Visiting charge", visitingChargePolicy || "-"],
     ["Notes", booking.notes || "-"],
   ];
 
-  let detailsY = 558;
+  let detailsY = tableTop - 48;
   details.forEach(([label, value]) => {
-    addText(lines, label, 78, detailsY, 9, colors.slate600, "F2");
-    detailsY = addWrappedText(lines, value, 214, detailsY, 62, 9, colors.slate900, 11) - 6;
+    addText(lines, label, 70, detailsY, 9, colors.slate600, "F2");
+    detailsY = addWrappedText(lines, value, 214, detailsY, 62, 9, colors.slate900, 11) - 7;
   });
 
   addRect(lines, 58, 228, 479, 48, colors.emerald50);
@@ -308,69 +416,43 @@ function createBookingConfirmationPdfBytes(booking: BookingConfirmationPdf) {
   addText(lines, "Thank you for choosing Looplic.", 58, 54, 10, colors.slate900, "F2");
   addText(lines, "This is a computer-generated booking confirmation.", 58, 40, 8, colors.slate500);
 
-  const stream = lines.join("\n");
-  const objects = [
-    "<< /Type /Catalog /Pages 2 0 R >>",
-    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>",
-    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
-    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>",
-    `<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`,
-  ];
-
-  let pdf = "%PDF-1.4\n";
-  const offsets = [0];
-  objects.forEach((object, index) => {
-    offsets.push(pdf.length);
-    pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
-  });
-  const xrefOffset = pdf.length;
-  pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
-  offsets.slice(1).forEach((offset) => {
-    pdf += `${String(offset).padStart(10, "0")} 00000 n \n`;
-  });
-  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
-
-  return pdf;
+  return finishPdf(lines);
 }
 
 export function createPickupAgreementPdfBytes(agreement: PickupAgreementPdf) {
   const createdAt = new Date().toLocaleString("en-IN");
   const lines: string[] = [];
 
-  addRect(lines, 0, 0, 595, 842, colors.page);
-  addRect(lines, 36, 36, 523, 770, colors.white);
-  addRect(lines, 36, 742, 523, 64, colors.brand);
-  addText(lines, companyName, 58, 778, 22, colors.white, "F2");
-  addText(lines, "PICKUP AGREEMENT", 58, 759, 10, colors.white, "F2");
-  addText(lines, `Agreement: ${agreement.agreementNumber}`, 320, 778, 8, colors.white, "F2");
-  addText(lines, `Date: ${createdAt}`, 320, 759, 8, colors.white);
+  addCompanyHeader(lines, "PICKUP AGREEMENT", [
+    ["Agreement", agreement.agreementNumber],
+    ["Date", createdAt],
+  ]);
 
-  addText(lines, "Customer", 58, 706, 10, colors.slate900, "F2");
-  addLine(lines, 58, 698, 246, 698, colors.slate200);
-  addText(lines, agreement.customerName || "Customer", 58, 678, 14, colors.slate900, "F2");
-  addText(lines, `Phone: ${agreement.customerPhone || "-"}`, 58, 660, 10, colors.slate900);
-  addText(lines, `Email: ${agreement.customerEmail || "-"}`, 58, 644, 9, colors.slate600);
+  addText(lines, "Customer", 58, 690, 10, colors.slate900, "F2");
+  addLine(lines, 58, 682, 246, 682, colors.slate200);
+  addText(lines, agreement.customerName || "Customer", 58, 662, 14, colors.slate900, "F2");
+  addText(lines, `Phone: ${agreement.customerPhone || "-"}`, 58, 644, 10, colors.slate900);
+  addText(lines, `Email: ${agreement.customerEmail || "-"}`, 58, 628, 9, colors.slate600);
 
-  addText(lines, "Looplic Pickup", 350, 706, 10, colors.slate900, "F2");
-  addLine(lines, 350, 698, 537, 698, colors.slate200);
-  addText(lines, supportPhoneDisplay, 350, 678, 10, colors.slate900, "F2");
-  addText(lines, supportEmail, 350, 660, 10, colors.slate900);
-  addText(lines, `Technician: ${agreement.technicianEmail || "-"}`, 350, 644, 8, colors.slate600);
+  addText(lines, "Looplic Pickup", 350, 690, 10, colors.slate900, "F2");
+  addLine(lines, 350, 682, 537, 682, colors.slate200);
+  addText(lines, supportPhoneDisplay, 350, 662, 10, colors.slate900, "F2");
+  addText(lines, supportEmail, 350, 644, 10, colors.slate900);
+  addText(lines, `Technician: ${agreement.technicianEmail || "-"}`, 350, 628, 8, colors.slate600);
 
-  addRect(lines, 58, 590, 479, 40, colors.slate100);
-  addText(lines, "Pickup and drop timeline", 78, 606, 11, colors.slate900, "F2");
-  addText(lines, "Pickup", 78, 562, 9, colors.slate600, "F2");
-  addWrappedText(lines, agreement.pickupDateTime || "-", 214, 562, 58, 10, colors.slate900, 12);
-  addText(lines, "Expected drop", 78, 536, 9, colors.slate600, "F2");
-  addWrappedText(lines, agreement.dropDateTime || "-", 214, 536, 58, 10, colors.slate900, 12);
-  addText(lines, "Pickup address", 78, 510, 9, colors.slate600, "F2");
-  addWrappedText(lines, agreement.pickupAddress || "-", 214, 510, 58, 9, colors.slate900, 11);
-  addText(lines, "Handover person", 78, 470, 9, colors.slate600, "F2");
-  addWrappedText(lines, agreement.pickupPerson || "-", 214, 470, 58, 9, colors.slate900, 11);
+  addRect(lines, 58, 574, 479, 40, colors.slate100);
+  addText(lines, "Pickup and drop timeline", 78, 590, 11, colors.slate900, "F2");
+  addText(lines, "Pickup", 78, 546, 9, colors.slate600, "F2");
+  addWrappedText(lines, agreement.pickupDateTime || "-", 214, 546, 58, 10, colors.slate900, 12);
+  addText(lines, "Expected drop", 78, 520, 9, colors.slate600, "F2");
+  addWrappedText(lines, agreement.dropDateTime || "-", 214, 520, 58, 10, colors.slate900, 12);
+  addText(lines, "Pickup address", 78, 494, 9, colors.slate600, "F2");
+  addWrappedText(lines, agreement.pickupAddress || "-", 214, 494, 58, 9, colors.slate900, 11);
+  addText(lines, "Handover person", 78, 454, 9, colors.slate600, "F2");
+  addWrappedText(lines, agreement.pickupPerson || "-", 214, 454, 58, 9, colors.slate900, 11);
 
-  addRect(lines, 58, 398, 479, 40, colors.slate100);
-  addText(lines, "Device and inspection details", 78, 414, 11, colors.slate900, "F2");
+  addRect(lines, 58, 382, 479, 40, colors.slate100);
+  addText(lines, "Device and inspection details", 78, 398, 11, colors.slate900, "F2");
   const details = [
     ["Booking", agreement.bookingCode || "-"],
     ["Service", agreement.serviceLabel || "-"],
@@ -382,7 +464,7 @@ export function createPickupAgreementPdfBytes(agreement: PickupAgreementPdf) {
     ["Notes", agreement.notes || "-"],
   ];
 
-  let detailsY = 370;
+  let detailsY = 354;
   details.forEach(([label, value]) => {
     addText(lines, label, 78, detailsY, 8, colors.slate600, "F2");
     detailsY = addWrappedText(lines, value, 214, detailsY, 62, 8, colors.slate900, 10) - 4;
@@ -399,39 +481,19 @@ export function createPickupAgreementPdfBytes(agreement: PickupAgreementPdf) {
   addText(lines, "Technician signature", 350, 74, 8, colors.slate500);
   addText(lines, "This is a computer-generated pickup agreement. Keep this document as pickup proof.", 58, 46, 8, colors.slate500);
 
-  const stream = lines.join("\n");
-  const objects = [
-    "<< /Type /Catalog /Pages 2 0 R >>",
-    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>",
-    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
-    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>",
-    `<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`,
-  ];
+  return finishPdf(lines);
+}
 
-  let pdf = "%PDF-1.4\n";
-  const offsets = [0];
-  objects.forEach((object, index) => {
-    offsets.push(pdf.length);
-    pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
-  });
-  const xrefOffset = pdf.length;
-  pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
-  offsets.slice(1).forEach((offset) => {
-    pdf += `${String(offset).padStart(10, "0")} 00000 n \n`;
-  });
-  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
-
-  return pdf;
+export function invoicePdfFilename(bill: Pick<InvoiceBill, "id" | "invoice_number">) {
+  return `${bill.invoice_number || `invoice-${bill.id.slice(0, 8)}`}.pdf`;
 }
 
 export function downloadInvoicePdf(bill: InvoiceBill) {
-  const invoiceNumber = bill.invoice_number || bill.id;
   const blob = new Blob([createInvoicePdfBytes(bill)], { type: "application/pdf" });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
-  anchor.download = `${invoiceNumber}.pdf`;
+  anchor.download = invoicePdfFilename(bill);
   document.body.appendChild(anchor);
   anchor.click();
   anchor.remove();

@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 
 import { db } from "@/src/lib/db";
 import { buybackBookings } from "@/src/lib/db/schema";
-import { sendLeadEmail } from "@/src/lib/email/resend";
+import { sendCustomerBookingConfirmation, sendLeadEmail } from "@/src/lib/email/resend";
+import { createBookingConfirmationPdfBytes } from "@/src/lib/invoice-pdf";
 import { getServerSupabase } from "@/src/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -46,11 +47,15 @@ export async function POST(request: Request) {
     }
 
     // Attach the logged-in user (if any) so the booking shows in /account.
+    // The account email also receives the pickup confirmation, since the
+    // pickup form itself only collects name and phone.
     let userId: string | null = null;
+    let userEmail: string | null = null;
     try {
       const supabase = await getServerSupabase();
       const { data } = await supabase.auth.getUser();
       userId = data?.user?.id ?? null;
+      userEmail = data?.user?.email ?? null;
     } catch {
       // Anonymous booking is fine.
     }
@@ -107,6 +112,49 @@ export async function POST(request: Request) {
     // when we have neither a saved row nor a delivered email.
     if (!saved && !emailResult.ok) {
       return NextResponse.json({ ok: false, error: "Could not record your booking. Please try again." }, { status: 500 });
+    }
+
+    // Pickup confirmation to the customer (best-effort — never fails the booking).
+    if (mode === "pickup" && userEmail) {
+      try {
+        const pdf = createBookingConfirmationPdfBytes({
+          bookingCode,
+          customerName,
+          customerPhone: phone,
+          customerEmail: userEmail,
+          serviceType,
+          serviceLabel: "Sell Device - Doorstep Pickup",
+          documentTitle: "PICKUP CONFIRMATION",
+          priceLabel: "Quoted amount",
+          price: quotedAmount,
+          brand: brandName,
+          model: `${modelName}${variantLabel ? ` (${variantLabel})` : ""}`,
+          scheduledDate: pickupDate,
+          timeSlot,
+          address,
+          notes: quoteBreakdown,
+        });
+        const confirmationResult = await sendCustomerBookingConfirmation(
+          {
+            source: "buyback-pickup",
+            bookingCode,
+            customer: { name: customerName, phone, email: userEmail },
+            service: { type: serviceType, label: "Sell Device - Doorstep Pickup", price: quotedAmount ? String(quotedAmount) : undefined },
+            device: { brand: brandName, model: modelName },
+            schedule: { date: pickupDate ?? null, timeSlot: timeSlot ?? null },
+            address: address ?? null,
+          },
+          {
+            pdfBase64: Buffer.from(pdf, "binary").toString("base64"),
+            pdfFilename: `${bookingCode}-pickup-confirmation.pdf`,
+          },
+        );
+        if (!confirmationResult.ok) {
+          console.error("Buyback pickup confirmation email failed", "error" in confirmationResult ? confirmationResult.error : confirmationResult.status);
+        }
+      } catch (err) {
+        console.warn("Buyback pickup confirmation failed (non-fatal)", err);
+      }
     }
 
     return NextResponse.json({ ok: true, bookingCode });

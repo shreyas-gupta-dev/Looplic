@@ -5,6 +5,10 @@ export const supportPhoneDisplay = "+91 88844 45924";
 export const whatsappPhone = "8884445924";
 export const whatsappPhoneDisplay = "+91 88844 45924";
 export const whatsappUrl = `https://wa.me/91${whatsappPhone}`;
+export const companyRegisteredAddress = "SJP Road, Bengaluru, Karnataka 560002";
+export const companyWebsite = "looplic.com";
+// Optional GSTIN — invoices render the GSTIN row only when this is configured.
+export const companyGstin = (process.env.NEXT_PUBLIC_COMPANY_GSTIN || "").trim();
 
 export const footerLinks = [
   { href: "/bangalore", label: "Bangalore" },

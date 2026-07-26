@@ -1097,6 +1097,27 @@ function BuybackOrdersSection({ canDelete }: { canDelete: boolean }) {
     if (error) { toast.error(error.message || "Failed to update status"); return; }
     setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, status } : r)));
     toast.success(`Marked ${row.booking_code} as ${status.replace("_", " ")}`);
+    // Marking a buyback order paid emails the customer a payment receipt PDF.
+    // Best-effort and deduped server-side (guest bookings have no email).
+    if (status === "paid") {
+      void emailBuybackReceipt(row.id);
+    }
+  };
+
+  const emailBuybackReceipt = async (bookingId: string) => {
+    try {
+      const response = await fetch("/api/buyback/send-receipt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookingId }),
+      });
+      const data = await response.json().catch(() => null);
+      if (response.ok && data?.ok && data.emailed) {
+        toast.success(`Payment receipt emailed to ${data.to}.`);
+      }
+    } catch {
+      // Non-fatal: the status change already succeeded.
+    }
   };
 
   const deleteOrder = async (row: BuybackBookingRow) => {

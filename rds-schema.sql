@@ -231,6 +231,9 @@ CREATE TABLE IF NOT EXISTS service_bills (
   invoice_number TEXT NOT NULL UNIQUE,
   customer_name TEXT NOT NULL,
   customer_phone TEXT,
+  customer_email TEXT,
+  customer_address TEXT,
+  invoice_emailed_at TIMESTAMPTZ,
   service_type TEXT NOT NULL,
   repair_category_id UUID REFERENCES repair_categories(id) ON DELETE SET NULL,
   repair_subcategory_id UUID REFERENCES repair_subcategories(id) ON DELETE SET NULL,
@@ -254,12 +257,37 @@ CREATE INDEX IF NOT EXISTS idx_service_bills_booking_id ON service_bills(booking
 CREATE INDEX IF NOT EXISTS idx_service_bills_payment_status ON service_bills(payment_status);
 CREATE INDEX IF NOT EXISTS idx_service_bills_created_at ON service_bills(created_at DESC);
 
+-- Sequential document numbering (invoices, buyback receipts). One atomic
+-- counter per document type per year: LOOP-INV-2026-0001, LOOP-RCT-2026-0001.
+CREATE TABLE IF NOT EXISTS document_counters (
+  doc_type TEXT NOT NULL,
+  year INTEGER NOT NULL,
+  last_value INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (doc_type, year)
+);
+
+CREATE OR REPLACE FUNCTION next_document_number(p_doc_type TEXT, p_prefix TEXT)
+RETURNS TEXT LANGUAGE plpgsql AS $$
+DECLARE
+  v_year INTEGER := EXTRACT(YEAR FROM NOW())::INTEGER;
+  v_next INTEGER;
+BEGIN
+  INSERT INTO document_counters (doc_type, year, last_value)
+  VALUES (p_doc_type, v_year, 1)
+  ON CONFLICT (doc_type, year)
+  DO UPDATE SET last_value = document_counters.last_value + 1
+  RETURNING last_value INTO v_next;
+  -- LPAD alone truncates once the counter passes 9999, so grow the width instead.
+  RETURN p_prefix || '-' || v_year || '-' || LPAD(v_next::TEXT, GREATEST(4, LENGTH(v_next::TEXT)), '0');
+END;
+$$;
+
 -- Invoice number generation
 CREATE OR REPLACE FUNCTION generate_invoice_number()
 RETURNS TRIGGER LANGUAGE plpgsql AS $$
 BEGIN
   IF NEW.invoice_number IS NULL OR NEW.invoice_number = '' THEN
-    NEW.invoice_number := 'INV-' || TO_CHAR(NOW(), 'YYYYMMDD') || '-' || UPPER(SUBSTR(REPLACE(gen_random_uuid()::TEXT, '-', ''), 1, 6));
+    NEW.invoice_number := next_document_number('service_invoice', 'LOOP-INV');
   END IF;
   RETURN NEW;
 END;
@@ -393,11 +421,15 @@ CREATE TABLE IF NOT EXISTS buyback_bookings (
   time_slot TEXT,
   status TEXT NOT NULL DEFAULT 'pending',
   user_id TEXT,
+  receipt_number TEXT,
+  receipt_emailed_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_buyback_bookings_status ON buyback_bookings(status);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_buyback_bookings_receipt_number
+  ON buyback_bookings(receipt_number) WHERE receipt_number IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_buyback_bookings_created_at ON buyback_bookings(created_at);
 
 DROP TRIGGER IF EXISTS trg_buyback_bookings_updated_at ON buyback_bookings;
