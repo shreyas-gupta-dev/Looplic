@@ -433,3 +433,29 @@ CREATE TABLE IF NOT EXISTS buyback_question_options (
 );
 
 CREATE INDEX IF NOT EXISTS idx_buyback_question_options_question_id ON buyback_question_options(question_id);
+
+-- ─── WhatsApp bot ────────────────────────────────────────────────────────────
+-- One row per customer WhatsApp number, plus an append-only message log.
+CREATE TABLE IF NOT EXISTS whatsapp_conversations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  wa_id TEXT NOT NULL UNIQUE,             -- customer phone in E.164 without '+'
+  profile_name TEXT,
+  state TEXT NOT NULL DEFAULT 'new',      -- new | menu | ai | handoff
+  last_booking_code TEXT,
+  last_inbound_at TIMESTAMPTZ,
+  last_outbound_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS whatsapp_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  wa_id TEXT NOT NULL,
+  direction TEXT NOT NULL,                -- inbound | outbound
+  message_id TEXT,                        -- WhatsApp message id (wamid...) when known
+  type TEXT NOT NULL DEFAULT 'text',
+  body TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_whatsapp_messages_wa_id ON whatsapp_messages(wa_id, created_at);

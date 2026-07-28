@@ -11,9 +11,10 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@looplic/db": "*",
+    "@anthropic-ai/sdk": "^0.115.0",
     "@aws-sdk/client-s3": "^3.1064.0",
     "@hookform/resolvers": "^3.10.0",
+    "@looplic/db": "*",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-aspect-ratio": "^1.1.7",

@@ -316,6 +316,32 @@ export const blogPosts = pgTable("blog_posts", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// WhatsApp bot. One conversation row per customer WhatsApp number (wa_id), plus
+// an append-only message log for both inbound and outbound messages. The bot
+// works without these tables (best-effort persistence) but they enable the AI
+// agent to keep short-term context and let the team audit conversations.
+export const whatsappConversations = pgTable("whatsapp_conversations", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  waId: text("wa_id").notNull().unique(), // customer phone in E.164 without '+'
+  profileName: text("profile_name"),
+  state: text("state").notNull().default("new"), // new | menu | ai | handoff
+  lastBookingCode: text("last_booking_code"),
+  lastInboundAt: timestamp("last_inbound_at", { withTimezone: true }),
+  lastOutboundAt: timestamp("last_outbound_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const whatsappMessages = pgTable("whatsapp_messages", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  waId: text("wa_id").notNull(),
+  direction: text("direction").notNull(), // inbound | outbound
+  messageId: text("message_id"), // WhatsApp message id (wamid...) when known
+  type: text("type").notNull().default("text"),
+  body: text("body"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export type AppRole = "admin" | "operation" | "technician" | "user";
 export type Brand = typeof brands.$inferSelect;
 export type BrandInsert = typeof brands.$inferInsert;
@@ -342,3 +368,7 @@ export type BuybackQuestion = typeof buybackQuestions.$inferSelect;
 export type BuybackQuestionOption = typeof buybackQuestionOptions.$inferSelect;
 export type BlogPost = typeof blogPosts.$inferSelect;
 export type BlogPostInsert = typeof blogPosts.$inferInsert;
+export type WhatsappConversation = typeof whatsappConversations.$inferSelect;
+export type WhatsappConversationInsert = typeof whatsappConversations.$inferInsert;
+export type WhatsappMessage = typeof whatsappMessages.$inferSelect;
+export type WhatsappMessageInsert = typeof whatsappMessages.$inferInsert;
