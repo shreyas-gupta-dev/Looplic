@@ -89,6 +89,45 @@ function money(value: number | string | null | undefined) {
   return `Rs. ${Number(value || 0).toLocaleString("en-IN")}`;
 }
 
+// A price is only real when it is a positive number. Catalog rows store "0" (a
+// truthy string) for "quote on inspection", so guard on the numeric value.
+function hasPositivePrice(value: number | string | null | undefined) {
+  return Number(value) > 0;
+}
+
+// Builds a clean device label from brand/series/model. These fields often each
+// repeat the brand and a "Series" grouping (e.g. brand "Apple", series "Apple
+// iPhone Air Series", model "Apple iPhone Air"), which naively joined reads
+// "Apple Apple iPhone Air Series Apple iPhone Air". Dedupe words case-insensitively
+// keeping first occurrence, and drop the "Series" grouping noise.
+function formatDeviceLabel(brand?: string | null, series?: string | null, model?: string | null) {
+  const parts = [brand, series, model].map((part) => String(part ?? "").trim()).filter(Boolean);
+  const seen = new Set<string>();
+  const words: string[] = [];
+  for (const part of parts) {
+    for (const word of part.split(/\s+/)) {
+      const key = word.toLowerCase();
+      if (key === "series") continue;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      words.push(word);
+    }
+  }
+  return words.join(" ") || "-";
+}
+
+// Drops the visiting-charge policy line the booking flow appends into notes, so
+// it is not printed twice (it already has its own row on the confirmation).
+function stripVisitingChargeFromNotes(notes: string | null | undefined, visitingChargePolicy: string | null | undefined) {
+  const text = String(notes ?? "").trim();
+  if (!text || !visitingChargePolicy) return text;
+  return text
+    .split(/\n{2,}/)
+    .map((block) => block.trim())
+    .filter((block) => block && block !== visitingChargePolicy.trim())
+    .join("\n\n");
+}
+
 const colors = {
   page: "0.972 0.980 0.988",
   white: "1 1 1",
@@ -366,9 +405,10 @@ export function createInvoicePdfBytes(bill: InvoiceBill) {
 export function createBookingConfirmationPdfBytes(booking: BookingConfirmationPdf) {
   const confirmationNumber = booking.bookingCode || `LOOPLIC-${Date.now()}`;
   const createdAt = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-  const device = [booking.brand, booking.series, booking.model].filter(Boolean).join(" ") || "-";
+  const device = formatDeviceLabel(booking.brand, booking.series, booking.model);
   const address = [booking.address, booking.city, booking.pincode].filter(Boolean).join(", ") || "-";
   const visitingChargePolicy = getVisitingChargePolicy(booking.serviceType);
+  const notesWithoutVisitingCharge = stripVisitingChargeFromNotes(booking.notes, visitingChargePolicy);
   const documentTitle = booking.documentTitle || "BOOKING CONFIRMATION";
   const lines: string[] = [];
 
@@ -394,13 +434,13 @@ export function createBookingConfirmationPdfBytes(booking: BookingConfirmationPd
   const details = [
     ["Service", booking.serviceLabel || formatBookingServiceType(booking.serviceType)],
     ["Device", device],
-    [booking.priceLabel || "Price / estimate", booking.price ? money(booking.price) : "To be confirmed"],
+    [booking.priceLabel || "Price / estimate", hasPositivePrice(booking.price) ? money(booking.price) : "To be confirmed"],
     ["Scheduled date", booking.scheduledDate || "-"],
     ["Preferred time", booking.timeSlot || "-"],
     ["Service address", address],
     ["Visiting charge", visitingChargePolicy || "-"],
-    ["Notes", booking.notes || "-"],
-  ];
+    ["Notes", notesWithoutVisitingCharge || "-"],
+  ].filter(([label, value]) => label !== "Notes" || value !== "-");
 
   let detailsY = tableTop - 48;
   details.forEach(([label, value]) => {
