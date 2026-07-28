@@ -64,6 +64,28 @@ export async function sendText(to: string, body: string, context = "text"): Prom
   return result;
 }
 
+// Sends an image message with an optional caption. Used to brand the booking
+// confirmation with the Looplic logo. NOTE: the Cloud API accepts image/jpeg and
+// image/png by hosted link (NOT webp — that's stickers only), and the link must
+// be publicly reachable, so always use a solid/colored PNG (never the white
+// transparent email logo, which is invisible on WhatsApp's light image bubble).
+export async function sendImage(
+  to: string,
+  link: string,
+  caption: string,
+  context = "image",
+): Promise<SendResult> {
+  const result = await postMessage(
+    { to, type: "image", image: { link, caption: caption.slice(0, 1024) } },
+    context,
+  );
+  if (result.ok) {
+    await logOutbound(to, "image", caption, result.messageId);
+    await touchOutbound(to);
+  }
+  return result;
+}
+
 export type ReplyButton = { id: string; title: string };
 
 // Interactive reply buttons (max 3, titles max 20 chars). Used for the menu.

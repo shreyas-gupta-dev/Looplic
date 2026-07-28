@@ -1,8 +1,16 @@
 import type { LeadPayload } from "@/src/lib/leads/types";
+import { siteConfig } from "@/src/lib/site";
 
-import { sendTemplate, sendText } from "./client";
+import { sendImage, sendTemplate, sendText } from "./client";
 import { getTeamNumbers, isWhatsappConfigured, whatsappConfig } from "./config";
 import { setLastBookingCode } from "./store";
+
+// WhatsApp-safe branding image: a SOLID/colored PNG (the app icon) that stays
+// visible on WhatsApp's light image bubble. Do NOT use the white transparent
+// email logo here — it renders invisible on WhatsApp. Override with env if you
+// host a wider branded banner (jpeg/png only).
+const WHATSAPP_LOGO_URL =
+  process.env.WHATSAPP_LOGO_URL || new URL("/looplic-app-icon-512.png", siteConfig.url).toString();
 
 // Normalizes an Indian phone number to E.164 without the leading '+', which is
 // what the Cloud API expects as the `to` field. Handles 10-digit local numbers,
@@ -41,6 +49,7 @@ export async function notifyCustomerBookingConfirmation(payload: LeadPayload): P
   if (whatsappConfig.bookingTemplate) {
     // Template body params — order must match how the template was approved in
     // Meta. Convention here: {{1}} name, {{2}} service, {{3}} booking code.
+    // Branding (logo/header) lives in the approved template itself.
     await sendTemplate(
       to,
       whatsappConfig.bookingTemplate,
@@ -49,17 +58,26 @@ export async function notifyCustomerBookingConfirmation(payload: LeadPayload): P
       "booking-confirm",
     );
   } else {
-    const lines = [
-      `Hi ${name}, thanks for choosing Looplic! ✅`,
+    const caption = [
+      `*Looplic* — booking received ✅`,
       "",
-      "Your booking request has been received.",
+      `Hi ${name}, thanks for choosing Looplic!`,
       code ? `Booking ID: ${code}` : "",
       `Service: ${service}`,
       device ? `Device: ${device}` : "",
       "",
       "Our team will reach out shortly to confirm the details. Reply here anytime if you need help.",
-    ].filter(Boolean);
-    await sendText(to, lines.join("\n"), "booking-confirm");
+    ]
+      .filter(Boolean)
+      .join("\n");
+    // Send the confirmation as a branded image message (visible Looplic logo +
+    // the details as the caption). If the image send fails (e.g. the logo URL
+    // isn't reachable), fall back to a plain-text confirmation so the customer
+    // always gets confirmed.
+    const imageResult = await sendImage(to, WHATSAPP_LOGO_URL, caption, "booking-confirm");
+    if (!imageResult.ok) {
+      await sendText(to, caption.replace(/\*/g, ""), "booking-confirm-fallback");
+    }
   }
 
   if (code) await setLastBookingCode(to, code);
