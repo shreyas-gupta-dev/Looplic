@@ -4,15 +4,23 @@ import { sendLeadEmail } from "@/src/lib/email/resend";
 import type { LeadPayload } from "@/src/lib/leads/types";
 import { companyName, supportEmail, supportPhoneDisplay } from "@/src/lib/company";
 
+import {
+  createBuybackPickup,
+  createRepairBooking,
+  createServiceBooking,
+  getRepairPricing,
+  searchDevices,
+  type RepairServiceType,
+} from "./booking";
 import { notifyTeamNewLead } from "./notify";
 import { setLastBookingCode, setState, type SimpleMessage } from "./store";
 
-// The conversational brain of the WhatsApp bot. Powered by Claude with two
-// tools: one grounds it in what Looplic actually offers, the other records a
-// booking/callback lead into the same pipeline the website uses (team email +
-// internal WhatsApp alert). Pricing is deliberately NOT quoted by the model —
-// it collects device + issue and hands the final quote to the human team, so
-// the bot can never commit Looplic to a wrong repair price.
+// The conversational brain of the WhatsApp bot. It mirrors the website: it reads
+// the SAME catalog + pricing and creates the SAME booking records (order_source
+// "whatsapp") that show up in admin Order Management. It can:
+//   • identify a device and quote EXACT repair prices from the DB
+//   • book a repair, a buyback pickup, and CCTV/IT/desktop service enquiries
+// Every booking pings the team (email + WhatsApp alert) like a website lead.
 
 const MODEL = "claude-opus-4-8";
 
@@ -27,134 +35,253 @@ export function isAiEnabled(): boolean {
   return Boolean(process.env.ANTHROPIC_API_KEY);
 }
 
-const SYSTEM_PROMPT = `You are the WhatsApp assistant for ${companyName}, a doorstep device repair and buyback service in Bengaluru, India.
+const SYSTEM_PROMPT = `You are the WhatsApp assistant for ${companyName}, a doorstep device repair, buyback and IT-services business in Bengaluru, India.
 
-What ${companyName} offers:
-- Doorstep mobile phone repair (screen, battery, charging port, water damage, software, etc.)
-- Laptop and desktop repair, and desktop/PC assembly
-- CCTV installation, IT support, and managed IT services
-- Device buyback / sell-your-old-phone-or-laptop (instant quote + free pickup)
-- Service across Bengaluru with doorstep pickup; most repairs handled by verified technicians
+STYLE: This is WhatsApp — keep replies short (a few lines), warm, and clear. Light emoji is fine. Ask for one or two things at a time, not a long form. Use *bold* (single asterisks) for key values like prices and booking IDs.
 
-Your job:
-- Answer questions helpfully and briefly. This is WhatsApp — keep replies short (a few lines), warm, and use simple language. A little emoji is fine, don't overdo it.
-- When a customer wants to book a repair, sell a device, or get a call back, collect their name, phone number, device (brand + model), and the issue, then use the capture_lead tool to record it. Confirm to them that the team will reach out.
-- NEVER invent or promise a specific repair price or exact quote. If asked for price, explain that the exact quote depends on the device and issue, and offer to have the team share a precise quote — capture their details with capture_lead.
-- Use get_service_info if you're unsure whether ${companyName} offers something.
-- For anything you genuinely can't help with, share support contact: ${supportPhoneDisplay} / ${supportEmail}.
-- Do not make up policies, timelines, or warranty terms you don't know. It's fine to say the team will confirm.
+WHAT YOU CAN DO (use the tools — never guess prices or make up a booking):
+1. Repair booking (mobile & laptop): identify the device with search_devices, confirm the exact model with the customer, then call get_repair_prices to quote the EXACT price from our database. To book, collect name, phone, full address + pincode in Bengaluru, and a preferred date + time, then call book_repair.
+2. Buyback / sell: collect the device (brand + model + variant if known), then call book_buyback_pickup to arrange a free pickup. The final buyback amount is always confirmed after physical inspection — say so; don't invent a number.
+3. CCTV / IT support / desktop assembly / managed IT / WiFi: collect what they need + name, phone, address, preferred time, then call book_service.
+4. Pricing questions: use search_devices + get_repair_prices and quote the exact price. If a device or issue isn't in the catalog, say the team will confirm and offer to note their details.
+
+RULES:
+- Quote ONLY prices returned by get_repair_prices — never estimate or round. Prices are in Indian Rupees (₹).
+- Confirm the device and the specific issue before booking a repair.
+- Always read back the booking ID after a successful booking.
+- ${companyName} serves Bengaluru with doorstep pickup. Always collect an address + pincode for a booking.
+- If a tool fails or you're unsure, be honest and share support contact: ${supportPhoneDisplay} / ${supportEmail}.
+- Don't promise timelines, warranty terms, or policies you don't know — say the team will confirm.
 
 Keep every reply under about 900 characters.`;
 
 const tools: Anthropic.Tool[] = [
   {
-    name: "get_service_info",
+    name: "search_devices",
     description:
-      "Look up whether Looplic offers a given service and get accurate high-level details (service areas, pickup, general scope). Use before answering questions about what Looplic does.",
+      "Find matching device models in the Looplic catalog from a free-text name like 'iPhone 12' or 'Galaxy S21'. Returns candidate models with their modelId. Use serviceType 'mobile' for phones, 'laptop' for laptops.",
     input_schema: {
       type: "object",
       properties: {
-        topic: {
-          type: "string",
-          description: "What the customer is asking about, e.g. 'mobile screen repair', 'sell laptop', 'CCTV'.",
-        },
+        query: { type: "string", description: "Device name the customer mentioned" },
+        serviceType: { type: "string", enum: ["mobile", "laptop"], description: "mobile for phones, laptop for laptops" },
       },
-      required: ["topic"],
+      required: ["query", "serviceType"],
     },
   },
   {
-    name: "capture_lead",
+    name: "get_repair_prices",
     description:
-      "Record a booking or callback request so the Looplic team can follow up. Call this once you have at least the customer's name and phone number and know what they want (repair, buyback, or callback).",
+      "Get the exact, model-specific repair services and prices for a modelId returned by search_devices. Use this to quote prices — never estimate.",
     input_schema: {
       type: "object",
       properties: {
-        name: { type: "string", description: "Customer name" },
-        phone: { type: "string", description: "Customer phone number" },
-        intent: {
-          type: "string",
-          enum: ["repair", "buyback", "callback"],
-          description: "What the customer wants",
-        },
-        deviceBrand: { type: "string", description: "Device brand, if known" },
-        deviceModel: { type: "string", description: "Device model, if known" },
-        issue: { type: "string", description: "Reported issue or what they want to sell" },
-        address: { type: "string", description: "Address or area in Bengaluru, if provided" },
-        preferredTime: { type: "string", description: "Preferred date/time for the visit, if provided" },
+        modelId: { type: "string", description: "modelId from search_devices" },
+        serviceType: { type: "string", enum: ["mobile", "laptop"] },
       },
-      required: ["name", "phone", "intent"],
+      required: ["modelId", "serviceType"],
+    },
+  },
+  {
+    name: "book_repair",
+    description:
+      "Create a real repair booking. Call only after confirming the exact model, the specific repair (subcategory), and collecting name, phone, address+pincode, and a preferred date + time slot.",
+    input_schema: {
+      type: "object",
+      properties: {
+        name: { type: "string" },
+        phone: { type: "string" },
+        modelId: { type: "string", description: "from search_devices" },
+        serviceType: { type: "string", enum: ["mobile", "laptop"] },
+        repairSubcategoryId: { type: "string", description: "subcategoryId from get_repair_prices" },
+        repairCategoryId: { type: "string", description: "categoryId from get_repair_prices" },
+        issue: { type: "string", description: "Short description of the repair (e.g. 'Screen Replacement')" },
+        address: { type: "string", description: "Full pickup address in Bengaluru" },
+        pincode: { type: "string" },
+        scheduledDate: { type: "string", description: "Preferred date (as the customer said it)" },
+        timeSlot: { type: "string", description: "Preferred time slot" },
+      },
+      required: ["name", "phone", "modelId", "serviceType", "repairSubcategoryId", "address", "scheduledDate", "timeSlot"],
+    },
+  },
+  {
+    name: "book_service",
+    description:
+      "Create a real service booking for CCTV, IT support, desktop assembly, managed IT, or WiFi network installation (non-device services). Collect name, phone, address+pincode, preferred time, and what they need first.",
+    input_schema: {
+      type: "object",
+      properties: {
+        name: { type: "string" },
+        phone: { type: "string" },
+        serviceType: {
+          type: "string",
+          enum: ["cctv", "it_support", "desktop_assembly", "managed_it_services", "wifi_network_installation"],
+        },
+        details: { type: "string", description: "What the customer needs (e.g. '4 CCTV cameras, outdoor')" },
+        address: { type: "string" },
+        pincode: { type: "string" },
+        scheduledDate: { type: "string" },
+        timeSlot: { type: "string" },
+      },
+      required: ["name", "phone", "serviceType", "address"],
+    },
+  },
+  {
+    name: "book_buyback_pickup",
+    description:
+      "Arrange a free buyback pickup for a device the customer wants to sell. The final price is confirmed after inspection — do not quote a fixed amount.",
+    input_schema: {
+      type: "object",
+      properties: {
+        name: { type: "string" },
+        phone: { type: "string" },
+        brandName: { type: "string" },
+        modelName: { type: "string" },
+        variant: { type: "string", description: "Storage/RAM variant if known, e.g. '128GB'" },
+        deviceType: { type: "string", enum: ["mobile", "laptop", "tablet", "smartwatch", "audio"] },
+        address: { type: "string" },
+        pickupDate: { type: "string" },
+        timeSlot: { type: "string" },
+      },
+      required: ["name", "phone", "brandName", "modelName"],
     },
   },
 ];
 
-function serviceInfo(topic: string): string {
-  const t = topic.toLowerCase();
-  const facts: string[] = [];
-  if (/(mobile|phone|screen|battery|charg|display)/.test(t))
-    facts.push("Doorstep mobile repair: screen, battery, charging port, water damage, software. Verified technicians, warranty on repairs.");
-  if (/(laptop|desktop|pc|computer|assembl)/.test(t))
-    facts.push("Laptop & desktop repair and custom PC assembly are offered.");
-  if (/(cctv|camera|surveillance)/.test(t)) facts.push("CCTV installation and support is offered.");
-  if (/(it support|managed it|network|server)/.test(t)) facts.push("IT support and managed IT services are offered.");
-  if (/(sell|buyback|buy back|old phone|exchange|quote)/.test(t))
-    facts.push("Buyback: get an instant estimate and free doorstep pickup for phones and laptops. Final price confirmed after inspection.");
-  if (facts.length === 0)
-    facts.push("Looplic offers doorstep mobile/laptop/desktop repair, PC assembly, CCTV, IT support, and device buyback in Bengaluru.");
-  facts.push("Service area: Bengaluru, with doorstep pickup. Exact repair prices are confirmed by the team based on device and issue.");
-  return facts.join(" ");
-}
-
-function makeBookingCode(): string {
-  const alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
-  let suffix = "";
-  for (let i = 0; i < 6; i++) suffix += alphabet[Math.floor(Math.random() * alphabet.length)];
-  return `LWB-${suffix}`; // Looplic WhatsApp Booking
-}
-
-async function captureLead(waId: string, input: Record<string, any>): Promise<string> {
-  const bookingCode = makeBookingCode();
-  const intent = String(input.intent || "callback");
-  const serviceType = intent === "buyback" ? "buyback" : intent === "repair" ? "repair" : "callback";
-  const device = [input.deviceBrand, input.deviceModel].filter(Boolean).join(" ");
-
-  const payload: LeadPayload = {
-    source: "whatsapp-bot",
-    title: `WhatsApp ${intent} ${bookingCode}${device ? ` — ${device}` : ""}`,
-    bookingCode,
-    customer: { name: input.name ?? null, phone: input.phone ?? String(waId) },
-    service: { type: serviceType, label: `WhatsApp ${intent}` },
-    device: { brand: input.deviceBrand ?? null, model: input.deviceModel ?? null },
-    schedule: { date: input.preferredTime ?? null },
-    address: input.address ?? null,
-    notes: input.issue ?? null,
-    metadata: { channel: "whatsapp", waId, intent },
-  };
-
-  // Fire both notifications; failures are logged inside each helper.
+// Fires the same team notifications a website lead does, so staff hear about a
+// WhatsApp booking immediately (the booking row itself already shows in admin).
+async function alertTeam(payload: LeadPayload): Promise<void> {
   await Promise.all([
     sendLeadEmail(payload).catch((e) => console.error("[whatsapp:ai] lead email failed", e)),
     notifyTeamNewLead(payload).catch((e) => console.error("[whatsapp:ai] team alert failed", e)),
   ]);
-
-  await setLastBookingCode(waId, bookingCode);
-  return bookingCode;
 }
 
-// Runs one assistant turn against the conversation history (oldest-first,
-// ending with the customer's latest message). Returns the reply text, or null
-// if the AI is unavailable so the caller can fall back to a canned message.
+async function runTool(waId: string, name: string, input: any): Promise<string> {
+  switch (name) {
+    case "search_devices": {
+      const matches = await searchDevices(String(input.query || ""), input.serviceType as RepairServiceType);
+      if (matches.length === 0) return JSON.stringify({ matches: [], note: "No catalog match — ask the customer to confirm the exact model name." });
+      return JSON.stringify({
+        matches: matches.map((m) => ({ modelId: m.modelId, label: m.label })),
+      });
+    }
+    case "get_repair_prices": {
+      const prices = await getRepairPricing(String(input.modelId), input.serviceType as RepairServiceType);
+      if (prices.length === 0) return JSON.stringify({ prices: [], note: "No listed prices for this model — the team will confirm. Offer to capture details." });
+      return JSON.stringify({
+        currency: "INR",
+        prices: prices.map((p) => ({
+          categoryId: p.categoryId,
+          category: p.categoryName,
+          subcategoryId: p.subcategoryId,
+          service: p.subcategoryName,
+          price: p.price,
+        })),
+      });
+    }
+    case "book_repair": {
+      const { bookingCode } = await createRepairBooking({
+        waId,
+        customerName: input.name,
+        customerPhone: input.phone,
+        modelId: input.modelId,
+        serviceType: input.serviceType as RepairServiceType,
+        repairCategoryId: input.repairCategoryId ?? null,
+        repairSubcategoryId: input.repairSubcategoryId ?? null,
+        location: input.address ?? null,
+        pincode: input.pincode ?? null,
+        scheduledDate: input.scheduledDate ?? null,
+        timeSlot: input.timeSlot ?? null,
+        notes: input.issue ? `WhatsApp repair: ${input.issue}` : "WhatsApp repair booking",
+      });
+      await setLastBookingCode(waId, bookingCode);
+      await setState(waId, "ai");
+      await alertTeam({
+        source: "whatsapp-booking",
+        title: `WhatsApp repair ${bookingCode} — ${input.issue || "repair"}`,
+        bookingCode,
+        customer: { name: input.name, phone: input.phone },
+        service: { type: input.serviceType, label: input.issue || "Repair" },
+        address: input.address ?? null,
+        schedule: { date: input.scheduledDate ?? null, timeSlot: input.timeSlot ?? null },
+        metadata: { channel: "whatsapp", waId },
+      });
+      return JSON.stringify({ ok: true, bookingCode });
+    }
+    case "book_service": {
+      const { bookingCode } = await createServiceBooking({
+        waId,
+        customerName: input.name,
+        customerPhone: input.phone,
+        serviceType: String(input.serviceType),
+        location: input.address ?? null,
+        pincode: input.pincode ?? null,
+        scheduledDate: input.scheduledDate ?? null,
+        timeSlot: input.timeSlot ?? null,
+        cctvService: input.serviceType === "cctv" ? input.details ?? null : null,
+        notes: input.details ? `WhatsApp ${input.serviceType}: ${input.details}` : `WhatsApp ${input.serviceType} enquiry`,
+      });
+      await setLastBookingCode(waId, bookingCode);
+      await setState(waId, "ai");
+      await alertTeam({
+        source: "whatsapp-booking",
+        title: `WhatsApp ${input.serviceType} ${bookingCode}`,
+        bookingCode,
+        customer: { name: input.name, phone: input.phone },
+        service: { type: String(input.serviceType), label: String(input.serviceType) },
+        address: input.address ?? null,
+        schedule: { date: input.scheduledDate ?? null, timeSlot: input.timeSlot ?? null },
+        notes: input.details ?? null,
+        metadata: { channel: "whatsapp", waId },
+      });
+      return JSON.stringify({ ok: true, bookingCode });
+    }
+    case "book_buyback_pickup": {
+      const { bookingCode } = await createBuybackPickup({
+        waId,
+        customerName: input.name,
+        customerPhone: input.phone,
+        brandName: input.brandName,
+        modelName: input.modelName,
+        variantLabel: input.variant ?? null,
+        serviceType: input.deviceType ?? "mobile",
+        address: input.address ?? null,
+        pickupDate: input.pickupDate ?? null,
+        timeSlot: input.timeSlot ?? null,
+      });
+      await setLastBookingCode(waId, bookingCode);
+      await setState(waId, "ai");
+      await alertTeam({
+        source: "whatsapp-buyback",
+        title: `WhatsApp buyback pickup ${bookingCode} — ${input.brandName} ${input.modelName}`,
+        bookingCode,
+        customer: { name: input.name, phone: input.phone },
+        service: { type: "buyback", label: "Buyback pickup" },
+        device: { brand: input.brandName, model: input.modelName },
+        address: input.address ?? null,
+        schedule: { date: input.pickupDate ?? null, timeSlot: input.timeSlot ?? null },
+        metadata: { channel: "whatsapp", waId, variant: input.variant ?? "" },
+      });
+      return JSON.stringify({ ok: true, bookingCode, note: "Final buyback price confirmed after inspection." });
+    }
+    default:
+      return JSON.stringify({ error: "Unknown tool" });
+  }
+}
+
+// Runs one assistant turn against the conversation history (oldest-first, ending
+// with the customer's latest message). Returns the reply text, or null if the AI
+// is unavailable so the caller can fall back to a canned message.
 export async function runAiTurn(waId: string, history: SimpleMessage[]): Promise<string | null> {
   const client = getClient();
   if (!client) return null;
   if (history.length === 0) return null;
 
-  const messages: Anthropic.MessageParam[] = history.map((m) => ({
-    role: m.role,
-    content: m.text,
-  }));
+  const messages: Anthropic.MessageParam[] = history.map((m) => ({ role: m.role, content: m.text }));
 
   try {
-    for (let hop = 0; hop < 4; hop++) {
+    for (let hop = 0; hop < 8; hop++) {
       const response = await client.messages.create({
         model: MODEL,
         max_tokens: 1024,
@@ -171,14 +298,11 @@ export async function runAiTurn(waId: string, history: SimpleMessage[]): Promise
         for (const block of response.content) {
           if (block.type !== "tool_use") continue;
           let resultText: string;
-          if (block.name === "get_service_info") {
-            resultText = serviceInfo(String((block.input as any)?.topic ?? ""));
-          } else if (block.name === "capture_lead") {
-            const code = await captureLead(waId, block.input as Record<string, any>);
-            await setState(waId, "ai");
-            resultText = `Lead recorded. Booking reference: ${code}. Team will follow up.`;
-          } else {
-            resultText = "Unknown tool.";
+          try {
+            resultText = await runTool(waId, block.name, block.input as any);
+          } catch (err) {
+            console.error(`[whatsapp:ai] tool ${block.name} failed:`, err);
+            resultText = JSON.stringify({ error: "Something went wrong. Ask the customer to try again or share support contact." });
           }
           results.push({ type: "tool_result", tool_use_id: block.id, content: resultText });
         }
@@ -186,7 +310,6 @@ export async function runAiTurn(waId: string, history: SimpleMessage[]): Promise
         continue;
       }
 
-      // Normal completion — collect the text blocks.
       const text = response.content
         .filter((b): b is Anthropic.TextBlock => b.type === "text")
         .map((b) => b.text)
