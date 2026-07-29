@@ -44,10 +44,18 @@ const organizationJsonLd = {
   sameAs: ["https://www.instagram.com/thelooplic/", "https://www.linkedin.com/company/looplic"],
   contactPoint: {
     "@type": "ContactPoint",
-    telephone: "+91-98865-79923",
+    telephone: "+91-88844-45924",
     contactType: "customer support",
     areaServed: "IN",
     availableLanguage: ["en", "hi"],
+  },
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "1st Floor, Shawkat Building, SJP Road, opp. Dasappa Hospital, near Town Hall, Dodpete, Nagarathpete",
+    addressLocality: "Bengaluru",
+    addressRegion: "Karnataka",
+    postalCode: "560002",
+    addressCountry: "IN",
   },
 };
 

@@ -1,10 +1,10 @@
-import { Instagram, Linkedin, Mail, Phone } from "lucide-react";
+import { Instagram, Linkedin, Mail, MapPin, Phone } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 import logo from "@/assets/looplic-logo.webp";
 import { InstallAppButton } from "@/src/components/next/InstallAppButton";
-import { companyName, footerLinks, supportEmail, supportPhone, supportPhoneDisplay, whatsappUrl } from "@/src/lib/company";
+import { companyAddress, companyAddressMapUrl, companyName, footerLinks, supportEmail, supportPhone, supportPhoneDisplay, whatsappUrl } from "@/src/lib/company";
 
 export function HomepageFooter() {
   return (
@@ -69,6 +69,9 @@ export function HomepageFooter() {
                   </a>
                   <a href={whatsappUrl} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-sm font-semibold text-emerald-700 md:justify-start">
                     <Image src="/whatsapp.svg" alt="" width={16} height={16} className="size-4" aria-hidden="true" /> WhatsApp support
+                  </a>
+                  <a href={companyAddressMapUrl} target="_blank" rel="noreferrer" className="inline-flex items-start gap-2 rounded-2xl border border-border bg-secondary p-3 text-left text-sm font-semibold leading-6 text-foreground">
+                    <MapPin className="mt-1 size-4 shrink-0" /> <span>{companyAddress}</span>
                   </a>
                 </div>
               </div>
