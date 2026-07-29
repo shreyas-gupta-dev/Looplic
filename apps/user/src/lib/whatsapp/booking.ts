@@ -75,14 +75,20 @@ export async function searchDevices(
     .sort((a, b) => b.score - a.score)
     .slice(0, limit);
 
-  return scored.map(({ m }) => ({
-    modelId: m.id,
-    modelName: m.name,
-    brandName: m.brand_name,
-    seriesName: m.series_name,
-    serviceType,
-    label: `${m.brand_name} ${m.name}`.trim(),
-  }));
+  return scored.map(({ m }) => {
+    // Catalog model names sometimes already include the brand ("Apple iPhone 12"),
+    // so only prefix the brand when it isn't already there — avoids "Apple Apple …".
+    const nameHasBrand = norm(m.name).startsWith(norm(m.brand_name));
+    const label = (nameHasBrand ? m.name : `${m.brand_name} ${m.name}`).trim();
+    return {
+      modelId: m.id,
+      modelName: m.name,
+      brandName: m.brand_name,
+      seriesName: m.series_name,
+      serviceType,
+      label,
+    };
+  });
 }
 
 export type RepairPrice = {
