@@ -6,6 +6,12 @@ import {
   getRepairSubcategories,
   type CatalogServiceType,
 } from "@/src/lib/data/catalog";
+import {
+  getBuybackQuestionSet,
+  getBuybackVariants,
+  type BuybackServiceType,
+} from "@/src/lib/data/buyback";
+import { brandOsSegment, computeBuybackQuote } from "@/src/lib/buyback/calc";
 
 // Server-side booking + pricing layer for the WhatsApp bot. This reuses the
 // SAME catalog/pricing data the website uses and writes to the SAME `bookings`
@@ -32,16 +38,17 @@ export type DeviceMatch = {
   modelName: string;
   brandName: string;
   seriesName: string;
-  serviceType: RepairServiceType;
+  serviceType: CatalogServiceType;
   label: string; // "Apple iPhone 12"
 };
 
 // Fuzzy-matches a free-text device query ("iphone 12", "galaxy s21") against the
-// real catalog for a given service type. Returns the best few candidates so the
+// real catalog for a given service type. Works for repair (mobile/laptop) and
+// buyback (also tablet/smartwatch/audio). Returns the best few candidates so the
 // AI can confirm the exact model before pricing/booking.
 export async function searchDevices(
   query: string,
-  serviceType: RepairServiceType = "mobile",
+  serviceType: CatalogServiceType = "mobile",
   limit = 6,
 ): Promise<DeviceMatch[]> {
   const q = norm(query);
@@ -190,6 +197,64 @@ export async function createServiceBooking(input: ServiceBookingInput): Promise<
   return { bookingCode: rows[0]?.bookingCode || "" };
 }
 
+// ─── Buyback (sell) pricing — uses the SAME engine as the website Sell flow ────
+
+export type SellOption = { id: string; label: string };
+export type SellQuestion = { id: string; title: string; type: "single" | "multi"; options: SellOption[] };
+export type SellDeviceOptions = {
+  priced: boolean; // false when the model has no buyback price configured
+  variants: { id: string; label: string }[]; // storage/spec choices (label may be "")
+  questions: SellQuestion[]; // condition questions to ask the customer
+};
+
+// Returns the variants + condition questions the customer must answer to get an
+// exact buyback quote (the option EFFECTS/amounts are intentionally hidden — the
+// bot only needs labels to present choices; the quote is computed server-side).
+export async function getBuybackDeviceOptions(
+  modelId: string,
+  deviceType: BuybackServiceType,
+  brandName: string,
+): Promise<SellDeviceOptions> {
+  const variants = await getBuybackVariants(modelId);
+  const seg = brandOsSegment(brandName);
+  const qset = await getBuybackQuestionSet(deviceType, seg);
+  return {
+    priced: variants.length > 0,
+    variants: variants.map((v) => ({ id: v.id, label: v.label })),
+    questions: qset.questions.map((q) => ({
+      id: q.id,
+      title: q.title,
+      type: q.question_type,
+      options: (qset.optionsByQuestion[q.id] || []).map((o) => ({ id: o.id, label: o.label })),
+    })),
+  };
+}
+
+// Computes the exact buyback estimate for a model/variant + the customer's
+// condition answers — byte-for-byte the same number the website Sell flow shows
+// (same computeBuybackQuote engine, prices managed in admin). `selected` maps
+// questionId -> chosen optionId(s). Returns null when the model is unpriced.
+export async function computeBuybackEstimate(
+  modelId: string,
+  deviceType: BuybackServiceType,
+  brandName: string,
+  variantId: string | null,
+  selected: Record<string, string[]>,
+): Promise<{ basePrice: number; finalQuote: number; variantLabel: string } | null> {
+  const variants = await getBuybackVariants(modelId);
+  if (variants.length === 0) return null;
+  const variant = variants.find((v) => v.id === variantId) ?? variants[0];
+  const seg = brandOsSegment(brandName);
+  const qset = await getBuybackQuestionSet(deviceType, seg);
+  const { basePrice, finalQuote } = computeBuybackQuote(
+    variant.basePrice,
+    qset.questions,
+    qset.optionsByQuestion,
+    selected,
+  );
+  return { basePrice, finalQuote, variantLabel: variant.label };
+}
+
 export type BuybackPickupInput = {
   waId: string;
   customerName: string;
@@ -198,6 +263,8 @@ export type BuybackPickupInput = {
   modelName: string;
   variantLabel?: string | null;
   serviceType?: string | null; // mobile | laptop | tablet | ...
+  quotedAmount?: number | null; // the estimate from computeBuybackEstimate
+  quoteBreakdown?: string | null;
   address?: string | null;
   pickupDate?: string | null;
   timeSlot?: string | null;
@@ -205,9 +272,9 @@ export type BuybackPickupInput = {
 };
 
 // Books a device buyback pickup (reuses the same buyback_bookings table as the
-// website Sell flow). The exact buyback price is always confirmed at inspection
-// — even on the website it's an estimate until the device is checked — so we book
-// the pickup and let the team finalise the amount.
+// website Sell flow), recording the estimate. The final buyback price is
+// confirmed at inspection — even on the website the quote is an estimate until
+// the device is physically checked.
 export async function createBuybackPickup(input: BuybackPickupInput): Promise<{ bookingCode: string }> {
   const alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
   let suffix = "";
@@ -220,6 +287,9 @@ export async function createBuybackPickup(input: BuybackPickupInput): Promise<{ 
     brandName: input.brandName,
     modelName: input.modelName,
     variantLabel: input.variantLabel ?? null,
+    quotedAmount:
+      input.quotedAmount === null || input.quotedAmount === undefined ? null : String(Math.round(input.quotedAmount)),
+    quoteBreakdown: input.quoteBreakdown ?? null,
     customerName: input.customerName,
     phone: input.customerPhone,
     address: input.address ?? null,

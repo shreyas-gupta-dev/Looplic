@@ -5,13 +5,17 @@ import type { LeadPayload } from "@/src/lib/leads/types";
 import { companyName, supportEmail, supportPhoneDisplay } from "@/src/lib/company";
 
 import {
+  computeBuybackEstimate,
   createBuybackPickup,
   createRepairBooking,
   createServiceBooking,
+  getBuybackDeviceOptions,
   getRepairPricing,
   searchDevices,
   type RepairServiceType,
 } from "./booking";
+import type { BuybackServiceType } from "@/src/lib/data/buyback";
+import type { CatalogServiceType } from "@/src/lib/data/catalog";
 import { notifyTeamNewLead } from "./notify";
 import { setLastBookingCode, setState, type SimpleMessage } from "./store";
 
@@ -41,7 +45,7 @@ STYLE: This is WhatsApp — keep replies short (a few lines), warm, and clear. L
 
 WHAT YOU CAN DO (use the tools — never guess prices or make up a booking):
 1. Repair booking (mobile & laptop): identify the device with search_devices, confirm the exact model with the customer, then call get_repair_prices to quote the EXACT price from our database. To book, collect name, phone, full address + pincode in Bengaluru, and a preferred date + time, then call book_repair.
-2. Buyback / sell: collect the device (brand + model + variant if known), then call book_buyback_pickup to arrange a free pickup. The final buyback amount is always confirmed after physical inspection — say so; don't invent a number.
+2. Buyback / sell: use search_devices to find the model, then get_sell_options to get its storage variants + condition questions. Ask the customer the variant and each condition question (present the option labels), then call get_sell_quote with their choices to get the EXACT quote (same as the website). Share the quote, then call book_buyback_pickup (pass quotedAmount) to arrange a free pickup. Tell them the final amount is confirmed at inspection. If a model has no configured price, book the pickup and say the team will confirm the price.
 3. CCTV / IT support / desktop assembly / managed IT / WiFi: collect what they need + name, phone, address, preferred time, then call book_service.
 4. Pricing questions: use search_devices + get_repair_prices and quote the exact price. If a device or issue isn't in the catalog, say the team will confirm and offer to note their details.
 
@@ -59,12 +63,16 @@ const tools: Anthropic.Tool[] = [
   {
     name: "search_devices",
     description:
-      "Find matching device models in the Looplic catalog from a free-text name like 'iPhone 12' or 'Galaxy S21'. Returns candidate models with their modelId. Use serviceType 'mobile' for phones, 'laptop' for laptops.",
+      "Find matching device models in the Looplic catalog from a free-text name like 'iPhone 12' or 'Galaxy S21'. Returns candidate models with modelId and brandName. Use serviceType 'mobile'/'laptop' for repairs; buyback also supports 'tablet','smartwatch','audio'.",
     input_schema: {
       type: "object",
       properties: {
         query: { type: "string", description: "Device name the customer mentioned" },
-        serviceType: { type: "string", enum: ["mobile", "laptop"], description: "mobile for phones, laptop for laptops" },
+        serviceType: {
+          type: "string",
+          enum: ["mobile", "laptop", "tablet", "smartwatch", "audio"],
+          description: "Device category. Repairs are only mobile/laptop.",
+        },
       },
       required: ["query", "serviceType"],
     },
@@ -127,9 +135,50 @@ const tools: Anthropic.Tool[] = [
     },
   },
   {
+    name: "get_sell_options",
+    description:
+      "For a device the customer wants to SELL, get the storage variants and the condition questions to ask. Use the modelId + brandName from search_devices. Present the variant choices and each question's options to the customer, then call get_sell_quote with their answers.",
+    input_schema: {
+      type: "object",
+      properties: {
+        modelId: { type: "string" },
+        deviceType: { type: "string", enum: ["mobile", "laptop", "tablet", "smartwatch", "audio"] },
+        brandName: { type: "string", description: "brandName from search_devices (needed for Apple vs Android pricing)" },
+      },
+      required: ["modelId", "deviceType", "brandName"],
+    },
+  },
+  {
+    name: "get_sell_quote",
+    description:
+      "Compute the EXACT buyback quote (same as the website) for the customer's chosen variant + condition answers. Pass the variantId and, for each question, the chosen optionId(s) from get_sell_options.",
+    input_schema: {
+      type: "object",
+      properties: {
+        modelId: { type: "string" },
+        deviceType: { type: "string", enum: ["mobile", "laptop", "tablet", "smartwatch", "audio"] },
+        brandName: { type: "string" },
+        variantId: { type: "string", description: "chosen variant id from get_sell_options (use the only one if unlabelled)" },
+        answers: {
+          type: "array",
+          description: "One entry per answered question",
+          items: {
+            type: "object",
+            properties: {
+              questionId: { type: "string" },
+              optionIds: { type: "array", items: { type: "string" } },
+            },
+            required: ["questionId", "optionIds"],
+          },
+        },
+      },
+      required: ["modelId", "deviceType", "brandName", "variantId", "answers"],
+    },
+  },
+  {
     name: "book_buyback_pickup",
     description:
-      "Arrange a free buyback pickup for a device the customer wants to sell. The final price is confirmed after inspection — do not quote a fixed amount.",
+      "Arrange a free buyback pickup after quoting. Pass the quotedAmount from get_sell_quote and the chosen variant label. The final price is confirmed at inspection.",
     input_schema: {
       type: "object",
       properties: {
@@ -137,8 +186,9 @@ const tools: Anthropic.Tool[] = [
         phone: { type: "string" },
         brandName: { type: "string" },
         modelName: { type: "string" },
-        variant: { type: "string", description: "Storage/RAM variant if known, e.g. '128GB'" },
+        variant: { type: "string", description: "Chosen variant label, e.g. '128 GB'" },
         deviceType: { type: "string", enum: ["mobile", "laptop", "tablet", "smartwatch", "audio"] },
+        quotedAmount: { type: "number", description: "The estimate from get_sell_quote (₹), if one was given" },
         address: { type: "string" },
         pickupDate: { type: "string" },
         timeSlot: { type: "string" },
@@ -160,10 +210,48 @@ async function alertTeam(payload: LeadPayload): Promise<void> {
 async function runTool(waId: string, name: string, input: any): Promise<string> {
   switch (name) {
     case "search_devices": {
-      const matches = await searchDevices(String(input.query || ""), input.serviceType as RepairServiceType);
+      const matches = await searchDevices(String(input.query || ""), input.serviceType as CatalogServiceType);
       if (matches.length === 0) return JSON.stringify({ matches: [], note: "No catalog match — ask the customer to confirm the exact model name." });
       return JSON.stringify({
-        matches: matches.map((m) => ({ modelId: m.modelId, label: m.label })),
+        matches: matches.map((m) => ({ modelId: m.modelId, label: m.label, brandName: m.brandName })),
+      });
+    }
+    case "get_sell_options": {
+      const opts = await getBuybackDeviceOptions(
+        String(input.modelId),
+        input.deviceType as BuybackServiceType,
+        String(input.brandName || ""),
+      );
+      if (!opts.priced) {
+        return JSON.stringify({
+          priced: false,
+          note: "No buyback price configured for this model. Offer to book a pickup — the team will confirm the price after inspection.",
+          questions: opts.questions,
+        });
+      }
+      return JSON.stringify(opts);
+    }
+    case "get_sell_quote": {
+      const selected: Record<string, string[]> = {};
+      for (const a of (input.answers as Array<{ questionId: string; optionIds: string[] }>) || []) {
+        if (a?.questionId) selected[a.questionId] = Array.isArray(a.optionIds) ? a.optionIds : [];
+      }
+      const est = await computeBuybackEstimate(
+        String(input.modelId),
+        input.deviceType as BuybackServiceType,
+        String(input.brandName || ""),
+        input.variantId ?? null,
+        selected,
+      );
+      if (!est) {
+        return JSON.stringify({ priced: false, note: "No price configured — book a pickup and the team confirms after inspection." });
+      }
+      return JSON.stringify({
+        currency: "INR",
+        variant: est.variantLabel,
+        basePrice: est.basePrice,
+        quote: est.finalQuote,
+        note: "This is an estimate; the final amount is confirmed at inspection.",
       });
     }
     case "get_repair_prices": {
@@ -238,6 +326,8 @@ async function runTool(waId: string, name: string, input: any): Promise<string> 
       return JSON.stringify({ ok: true, bookingCode });
     }
     case "book_buyback_pickup": {
+      const quotedAmount =
+        typeof input.quotedAmount === "number" && Number.isFinite(input.quotedAmount) ? input.quotedAmount : null;
       const { bookingCode } = await createBuybackPickup({
         waId,
         customerName: input.name,
@@ -246,6 +336,8 @@ async function runTool(waId: string, name: string, input: any): Promise<string> 
         modelName: input.modelName,
         variantLabel: input.variant ?? null,
         serviceType: input.deviceType ?? "mobile",
+        quotedAmount,
+        quoteBreakdown: quotedAmount ? "WhatsApp estimate (confirmed at inspection)" : null,
         address: input.address ?? null,
         pickupDate: input.pickupDate ?? null,
         timeSlot: input.timeSlot ?? null,
@@ -254,14 +346,14 @@ async function runTool(waId: string, name: string, input: any): Promise<string> 
       await setState(waId, "ai");
       await alertTeam({
         source: "whatsapp-buyback",
-        title: `WhatsApp buyback pickup ${bookingCode} — ${input.brandName} ${input.modelName}`,
+        title: `WhatsApp buyback pickup ${bookingCode} — ${input.brandName} ${input.modelName}${quotedAmount ? ` @ ₹${quotedAmount}` : ""}`,
         bookingCode,
         customer: { name: input.name, phone: input.phone },
-        service: { type: "buyback", label: "Buyback pickup" },
+        service: { type: "buyback", label: "Buyback pickup", price: quotedAmount },
         device: { brand: input.brandName, model: input.modelName },
         address: input.address ?? null,
         schedule: { date: input.pickupDate ?? null, timeSlot: input.timeSlot ?? null },
-        metadata: { channel: "whatsapp", waId, variant: input.variant ?? "" },
+        metadata: { channel: "whatsapp", waId, variant: input.variant ?? "", quotedAmount },
       });
       return JSON.stringify({ ok: true, bookingCode, note: "Final buyback price confirmed after inspection." });
     }
