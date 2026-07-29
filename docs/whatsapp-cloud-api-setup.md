@@ -56,6 +56,21 @@ From the same **API Setup** / app settings:
 4. **Verify token** — invent any random string (e.g. `looplic-wa-9f3k2`) → you'll paste
    the SAME value in two places (Amplify env + Meta webhook config) → `WHATSAPP_VERIFY_TOKEN`
 
+### 4b. Change the display name from "Numunix" to "Looplic"
+The name shown on the chat header **and on the `wa.me` / `api.whatsapp.com/send`
+click-to-chat page** is the number's **WhatsApp display name** — it comes from Meta,
+NOT from the website (the site already says "Looplic" and links to this number).
+To change it:
+1. **WhatsApp Manager** (business.facebook.com/wa/manage) → **Phone numbers** →
+   select `+91 98865 79923` → **Settings → Profile → Business/Display name**.
+2. Enter **`Looplic`** and submit. Meta reviews display-name changes (usually minutes
+   to ~a day); until approved, the old name "Numunix" keeps showing.
+3. Once approved + my profile script has run, the chat header and the click-to-chat
+   page will show **Looplic** with the Looplic logo.
+
+> There is **no code change** for this — the website is already correct. Only the
+> Meta display name needs updating.
+
 ### 5. (Later, for messaging real customers)
 - Complete **Meta Business Verification** to lift the test‑number limit and raise
   messaging tier.
