@@ -55,6 +55,18 @@ async function userIsAdmin(userId: string): Promise<boolean> {
   return rows.length > 0;
 }
 
+// Staff = admin or operation. Any authenticated Supabase session (including an
+// ordinary customer's, since sessions are shared across the looplic.com apps)
+// used to be enough to read non-public tables and write updates through this
+// proxy — this is the actual gate for those operations.
+async function userIsStaff(userId: string): Promise<boolean> {
+  const rows = await db
+    .select({ id: schema.userRoles.id })
+    .from(schema.userRoles)
+    .where(and(eq(schema.userRoles.userId, userId), inArray(schema.userRoles.role, ["admin", "operation"])));
+  return rows.length > 0;
+}
+
 function snakeToCamel(s: string) {
   return s.replace(/_([a-z])/g, (_, l) => l.toUpperCase());
 }
@@ -139,7 +151,7 @@ export async function POST(req: NextRequest) {
     if (isRead) {
       if (!PUBLIC_READ_TABLES.has(table)) {
         const session = await getServerSession();
-        if (!session.user) {
+        if (!session.user || !(await userIsStaff(session.user.id))) {
           return NextResponse.json({ error: { message: "Unauthorized" } }, { status: 401 });
         }
       }
@@ -158,7 +170,7 @@ export async function POST(req: NextRequest) {
     const session = await getServerSession();
 
     if (op === "insert") {
-      if (!PUBLIC_INSERT_TABLES.has(table) && !session.user) {
+      if (!PUBLIC_INSERT_TABLES.has(table) && (!session.user || !(await userIsStaff(session.user.id)))) {
         return NextResponse.json({ error: { message: "Unauthorized" } }, { status: 401 });
       }
 
@@ -167,7 +179,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ data: inserted.map(mapRowOut) });
     }
 
-    if (!session.user) {
+    if (!session.user || !(await userIsStaff(session.user.id))) {
       return NextResponse.json({ error: { message: "Unauthorized" } }, { status: 401 });
     }
 

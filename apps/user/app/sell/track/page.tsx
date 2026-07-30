@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { headers } from "next/headers";
 import { CalendarCheck, SearchCheck } from "lucide-react";
 
 import { BuybackStatusTimeline } from "@/src/components/next/BuybackStatusTimeline";
@@ -8,6 +9,7 @@ import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { trackBuybackBooking } from "@/src/lib/data/buyback-bookings";
 import { buildPageMetadata } from "@/src/lib/metadata";
 import { deviceDisplayName } from "@/src/lib/sell";
+import { enforceRateLimit } from "@/src/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +28,14 @@ export default async function SellTrackPage({ searchParams }: PageProps) {
   const { code = "", phone = "" } = await searchParams;
   const trimmedCode = code.trim().toUpperCase();
   const attempted = Boolean(trimmedCode && phone.trim());
-  const booking = attempted ? await trackBuybackBooking(trimmedCode, phone) : null;
+
+  // A phone+code lookup is guessable in bulk without this — cap attempts per IP.
+  const hdrs = await headers();
+  const rateLimit = attempted
+    ? await enforceRateLimit({ headers: hdrs } as unknown as Request, "sell-track", 20, 600)
+    : { allowed: true };
+  const booking = attempted && rateLimit.allowed ? await trackBuybackBooking(trimmedCode, phone) : null;
+  const rateLimited = attempted && !rateLimit.allowed;
 
   const inputClassName =
     "w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-[13px] font-medium text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-violet-400";
@@ -63,7 +72,12 @@ export default async function SellTrackPage({ searchParams }: PageProps) {
           </button>
         </form>
 
-        {attempted && !booking ? (
+        {rateLimited ? (
+          <p className="mt-4 rounded-2xl border border-amber-100 bg-amber-50 p-4 text-center text-[13px] font-semibold text-amber-700">
+            Too many attempts. Please wait a few minutes and try again, or{" "}
+            <Link href="/contact-us" className="underline">contact support</Link>.
+          </p>
+        ) : attempted && !booking ? (
           <p className="mt-4 rounded-2xl border border-amber-100 bg-amber-50 p-4 text-center text-[13px] font-semibold text-amber-700">
             No booking found for that ID and phone combination. Double-check both, or{" "}
             <Link href="/contact-us" className="underline">contact support</Link>.

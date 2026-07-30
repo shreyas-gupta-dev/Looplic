@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { BadgeIndianRupee, CalendarCheck, CheckCircle, PhoneCall, Truck } from "lucide-react";
 
@@ -8,6 +9,7 @@ import { CatalogNavbar } from "@/src/components/next/CatalogNavbar";
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { getBuybackBookingByCode } from "@/src/lib/data/buyback-bookings";
 import { deviceDisplayName } from "@/src/lib/sell";
+import { enforceRateLimit } from "@/src/lib/rate-limit";
 
 // Personal(ish) page — never ISR-cache one visitor's booking for another.
 export const dynamic = "force-dynamic";
@@ -28,7 +30,11 @@ export default async function BuybackBookedPage({ params }: { params: Promise<{ 
   const normalized = code.trim().toUpperCase();
   if (!/^LBB-[A-Z0-9]{6}$/.test(normalized)) notFound();
 
-  const booking = await getBuybackBookingByCode(normalized);
+  // This page is reachable by code alone (no phone check) so a scripted
+  // visitor could otherwise enumerate LBB-XXXXXX codes — cap lookups per IP.
+  const hdrs = await headers();
+  const rateLimit = await enforceRateLimit({ headers: hdrs } as unknown as Request, "sell-booked-lookup", 30, 600);
+  const booking = rateLimit.allowed ? await getBuybackBookingByCode(normalized) : null;
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">

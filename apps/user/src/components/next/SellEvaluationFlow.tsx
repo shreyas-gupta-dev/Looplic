@@ -380,6 +380,9 @@ export function SellEvaluationFlow({ model, variants, questions, optionsByQuesti
                   modelName={model.name}
                   variantLabel={selectedVariant?.label || null}
                   quoteAmount={quote.finalQuote}
+                  modelId={model.id}
+                  variantId={selectedVariant?.id ?? null}
+                  selectedAnswers={selected}
                   serviceType={serviceType}
                   quoteBreakdown={[
                     `Base ${formatInr(quote.basePrice)}`,

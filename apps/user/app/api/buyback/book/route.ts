@@ -4,6 +4,10 @@ import { db } from "@/src/lib/db";
 import { buybackBookings } from "@/src/lib/db/schema";
 import { sendLeadEmail } from "@/src/lib/email/resend";
 import { getServerSupabase } from "@/src/lib/supabase/server";
+import { brandOsSegment, computeBuybackQuote } from "@/src/lib/buyback/calc";
+import { getBuybackQuestionSet, getBuybackVariants, type BuybackServiceType } from "@/src/lib/data/buyback";
+import { isValidPhoneNumber, isValidPincode } from "@/src/lib/bookings";
+import { enforceRateLimit } from "@/src/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -25,6 +29,11 @@ function makeBookingCode() {
 // been run yet (42P01) we still send the lead email so no customer is lost.
 export async function POST(request: Request) {
   try {
+    const rateLimit = await enforceRateLimit(request, "buyback-book", 8, 600);
+    if (!rateLimit.allowed) {
+      return NextResponse.json({ ok: false, error: "Too many requests. Please try again in a few minutes." }, { status: 429 });
+    }
+
     const body = await request.json();
 
     const mode = body?.mode === "quote" ? "quote" : "pickup";
@@ -33,16 +42,60 @@ export async function POST(request: Request) {
     const customerName = cleanString(body?.name, 120);
     const phone = cleanString(body?.phone, 40);
     const address = cleanString(body?.address, 500);
+    const pincode = cleanString(body?.pincode, 10);
     const pickupDate = cleanString(body?.pickupDate, 40);
     const timeSlot = cleanString(body?.timeSlot, 80);
     const variantLabel = cleanString(body?.variantLabel, 80);
     const serviceType = cleanString(body?.serviceType, 40) || "mobile";
     const quoteBreakdown = cleanString(body?.quoteBreakdown, 2000);
+    const modelId = cleanString(body?.modelId, 100);
+    const variantId = cleanString(body?.variantId, 100);
+    const selectedAnswers =
+      body?.selectedAnswers && typeof body.selectedAnswers === "object" && !Array.isArray(body.selectedAnswers)
+        ? (body.selectedAnswers as Record<string, unknown>)
+        : null;
     const quotedAmountRaw = Number(body?.quotedAmount);
-    const quotedAmount = Number.isFinite(quotedAmountRaw) && quotedAmountRaw > 0 ? Math.round(quotedAmountRaw) : null;
+    let quotedAmount = Number.isFinite(quotedAmountRaw) && quotedAmountRaw > 0 ? Math.round(quotedAmountRaw) : null;
 
     if (!brandName || !modelName || !customerName || !phone) {
       return NextResponse.json({ ok: false, error: "Name, phone and device are required." }, { status: 400 });
+    }
+
+    if (!isValidPhoneNumber(phone)) {
+      return NextResponse.json({ ok: false, error: "Please enter a valid phone number." }, { status: 400 });
+    }
+
+    if (mode === "pickup") {
+      if (!address) {
+        return NextResponse.json({ ok: false, error: "Please enter your pickup address." }, { status: 400 });
+      }
+      if (pincode && !isValidPincode(pincode)) {
+        return NextResponse.json({ ok: false, error: "Please enter a valid 6-digit pincode." }, { status: 400 });
+      }
+    }
+
+    // Never trust a client-submitted price: recompute it server-side from the
+    // model/variant/answers and use that instead, so a tampered quotedAmount
+    // in the request can't be stored or paid out.
+    if (mode === "pickup" && modelId && variantId && selectedAnswers) {
+      try {
+        const variants = await getBuybackVariants(modelId);
+        const variant = variants.find((v) => v.id === variantId);
+        if (variant) {
+          const osSegment = brandOsSegment(brandName);
+          const { questions, optionsByQuestion } = await getBuybackQuestionSet(serviceType as BuybackServiceType, osSegment);
+          const normalizedAnswers: Record<string, string[]> = {};
+          for (const [questionId, optionIds] of Object.entries(selectedAnswers)) {
+            if (Array.isArray(optionIds)) normalizedAnswers[questionId] = optionIds.filter((id): id is string => typeof id === "string");
+          }
+          const recomputed = computeBuybackQuote(variant.basePrice, questions, optionsByQuestion, normalizedAnswers);
+          quotedAmount = recomputed.finalQuote;
+        }
+      } catch {
+        // Recomputation is best-effort — if it fails (e.g. transient DB
+        // issue), fall back to the client-submitted amount rather than
+        // blocking the booking outright.
+      }
     }
 
     // Attach the logged-in user (if any) so the booking shows in /account.

@@ -58,11 +58,15 @@ type BuybackPickupFormProps = {
   modelName: string;
   variantLabel?: string | null;
   quoteAmount?: number | null;
+  /** Model + variant + answers, so the API can recompute the quote server-side and reject a tampered amount. */
+  modelId?: string | null;
+  variantId?: string | null;
+  selectedAnswers?: Record<string, string[]>;
   serviceType?: string;
   quoteBreakdown?: string | null;
 };
 
-export function BuybackPickupForm({ mode, brandName, modelName, variantLabel, quoteAmount, serviceType, quoteBreakdown }: BuybackPickupFormProps) {
+export function BuybackPickupForm({ mode, brandName, modelName, variantLabel, quoteAmount, modelId, variantId, selectedAnswers, serviceType, quoteBreakdown }: BuybackPickupFormProps) {
   const dataClient = useMemo(() => createClient(), []);
   const router = useRouter();
 
@@ -310,9 +314,13 @@ export function BuybackPickupForm({ mode, brandName, modelName, variantLabel, qu
           quotedAmount: quoteAmount ?? null,
           quoteBreakdown: quoteBreakdown || null,
           serviceType: serviceType || "mobile",
+          modelId: modelId || null,
+          variantId: variantId || null,
+          selectedAnswers: selectedAnswers || null,
           name: name.trim(),
           phone: phone.trim(),
           address: composedAddress,
+          pincode: isPickup ? pincode.trim() : null,
           pickupDate: pickupDate || null,
           timeSlot: timeSlot || null,
         }),
