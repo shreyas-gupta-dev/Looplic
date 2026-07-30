@@ -1,3 +1,5 @@
+import { and, desc, eq, or } from "drizzle-orm";
+
 import { db } from "@/src/lib/db";
 import { bookings, buybackBookings } from "@/src/lib/db/schema";
 import {
@@ -12,6 +14,7 @@ import {
   type BuybackServiceType,
 } from "@/src/lib/data/buyback";
 import { brandOsSegment, computeBuybackQuote } from "@/src/lib/buyback/calc";
+import { parseBookingLocation } from "@/src/lib/bookings";
 
 // Server-side booking + pricing layer for the WhatsApp bot. This reuses the
 // SAME catalog/pricing data the website uses and writes to the SAME `bookings`
@@ -36,7 +39,9 @@ function norm(s: string): string {
 export type DeviceMatch = {
   modelId: string;
   modelName: string;
+  brandId: string | null;
   brandName: string;
+  seriesId: string | null;
   seriesName: string;
   serviceType: CatalogServiceType;
   label: string; // "Apple iPhone 12"
@@ -75,6 +80,14 @@ export async function searchDevices(
     .sort((a, b) => b.score - a.score)
     .slice(0, limit);
 
+  // The search index only carries series_id on a model, so resolve the brand id
+  // through the series index. Callers need both to be able to navigate BACK up
+  // the catalogue (series picker, brand picker) after a text search jumped them
+  // straight to a model.
+  const brandIdBySeriesId = new Map<string, string>(
+    index.series.map((s) => [s.id, s.brand_id] as [string, string]),
+  );
+
   return scored.map(({ m }) => {
     // Catalog model names sometimes already include the brand ("Apple iPhone 12"),
     // so only prefix the brand when it isn't already there — avoids "Apple Apple …".
@@ -83,7 +96,9 @@ export async function searchDevices(
     return {
       modelId: m.id,
       modelName: m.name,
+      brandId: brandIdBySeriesId.get(m.series_id) ?? null,
       brandName: m.brand_name,
+      seriesId: m.series_id ?? null,
       seriesName: m.series_name,
       serviceType,
       label,
@@ -142,15 +157,42 @@ export type RepairBookingInput = {
 // DB-generated booking code. Throws on failure so the caller can tell the
 // customer honestly rather than pretend it booked.
 export async function createRepairBooking(input: RepairBookingInput): Promise<{ bookingCode: string }> {
+  return createDeviceBooking({ ...input, dbServiceType: DB_SERVICE_TYPE[input.serviceType] });
+}
+
+export type DeviceBookingInput = {
+  waId: string;
+  customerName: string;
+  customerPhone: string;
+  modelId: string;
+  /** Raw DB service type: mobile_repair | laptop_repair | screen_guard. */
+  dbServiceType: string;
+  repairCategoryId?: string | null;
+  repairSubcategoryId?: string | null;
+  /** Screen-guard flow only — the full guard_type string as stored in admin. */
+  guardType?: string | null;
+  location?: string | null;
+  pincode?: string | null;
+  scheduledDate?: string | null;
+  timeSlot?: string | null;
+  notes?: string | null;
+};
+
+// Creates a device booking (repair OR screen guard) exactly as the website does
+// — same table, same columns, DB-generated booking code — with
+// order_source = "whatsapp". The website writes guard_type for the screen-guard
+// flow and repair_category_id/repair_subcategory_id for repairs; so do we.
+export async function createDeviceBooking(input: DeviceBookingInput): Promise<{ bookingCode: string }> {
   const rows = await db
     .insert(bookings)
     .values({
       customerName: input.customerName,
       customerPhone: input.customerPhone,
       modelId: input.modelId,
-      serviceType: DB_SERVICE_TYPE[input.serviceType],
+      serviceType: input.dbServiceType,
       repairCategoryId: input.repairCategoryId ?? null,
       repairSubcategoryId: input.repairSubcategoryId ?? null,
+      guardType: input.guardType ?? null,
       location: input.location ?? null,
       pincode: input.pincode ?? null,
       scheduledDate: input.scheduledDate ?? null,
@@ -201,6 +243,249 @@ export async function createServiceBooking(input: ServiceBookingInput): Promise<
     })
     .returning({ bookingCode: bookings.bookingCode });
   return { bookingCode: rows[0]?.bookingCode || "" };
+}
+
+// ─── Saved details, tracking, reschedule, cancel ──────────────────────────────
+
+export type SavedProfile = {
+  name: string;
+  phone: string;
+  address: string;
+  city: string;
+  pincode: string;
+};
+
+// The website pre-fills the details step from the signed-in customer's saved
+// profile. WhatsApp has no login, but the sender's number IS an identifier, so
+// we pre-fill from their most recent booking on that number. Only ever used to
+// OFFER the details back to the same number — never to share them elsewhere.
+export async function getSavedProfile(phone: string): Promise<SavedProfile | null> {
+  const candidates = phoneVariants(phone);
+  if (candidates.length === 0) return null;
+  try {
+    const rows = await db
+      .select({
+        customerName: bookings.customerName,
+        customerPhone: bookings.customerPhone,
+        location: bookings.location,
+        pincode: bookings.pincode,
+      })
+      .from(bookings)
+      .where(or(...candidates.map((value) => eq(bookings.customerPhone, value))))
+      .orderBy(desc(bookings.createdAt))
+      .limit(1);
+
+    const row = rows[0];
+    if (!row) return null;
+
+    // The website stores "address, city" in `location` (buildBookingLocation),
+    // so the same parser reads it back.
+    const { address, city } = parseBookingLocation(row.location);
+
+    return {
+      name: row.customerName || "",
+      phone: row.customerPhone || "",
+      address,
+      city,
+      pincode: row.pincode || "",
+    };
+  } catch (err) {
+    console.error("[whatsapp:booking] getSavedProfile failed", err);
+    return null;
+  }
+}
+
+// The same number can be stored as 9876543210 or 919876543210 or +91… across
+// website and WhatsApp bookings, so match on every plausible form.
+function phoneVariants(phone: string): string[] {
+  const digits = String(phone || "").replace(/[^\d]/g, "");
+  if (digits.length < 10) return [];
+  const local = digits.slice(-10);
+  return Array.from(new Set([digits, local, `91${local}`, `+91${local}`, `0${local}`]));
+}
+
+export type TrackedBooking = {
+  kind: "service" | "buyback";
+  bookingCode: string;
+  status: string;
+  serviceType: string;
+  scheduledDate: string | null;
+  timeSlot: string | null;
+  location: string | null;
+  createdAt: Date | null;
+  assignedRider: string | null;
+  /** Buyback only. */
+  quotedAmount: number | null;
+  deviceLabel: string | null;
+};
+
+// Looks up one booking by its code across BOTH booking tables (service bookings
+// use the DB trigger's MOB-/LAP-/CCT-… codes, buyback pickups use LBB-…).
+// `waId` scopes the lookup to the sender's own number so a customer can't read
+// somebody else's order by guessing a code.
+export async function findBookingByCode(code: string, waId: string): Promise<TrackedBooking | null> {
+  const normalized = String(code || "").trim().toUpperCase();
+  if (!normalized) return null;
+  const candidates = phoneVariants(waId);
+  if (candidates.length === 0) return null;
+  const phoneMatches = (value: string | null) =>
+    candidates.includes(String(value || "").replace(/[^\d+]/g, ""));
+
+  try {
+    const serviceRows = await db
+      .select()
+      .from(bookings)
+      .where(eq(bookings.bookingCode, normalized))
+      .limit(1);
+    const service = serviceRows[0];
+    if (service) {
+      if (!phoneMatches(service.customerPhone)) return null;
+      return {
+        kind: "service",
+        bookingCode: service.bookingCode || normalized,
+        status: service.status,
+        serviceType: service.serviceType,
+        scheduledDate: service.scheduledDate,
+        timeSlot: service.timeSlot,
+        location: service.location,
+        createdAt: service.createdAt ?? null,
+        assignedRider: service.assignedRider ?? null,
+        quotedAmount: null,
+        deviceLabel: null,
+      };
+    }
+
+    const buybackRows = await db
+      .select()
+      .from(buybackBookings)
+      .where(eq(buybackBookings.bookingCode, normalized))
+      .limit(1);
+    const buyback = buybackRows[0];
+    if (buyback) {
+      if (!phoneMatches(buyback.phone)) return null;
+      return {
+        kind: "buyback",
+        bookingCode: buyback.bookingCode,
+        status: buyback.status,
+        serviceType: `${buyback.serviceType} buyback`,
+        scheduledDate: buyback.pickupDate ?? null,
+        timeSlot: buyback.timeSlot ?? null,
+        location: buyback.address ?? null,
+        createdAt: buyback.createdAt ?? null,
+        assignedRider: null,
+        quotedAmount: buyback.quotedAmount === null ? null : Number(buyback.quotedAmount),
+        deviceLabel: [buyback.brandName, buyback.modelName, buyback.variantLabel]
+          .filter(Boolean)
+          .join(" "),
+      };
+    }
+    return null;
+  } catch (err) {
+    console.error("[whatsapp:booking] findBookingByCode failed", err);
+    return null;
+  }
+}
+
+// The most recent bookings for the sender's number — powers "My orders".
+export async function listRecentBookings(waId: string, limit = 5): Promise<TrackedBooking[]> {
+  const candidates = phoneVariants(waId);
+  if (candidates.length === 0) return [];
+  try {
+    const rows = await db
+      .select()
+      .from(bookings)
+      .where(or(...candidates.map((value) => eq(bookings.customerPhone, value))))
+      .orderBy(desc(bookings.createdAt))
+      .limit(limit);
+    return rows.map((row) => ({
+      kind: "service" as const,
+      bookingCode: row.bookingCode || "",
+      status: row.status,
+      serviceType: row.serviceType,
+      scheduledDate: row.scheduledDate,
+      timeSlot: row.timeSlot,
+      location: row.location,
+      createdAt: row.createdAt ?? null,
+      assignedRider: row.assignedRider ?? null,
+      quotedAmount: null,
+      deviceLabel: null,
+    }));
+  } catch (err) {
+    console.error("[whatsapp:booking] listRecentBookings failed", err);
+    return [];
+  }
+}
+
+// Statuses past the point where a customer may still self-serve. Anything the
+// team has already acted on has to go through a human.
+const LOCKED_STATUSES = new Set(["completed", "cancelled", "in_progress", "picked_up", "paid"]);
+
+export function isSelfServiceEditable(status: string): boolean {
+  return !LOCKED_STATUSES.has(String(status || "").toLowerCase());
+}
+
+export async function rescheduleBooking(
+  code: string,
+  waId: string,
+  scheduledDate: string,
+  timeSlot: string,
+): Promise<{ ok: boolean; reason?: string }> {
+  const booking = await findBookingByCode(code, waId);
+  if (!booking) return { ok: false, reason: "not_found" };
+  if (!isSelfServiceEditable(booking.status)) return { ok: false, reason: "locked" };
+
+  try {
+    if (booking.kind === "buyback") {
+      await db
+        .update(buybackBookings)
+        .set({ pickupDate: scheduledDate, timeSlot, updatedAt: new Date() })
+        .where(eq(buybackBookings.bookingCode, booking.bookingCode));
+    } else {
+      await db
+        .update(bookings)
+        .set({ scheduledDate, timeSlot })
+        .where(eq(bookings.bookingCode, booking.bookingCode));
+    }
+    return { ok: true };
+  } catch (err) {
+    console.error("[whatsapp:booking] rescheduleBooking failed", err);
+    return { ok: false, reason: "error" };
+  }
+}
+
+export async function cancelBooking(
+  code: string,
+  waId: string,
+  reason?: string | null,
+): Promise<{ ok: boolean; reason?: string }> {
+  const booking = await findBookingByCode(code, waId);
+  if (!booking) return { ok: false, reason: "not_found" };
+  if (!isSelfServiceEditable(booking.status)) return { ok: false, reason: "locked" };
+
+  const note = `Cancelled by customer on WhatsApp${reason ? `: ${reason}` : ""}`;
+  try {
+    if (booking.kind === "buyback") {
+      await db
+        .update(buybackBookings)
+        .set({ status: "cancelled", updatedAt: new Date() })
+        .where(eq(buybackBookings.bookingCode, booking.bookingCode));
+    } else {
+      const current = await db
+        .select({ notes: bookings.notes })
+        .from(bookings)
+        .where(eq(bookings.bookingCode, booking.bookingCode))
+        .limit(1);
+      const notes = [current[0]?.notes, note].filter(Boolean).join("\n\n");
+      await db
+        .update(bookings)
+        .set({ status: "cancelled", notes })
+        .where(and(eq(bookings.bookingCode, booking.bookingCode)));
+    }
+    return { ok: true };
+  } catch (err) {
+    console.error("[whatsapp:booking] cancelBooking failed", err);
+    return { ok: false, reason: "error" };
+  }
 }
 
 // ─── Buyback (sell) pricing — uses the SAME engine as the website Sell flow ────

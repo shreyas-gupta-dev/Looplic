@@ -1,4 +1,4 @@
-import { boolean, integer, numeric, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, integer, jsonb, numeric, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 export const appRoleEnum = pgEnum("app_role", ["admin", "operation", "technician", "user"]);
@@ -324,12 +324,35 @@ export const whatsappConversations = pgTable("whatsapp_conversations", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   waId: text("wa_id").notNull().unique(), // customer phone in E.164 without '+'
   profileName: text("profile_name"),
-  state: text("state").notNull().default("new"), // new | menu | ai | handoff
+  state: text("state").notNull().default("new"), // new | menu | ai | handoff | flow
   lastBookingCode: text("last_booking_code"),
   lastInboundAt: timestamp("last_inbound_at", { withTimezone: true }),
   lastOutboundAt: timestamp("last_outbound_at", { withTimezone: true }),
+  // ─ Guided-booking wizard (mirrors the website's UniversalBookingFlow) ─
+  // `flowStep` is the wizard step the customer is on ("idle" when not in a
+  // flow); `flowContext` carries every selection made so far. Both are nullable
+  // /defaulted so a conversation that predates this migration still loads.
+  flowStep: text("flow_step").notNull().default("idle"),
+  flowContext: jsonb("flow_context"),
+  flowUpdatedAt: timestamp("flow_updated_at", { withTimezone: true }),
+  // Set while a human has taken over — the bot stays silent until released.
+  handoffUntil: timestamp("handoff_until", { withTimezone: true }),
+  // STOP / opt-out: no proactive sends, and the bot only answers with the
+  // resubscribe hint until the customer sends START.
+  optedOut: boolean("opted_out").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// Idempotency ledger for inbound webhook deliveries. Meta redelivers a message
+// whenever our 200 is slow or lost, and without this a retry replays the same
+// tap — which on the confirm step means a duplicate booking. One row per
+// wamid, inserted with ON CONFLICT DO NOTHING; an insert that returns nothing
+// means "already handled, skip".
+export const whatsappProcessedMessages = pgTable("whatsapp_processed_messages", {
+  messageId: text("message_id").primaryKey(),
+  waId: text("wa_id"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const whatsappMessages = pgTable("whatsapp_messages", {

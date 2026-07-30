@@ -83,6 +83,80 @@ export async function notifyCustomerBookingConfirmation(payload: LeadPayload): P
   if (code) await setLastBookingCode(to, code);
 }
 
+// Alerts the team that a customer asked for a human. Sent to the same staff
+// numbers as new-lead alerts.
+export async function notifyTeamHandoff(waId: string, profileName: string | null): Promise<void> {
+  if (!isWhatsappConfigured()) return;
+  const team = getTeamNumbers();
+  if (team.length === 0) return;
+
+  const body = [
+    "🙋 Customer asked for a human on WhatsApp",
+    profileName ? `Name: ${profileName}` : "",
+    `Number: +${waId}`,
+    "The bot is paused on this chat for 2 hours — reply to them directly.",
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  await Promise.all(team.map((num) => sendText(num, body, "team-handoff")));
+}
+
+// Tells the customer their booking moved to a new stage. Called from wherever
+// staff change a booking's status (admin / operator). Inside the 24h window a
+// plain text send works; outside it this needs an approved template, which is
+// why WHATSAPP_STATUS_TEMPLATE is honoured when configured.
+export async function notifyCustomerStatusChange(input: {
+  phone: string;
+  bookingCode: string;
+  status: string;
+  serviceLabel?: string | null;
+  scheduledDate?: string | null;
+  timeSlot?: string | null;
+}): Promise<void> {
+  if (!isWhatsappConfigured()) return;
+  const to = toWaId(input.phone);
+  if (!to) return;
+
+  const statusText = CUSTOMER_STATUS_TEXT[input.status.toLowerCase()];
+  if (!statusText) return; // Not a stage worth pinging about.
+
+  const template = process.env.WHATSAPP_STATUS_TEMPLATE || "";
+  if (template) {
+    await sendTemplate(
+      to,
+      template,
+      [input.bookingCode, statusText, input.serviceLabel || "your booking"],
+      "en",
+      "status-change",
+    );
+    return;
+  }
+
+  const lines = [
+    `*Looplic* — update on your booking`,
+    "",
+    `Booking ID: *${input.bookingCode}*`,
+    input.serviceLabel ? `Service: ${input.serviceLabel}` : "",
+    `Status: *${statusText}*`,
+    input.scheduledDate ? `Scheduled: ${input.scheduledDate}${input.timeSlot ? ` · ${input.timeSlot}` : ""}` : "",
+    "",
+    "Reply here if you need anything, or type *track* to see the latest.",
+  ].filter(Boolean);
+
+  await sendText(to, lines.join("\n"), "status-change");
+}
+
+// Only the stages a customer actually cares about get a WhatsApp ping.
+const CUSTOMER_STATUS_TEXT: Record<string, string> = {
+  confirmed: "Confirmed ✅",
+  assigned: "Technician assigned 🧑‍🔧",
+  in_progress: "In progress 🔧",
+  picked_up: "Device picked up 📦",
+  completed: "Completed ✅",
+  cancelled: "Cancelled",
+};
+
 // Sends an internal new-lead alert to each staff number in WHATSAPP_TEAM_NUMBERS.
 // Note: like any free-text send, this only delivers if the staff member has
 // messaged the business number within the last 24h (or use a template for them).

@@ -101,12 +101,17 @@ To change it:
 ---
 
 ## After go‑live — how to test
-1. From any phone, message `+91 98865 79923` with "hi" → you should get the button menu.
-2. Tap **Book a repair** / send free text → the AI agent replies and can capture a lead.
+1. From any phone, message `+91 98865 79923` with "hi" → you should get the service menu.
+2. Tap through a service → brand → model → repair: you get the real price and a booking code.
 3. Book on the website → you get a branded WhatsApp confirmation + the team gets an alert.
 
 ## Notes
-- Without `ANTHROPIC_API_KEY`, the bot still runs the button menu and captures leads,
-  but free‑text gets a canned reply instead of the AI. Add the key to enable the agent.
-- The AI intentionally never quotes exact repair prices — it collects details and
-  captures a lead so the team confirms the quote.
+- Without `ANTHROPIC_API_KEY`, the guided booking wizard still works end‑to‑end;
+  only the free‑text AI lane falls back to a canned reply. Add the key to enable the agent.
+- The bot quotes prices **only** from the database, and honours the global
+  repair‑price visibility switch in `app_settings`.
+
+> **The tap‑driven booking flow** (service → brand → model → repair → address →
+> slot → confirm, plus tracking/reschedule/cancel and buyback quotes) is
+> documented separately in [`whatsapp-guided-booking.md`](./whatsapp-guided-booking.md).
+> It needs one extra migration: `scripts/migrate-whatsapp-flow.sql`.

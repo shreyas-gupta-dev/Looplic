@@ -1,7 +1,11 @@
 import { and, desc, eq } from "drizzle-orm";
 
 import { db } from "@/src/lib/db";
-import { whatsappConversations, whatsappMessages } from "@/src/lib/db/schema";
+import {
+  whatsappConversations,
+  whatsappMessages,
+  whatsappProcessedMessages,
+} from "@/src/lib/db/schema";
 import type { WhatsappConversation } from "@/src/lib/db/schema";
 
 // Persistence for the WhatsApp bot. Everything here is BEST-EFFORT: if the
@@ -9,22 +13,27 @@ import type { WhatsappConversation } from "@/src/lib/db/schema";
 // swallow the "relation does not exist" error (42P01) so the bot keeps replying
 // — it just loses conversation memory until the tables exist.
 
-function isMissingTable(err: unknown): boolean {
+// 42P01 = undefined_table (the WhatsApp migration hasn't run), 42703 =
+// undefined_column (the flow-state migration hasn't run). Both mean "schema is
+// behind the code" and must degrade quietly — the bot keeps replying, it just
+// can't remember anything until the migration is applied.
+function isMissingSchema(err: unknown): boolean {
   const e = err as { code?: string; cause?: { code?: string } };
-  return (e?.code ?? e?.cause?.code) === "42P01";
+  const code = e?.code ?? e?.cause?.code;
+  return code === "42P01" || code === "42703";
 }
 
 async function safe<T>(fn: () => Promise<T>, fallback: T, context: string): Promise<T> {
   try {
     return await fn();
   } catch (err) {
-    if (isMissingTable(err)) return fallback;
+    if (isMissingSchema(err)) return fallback;
     console.error(`[whatsapp:store:${context}] ${err instanceof Error ? err.message : err}`);
     return fallback;
   }
 }
 
-export type ConversationState = "new" | "menu" | "ai" | "handoff";
+export type ConversationState = "new" | "menu" | "ai" | "handoff" | "flow";
 
 export async function getConversation(waId: string): Promise<WhatsappConversation | null> {
   return safe(
@@ -145,6 +154,135 @@ export async function logOutbound(
     },
     undefined,
     "logOutbound",
+  );
+}
+
+// ─── Guided-booking wizard state ──────────────────────────────────────────────
+
+// A wizard session this old is considered abandoned: the customer is greeted
+// fresh rather than dropped back into a half-filled booking from last week.
+export const FLOW_SESSION_TTL_MS = 24 * 60 * 60 * 1000;
+
+// Persists the wizard step + all selections made so far. Called on every step
+// transition, so it is deliberately a single UPDATE.
+export async function setFlow(
+  waId: string,
+  flowStep: string,
+  flowContext: Record<string, unknown>,
+): Promise<void> {
+  await safe(
+    async () => {
+      await db
+        .update(whatsappConversations)
+        .set({
+          state: flowStep === "idle" ? "menu" : "flow",
+          flowStep,
+          flowContext,
+          flowUpdatedAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(whatsappConversations.waId, waId));
+    },
+    undefined,
+    "setFlow",
+  );
+}
+
+export async function clearFlow(waId: string): Promise<void> {
+  await safe(
+    async () => {
+      await db
+        .update(whatsappConversations)
+        .set({
+          state: "menu",
+          flowStep: "idle",
+          flowContext: null,
+          flowUpdatedAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(whatsappConversations.waId, waId));
+    },
+    undefined,
+    "clearFlow",
+  );
+}
+
+// True when the stored wizard session is still fresh enough to resume.
+export function isFlowSessionFresh(conversation: WhatsappConversation | null): boolean {
+  if (!conversation?.flowUpdatedAt) return false;
+  return Date.now() - new Date(conversation.flowUpdatedAt).getTime() < FLOW_SESSION_TTL_MS;
+}
+
+// ─── Handoff / opt-out ────────────────────────────────────────────────────────
+
+// Silences the bot for `minutes` while a human handles the chat.
+export async function setHandoff(waId: string, minutes: number): Promise<void> {
+  await safe(
+    async () => {
+      await db
+        .update(whatsappConversations)
+        .set({
+          state: "handoff",
+          handoffUntil: new Date(Date.now() + minutes * 60 * 1000),
+          updatedAt: new Date(),
+        })
+        .where(eq(whatsappConversations.waId, waId));
+    },
+    undefined,
+    "setHandoff",
+  );
+}
+
+export async function releaseHandoff(waId: string): Promise<void> {
+  await safe(
+    async () => {
+      await db
+        .update(whatsappConversations)
+        .set({ state: "menu", handoffUntil: null, updatedAt: new Date() })
+        .where(eq(whatsappConversations.waId, waId));
+    },
+    undefined,
+    "releaseHandoff",
+  );
+}
+
+export function isHandoffActive(conversation: WhatsappConversation | null): boolean {
+  if (!conversation?.handoffUntil) return false;
+  return new Date(conversation.handoffUntil).getTime() > Date.now();
+}
+
+export async function setOptOut(waId: string, optedOut: boolean): Promise<void> {
+  await safe(
+    async () => {
+      await db
+        .update(whatsappConversations)
+        .set({ optedOut, updatedAt: new Date() })
+        .where(eq(whatsappConversations.waId, waId));
+    },
+    undefined,
+    "setOptOut",
+  );
+}
+
+// ─── Webhook idempotency ──────────────────────────────────────────────────────
+
+// Claims an inbound message id. Returns true the FIRST time a message id is
+// seen and false for every redelivery, so the caller can skip replaying a tap.
+// If the ledger table is missing we return true (process it) — degrading to the
+// old at-least-once behaviour beats going silent.
+export async function claimInboundMessage(messageId: string, waId: string): Promise<boolean> {
+  if (!messageId) return true;
+  return safe(
+    async () => {
+      const rows = await db
+        .insert(whatsappProcessedMessages)
+        .values({ messageId, waId })
+        .onConflictDoNothing({ target: whatsappProcessedMessages.messageId })
+        .returning({ messageId: whatsappProcessedMessages.messageId });
+      return rows.length > 0;
+    },
+    true,
+    "claimInboundMessage",
   );
 }
 

@@ -10,7 +10,32 @@ import { logOutbound, touchOutbound } from "./store";
 
 type SendResult = { ok: boolean; messageId?: string; error?: string; status?: number };
 
+// ─── Simulation capture ───────────────────────────────────────────────────────
+// When a capture buffer is open, sends are recorded instead of being posted to
+// Meta. Used by the dev-only /api/whatsapp/simulate route to drive the whole
+// wizard without a phone, a Meta app or a single real message. Off unless a
+// caller explicitly opens a buffer, so production is untouched.
+
+export type CapturedMessage = { to: string; context: string; payload: Record<string, unknown> };
+
+let captureBuffer: CapturedMessage[] | null = null;
+
+export function beginCapture(): void {
+  captureBuffer = [];
+}
+
+export function drainCapture(): CapturedMessage[] {
+  const captured = captureBuffer ?? [];
+  captureBuffer = null;
+  return captured;
+}
+
 async function postMessage(payload: Record<string, unknown>, context: string): Promise<SendResult> {
+  if (captureBuffer) {
+    captureBuffer.push({ to: String(payload.to ?? ""), context, payload });
+    return { ok: true, messageId: `sim-${captureBuffer.length}`, status: 200 };
+  }
+
   if (!isWhatsappConfigured()) {
     console.warn(`[whatsapp:${context}] not configured — skipping send`, {
       to: payload.to,
@@ -115,6 +140,114 @@ export async function sendButtons(
   if (result.ok) {
     await logOutbound(to, "interactive", bodyText, result.messageId);
     await touchOutbound(to);
+  }
+  return result;
+}
+
+export type ListRow = { id: string; title: string; description?: string | null };
+export type ListSection = { title?: string | null; rows: ListRow[] };
+
+// Cloud API limits for an interactive list. Exceeding any of these is a 400
+// from Meta (i.e. a silently unanswered customer), so every caller goes through
+// the truncation below rather than trusting its own strings.
+export const LIST_MAX_ROWS = 10; // across ALL sections, not per section
+export const LIST_MAX_SECTIONS = 10;
+const LIST_ROW_TITLE_MAX = 24;
+const LIST_ROW_DESC_MAX = 72;
+const LIST_BUTTON_MAX = 20;
+const LIST_ROW_ID_MAX = 200;
+const INTERACTIVE_BODY_MAX = 1024;
+const INTERACTIVE_HEADER_MAX = 60;
+const INTERACTIVE_FOOTER_MAX = 60;
+
+// Interactive list message — the workhorse of the guided booking flow (brands,
+// models, repairs, time slots…). Rows are capped at 10 TOTAL, so callers must
+// paginate; `sendList` truncates defensively rather than letting Meta reject the
+// whole message.
+export async function sendList(
+  to: string,
+  opts: {
+    body: string;
+    buttonLabel: string;
+    sections: ListSection[];
+    header?: string | null;
+    footer?: string | null;
+  },
+  context = "list",
+): Promise<SendResult> {
+  let remaining = LIST_MAX_ROWS;
+  const sections = opts.sections
+    .slice(0, LIST_MAX_SECTIONS)
+    .map((section) => {
+      const rows = section.rows.slice(0, Math.max(0, remaining)).map((row) => ({
+        id: row.id.slice(0, LIST_ROW_ID_MAX),
+        title: row.title.slice(0, LIST_ROW_TITLE_MAX),
+        ...(row.description ? { description: row.description.slice(0, LIST_ROW_DESC_MAX) } : {}),
+      }));
+      remaining -= rows.length;
+      return { ...(section.title ? { title: section.title.slice(0, LIST_ROW_TITLE_MAX) } : {}), rows };
+    })
+    .filter((section) => section.rows.length > 0);
+
+  if (sections.length === 0) {
+    // Nothing to choose from — say so in text rather than sending an invalid list.
+    return sendText(to, opts.body, `${context}-empty`);
+  }
+
+  const result = await postMessage(
+    {
+      to,
+      type: "interactive",
+      interactive: {
+        type: "list",
+        ...(opts.header ? { header: { type: "text", text: opts.header.slice(0, INTERACTIVE_HEADER_MAX) } } : {}),
+        body: { text: opts.body.slice(0, INTERACTIVE_BODY_MAX) },
+        ...(opts.footer ? { footer: { text: opts.footer.slice(0, INTERACTIVE_FOOTER_MAX) } } : {}),
+        action: { button: opts.buttonLabel.slice(0, LIST_BUTTON_MAX), sections },
+      },
+    },
+    context,
+  );
+  if (result.ok) {
+    await logOutbound(to, "interactive", opts.body, result.messageId);
+    await touchOutbound(to);
+  }
+  return result;
+}
+
+// Interactive CTA-URL message: a tappable button that opens a link (the model's
+// page on looplic.com, the tracking page, an invoice). Nicer than a bare URL in
+// text and it keeps the customer's tap inside the conversation.
+export async function sendCtaUrl(
+  to: string,
+  opts: { body: string; buttonLabel: string; url: string; header?: string | null; footer?: string | null },
+  context = "cta-url",
+): Promise<SendResult> {
+  const result = await postMessage(
+    {
+      to,
+      type: "interactive",
+      interactive: {
+        type: "cta_url",
+        ...(opts.header ? { header: { type: "text", text: opts.header.slice(0, INTERACTIVE_HEADER_MAX) } } : {}),
+        body: { text: opts.body.slice(0, INTERACTIVE_BODY_MAX) },
+        ...(opts.footer ? { footer: { text: opts.footer.slice(0, INTERACTIVE_FOOTER_MAX) } } : {}),
+        action: {
+          name: "cta_url",
+          parameters: { display_text: opts.buttonLabel.slice(0, LIST_BUTTON_MAX), url: opts.url },
+        },
+      },
+    },
+    context,
+  );
+  if (result.ok) {
+    await logOutbound(to, "interactive", opts.body, result.messageId);
+    await touchOutbound(to);
+  }
+  // Older Cloud API versions / unapproved numbers can reject cta_url. Falling
+  // back to text keeps the customer moving instead of leaving them hanging.
+  if (!result.ok) {
+    return sendText(to, `${opts.body}\n\n${opts.url}`, `${context}-fallback`);
   }
   return result;
 }
