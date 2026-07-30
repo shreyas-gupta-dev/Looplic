@@ -20,7 +20,6 @@ const TABLE_MAP: Record<string, any> = {
   user_roles: schema.userRoles,
   customer_profiles: schema.customerProfiles,
   service_bills: schema.serviceBills,
-  booking_inspections: schema.bookingInspections,
   technician_applications: schema.technicianApplications,
 };
 
@@ -32,6 +31,25 @@ const PUBLIC_READ_TABLES = new Set([
 ]);
 
 const PUBLIC_INSERT_TABLES = new Set(["bookings", "technician_applications"]);
+
+// technician_applications is insert-only from this app (the technician signup
+// form) — nothing in apps/user ever reads it back, so a select is rejected
+// outright rather than left open to "any authenticated session" (which would
+// otherwise let a customer read every applicant's name/phone/email).
+const WRITE_ONLY_TABLES = new Set(["technician_applications"]);
+
+// Tables a customer session may mutate through this proxy, and the column
+// that must equal their own user id. Every update/upsert is force-scoped to
+// this column server-side — the client's own filters/payload are never
+// trusted to enforce ownership, since a forged request could otherwise edit
+// or read another customer's booking/profile. Tables not listed here (e.g.
+// service_bills, technician_applications) have no legitimate
+// customer-initiated mutation today, so update/upsert on them is rejected
+// outright.
+const OWNED_TABLES: Record<string, string> = {
+  bookings: "user_id",
+  customer_profiles: "user_id",
+};
 
 function snakeToCamel(s: string) {
   return s.replace(/_([a-z])/g, (_, l) => l.toUpperCase());
@@ -115,16 +133,42 @@ export async function POST(req: NextRequest) {
     const isRead = !op || op === "select";
 
     if (isRead) {
+      let readFilters = filters;
+      let readInFilters = inFilters;
       if (!PUBLIC_READ_TABLES.has(table)) {
         const session = await getServerSession();
         if (!session.user) {
           return NextResponse.json({ error: { message: "Unauthorized" } }, { status: 401 });
         }
+        if (WRITE_ONLY_TABLES.has(table)) {
+          return NextResponse.json({ error: { message: "Reads of this table are not permitted from this app." } }, { status: 403 });
+        }
+        // For owned tables, force-scope every read to the caller's own rows —
+        // whatever user_id filter the client sent (or omitted) is ignored, so
+        // a forged request can't read another customer's booking/profile.
+        const ownerColumn = OWNED_TABLES[table];
+        if (ownerColumn) {
+          readFilters = [...(filters || []), ["eq", ownerColumn, session.user.id]];
+        } else if (table === "service_bills") {
+          // service_bills has no direct user_id column — it's scoped through
+          // the booking it belongs to. Ignore whatever booking_id filter the
+          // client sent and force it to the caller's own booking ids, so a
+          // forged request can't read another customer's invoice.
+          const ownedBookings = await db
+            .select({ id: schema.bookings.id })
+            .from(schema.bookings)
+            .where(eq(schema.bookings.userId, session.user.id));
+          const ownedBookingIds = ownedBookings.map((row) => row.id);
+          if (ownedBookingIds.length === 0) {
+            return NextResponse.json({ data: single ? null : [] });
+          }
+          readInFilters = [["booking_id", ownedBookingIds]];
+        }
       }
 
       const selection = buildSelection(tbl, select);
       let query = (selection ? db.select(selection).from(tbl) : db.select().from(tbl)) as any;
-      query = applyFilters(query, tbl, filters, inFilters);
+      query = applyFilters(query, tbl, readFilters, readInFilters);
       query = applyOrder(query, tbl, order);
       const effectiveLimit = single ? 1 : (typeof limit === "number" && limit > 0 ? limit : undefined);
       if (effectiveLimit) query = query.limit(effectiveLimit);
@@ -150,21 +194,36 @@ export async function POST(req: NextRequest) {
     }
 
     if (op === "update") {
+      const ownerColumn = OWNED_TABLES[table];
+      if (!ownerColumn) {
+        return NextResponse.json({ error: { message: "Updates to this table are not permitted from this app." } }, { status: 403 });
+      }
+      // Force-scope to the caller's own row regardless of the client-supplied
+      // filters, so a forged filter (or a missing one) can't touch another
+      // customer's row.
+      const scopedFilters = [...(filters || []), ["eq", ownerColumn, session.user.id]];
       let query = db.update(tbl).set(mapRowIn(payload, tbl)) as any;
-      query = applyFilters(query, tbl, filters, inFilters);
+      query = applyFilters(query, tbl, scopedFilters, inFilters);
       const updated = await query.returning();
       return NextResponse.json({ data: updated.map(mapRowOut) });
     }
 
     if (op === "delete") {
-      let query = db.delete(tbl) as any;
-      query = applyFilters(query, tbl, filters, inFilters);
-      await query;
-      return NextResponse.json({ data: null });
+      // No legitimate customer-initiated delete exists in this app today.
+      return NextResponse.json({ error: { message: "Delete is not permitted from this app." } }, { status: 403 });
     }
 
     if (op === "upsert") {
+      const ownerColumn = OWNED_TABLES[table];
+      if (!ownerColumn) {
+        return NextResponse.json({ error: { message: "Upserts to this table are not permitted from this app." } }, { status: 403 });
+      }
       const rows = Array.isArray(payload) ? payload.map((row: any) => mapRowIn(row, tbl)) : [mapRowIn(payload, tbl)];
+      const ownerKey = snakeToCamel(ownerColumn);
+      // Never trust a client-supplied owner id — force every upserted row to
+      // belong to the caller, so a forged payload can't overwrite someone
+      // else's profile/booking via onConflict.
+      for (const row of rows) row[ownerKey] = session.user.id;
       const onConflictKey = onConflict ? snakeToCamel(onConflict) : null;
       const conflictTarget = onConflictKey ? tbl[onConflictKey] : null;
       let insertQuery: any = db.insert(tbl).values(rows);

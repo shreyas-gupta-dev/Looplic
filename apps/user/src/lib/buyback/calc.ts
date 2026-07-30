@@ -40,6 +40,11 @@ export function brandOsSegment(brandName: string): Exclude<BuybackOsSegment, "al
   return brandName.trim().toLowerCase() === "apple" ? "apple" : "android";
 }
 
+export function questionMatchesSegment(question: BuybackQuestionRow, segment: Exclude<BuybackOsSegment, "all">): boolean {
+  const scope = question.os_segment || "all";
+  return scope === "all" || scope === segment;
+}
+
 export type QuoteLine = {
   optionId: string;
   questionTitle: string;
@@ -54,6 +59,23 @@ export type QuoteResult = {
   basePrice: number;
   finalQuote: number;
   lines: QuoteLine[];
+};
+
+export function formatEffect(effectType: BuybackEffectType, amount: number): string {
+  const n = Number(amount) || 0;
+  switch (effectType) {
+    case "deduct_fixed": return `-₹${n.toLocaleString("en-IN")}`;
+    case "deduct_percent": return `-${n}%`;
+    case "add_fixed": return `+₹${n.toLocaleString("en-IN")}`;
+    case "add_percent": return `+${n}%`;
+  }
+}
+
+export const EFFECT_LABELS: Record<BuybackEffectType, { label: string; helper: string }> = {
+  deduct_fixed: { label: "Deduct ₹ (fixed)", helper: "Subtracts a flat amount" },
+  deduct_percent: { label: "Deduct % of value", helper: "Cuts the running quote by this percent (compounds with other % cuts)" },
+  add_fixed: { label: "Add ₹ (fixed)", helper: "Adds a flat amount (e.g. original box / charger / bill)" },
+  add_percent: { label: "Add % of value", helper: "Increases the running quote by this percent" },
 };
 
 /**

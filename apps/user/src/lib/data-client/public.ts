@@ -10,6 +10,12 @@ function snakeToCamel(col: string) {
   return col.replace(/_([a-z])/g, (_, l) => l.toUpperCase());
 }
 
+// This client has NO auth/session check of any kind — every table listed
+// here is readable by anyone who can reach the calling server code, with
+// whatever filters that code passes. Only list genuinely public catalog
+// data; never add bookings/customer_profiles/service_bills or any other
+// per-user table here (use the session-checked, ownership-scoped db-proxy
+// client in data-client/client.ts for those instead).
 const TABLE_MAP: Record<string, any> = {
   brands: schema.brands,
   series: schema.series,
@@ -22,12 +28,6 @@ const TABLE_MAP: Record<string, any> = {
   screen_guard_categories: schema.screenGuardCategories,
   app_settings: schema.appSettings,
   model_repair_subcategory_prices: schema.modelRepairSubcategoryPrices,
-  bookings: schema.bookings,
-  user_roles: schema.userRoles,
-  customer_profiles: schema.customerProfiles,
-  service_bills: schema.serviceBills,
-  booking_inspections: schema.bookingInspections,
-  technician_applications: schema.technicianApplications,
   blog_posts: schema.blogPosts,
 };
 
