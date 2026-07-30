@@ -1,7 +1,13 @@
 # Looplic WhatsApp Bot — Go‑Live Guide (Meta Cloud API)
 
-This is the step‑by‑step to take the WhatsApp bot (already built, PR #62) from
-code to a live, auto‑replying WhatsApp number.
+This is the step‑by‑step to take the WhatsApp bot from code to a live,
+auto‑replying WhatsApp number.
+
+> **Status (2026‑07‑30): the code is merged and deployed.** PR #62 (the bot +
+> the guided booking wizard) and PR #63 (the Amplify runtime‑env fix) are both on
+> `master`, and both RDS migrations have been run. Everything in **Part A** below
+> is still outstanding — the bot stays inert until real Meta credentials exist.
+> See **Part B** for what's already done vs. what's left.
 
 Decision made: **migrate the existing number `+91 98865 79923` (9886579923)** from
 the WhatsApp Business *app* (currently branded "Numunix") onto the **WhatsApp
@@ -80,23 +86,46 @@ To change it:
 
 ---
 
-## Part B — What I do (once you give me the 4 credentials + your OK to deploy)
+## Part B — Deployment
 
-1. **Set the env vars in Amplify** (user app): `WHATSAPP_PHONE_NUMBER_ID`,
+### ✅ Already done (2026‑07‑30)
+
+- **Both RDS migrations are run** on prod: the base
+  `whatsapp_conversations` / `whatsapp_messages` DDL *and*
+  `scripts/migrate-whatsapp-flow.sql` (wizard state + the
+  `whatsapp_processed_messages` idempotency ledger).
+- **PR #62 merged to `master`** — the webhook is live at
+  `https://www.looplic.com/api/whatsapp/webhook` and answers Meta's verification.
+- **PR #63 merged to `master`** — `amplify.yml` now copies `WHATSAPP_*` and
+  `ANTHROPIC_API_KEY` into `.env.production` at build time. Without it, variables
+  set in the Amplify console never reach the request‑time Lambda and the bot is
+  silent with no error anywhere. **Any new server‑side env var must be added to
+  that grep or it won't exist at runtime.**
+
+### ⬜ Remaining (needs your Meta account + AWS console)
+
+1. **Get the four credentials** from Meta — Part A above. Note the placeholders
+   currently sitting in `apps/user/.env.local` are dummies
+   (`WHATSAPP_ACCESS_TOKEN=DUMM…`); replace them for local testing.
+2. **Set the env vars in Amplify** (user app): `WHATSAPP_PHONE_NUMBER_ID`,
    `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_APP_SECRET`,
-   `WHATSAPP_TEAM_NUMBERS` (staff alert numbers), and `ANTHROPIC_API_KEY` (for the AI).
-2. **Run the RDS migration** (the `whatsapp_conversations` / `whatsapp_messages` DDL at
-   the tail of `rds-schema.sql`).
-3. **Merge PR #62 → master** so the webhook goes live at
-   `https://www.looplic.com/api/whatsapp/webhook` (Amplify auto‑builds).
+   `WHATSAPP_TEAM_NUMBERS` (staff alert numbers), and optionally
+   `ANTHROPIC_API_KEY` (free‑text AI lane) and `WHATSAPP_BOOKING_TEMPLATE` /
+   `WHATSAPP_STATUS_TEMPLATE` (approved templates).
+3. **Redeploy the user app** so the build bakes those variables in. Setting them
+   without a rebuild changes nothing.
 4. **Register the webhook in Meta** (WhatsApp → Configuration):
    - Callback URL: `https://www.looplic.com/api/whatsapp/webhook`
    - Verify token: your `WHATSAPP_VERIFY_TOKEN`
    - Subscribe to the **messages** field.
-5. **Set the Looplic business profile via the Cloud API** — profile picture (the
-   colored Looplic logo), about text, address, email, website — so the chat shows
-   Looplic, not Numunix. (The verified *display name* change to "Looplic" is a separate
-   Meta review.)
+5. **Set the Looplic business profile via the Cloud API** — run
+   `node scripts/whatsapp-set-profile.mjs` for the profile picture (the colored
+   Looplic logo), about text, address, email and website, so the chat shows
+   Looplic, not Numunix. (The verified *display name* change is a separate Meta
+   review — see 4b.)
+6. **Place one real booking yourself** before publicising the number. Every other
+   path has been exercised against the live catalogue, but the Confirm tap —
+   which writes a booking and sends the lead email — has never run for real.
 
 ---
 
