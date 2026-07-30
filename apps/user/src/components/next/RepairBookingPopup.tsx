@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { whatsappUrl } from "@/src/lib/company";
+import { buildWhatsappLink } from "@/src/lib/whatsapp-links";
 
 const popupSeenKey = "looplic-repair-popup-shown";
 
@@ -80,7 +80,7 @@ export function RepairBookingPopup() {
           </div>
 
           <a
-            href={`${whatsappUrl}?text=${encodeURIComponent("Hi Looplic, I want to book a repair.")}`}
+            href={buildWhatsappLink({ service: "mobile_repair" })}
             target="_blank"
             rel="noreferrer"
             className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-5 text-sm font-black text-white shadow-lg shadow-emerald-500/25 transition-colors hover:bg-emerald-600"

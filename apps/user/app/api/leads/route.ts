@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { sendCustomerBookingConfirmation, sendLeadEmail } from "@/src/lib/email/resend";
 import type { LeadPayload } from "@/src/lib/leads/types";
+import { notifyCustomerBookingConfirmation, notifyTeamNewLead } from "@/src/lib/whatsapp/notify";
 
 function cleanString(value: unknown, maxLength = 500) {
   if (value === null || value === undefined) {
@@ -72,7 +73,17 @@ export async function POST(request: Request) {
           "error" in confirmationResult ? confirmationResult.error : "Confirmation email was skipped.",
         );
       }
+      // WhatsApp confirmation to the customer (mirrors the email). Best-effort.
+      await notifyCustomerBookingConfirmation(payload).catch((err) =>
+        console.error("WhatsApp booking confirmation failed", err),
+      );
     }
+
+    // Internal WhatsApp alert to the team for every lead. Best-effort; never
+    // blocks the response (a WhatsApp misconfig must not drop a website lead).
+    await notifyTeamNewLead(payload).catch((err) =>
+      console.error("WhatsApp team alert failed", err),
+    );
 
     return NextResponse.json({ ok: true });
   } catch (error) {

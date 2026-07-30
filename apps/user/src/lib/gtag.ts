@@ -2,6 +2,15 @@
 // Remove an entry if its Google Ads account is retired.
 export const GOOGLE_ADS_IDS = ["AW-18323182413", "AW-18186396144"] as const;
 
+// GA4 property (Google Analytics). Optional: tracking stays Ads-only until the
+// env var is set, so builds without it behave exactly as before.
+export const GA4_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID ?? "";
+
+// All destinations that receive config, page views, and events.
+export const GTAG_IDS: readonly string[] = GA4_MEASUREMENT_ID
+  ? [...GOOGLE_ADS_IDS, GA4_MEASUREMENT_ID]
+  : GOOGLE_ADS_IDS;
+
 // The gtag.js loader script is shared across accounts, so the URL only needs one ID.
 export const GOOGLE_ADS_ID = GOOGLE_ADS_IDS[0];
 
@@ -21,7 +30,7 @@ export function trackGoogleAdsEvent(eventName: string, params: GtagParams = {}) 
   }
 
   window.gtag("event", eventName, {
-    send_to: GOOGLE_ADS_IDS,
+    send_to: GTAG_IDS,
     ...params,
   });
 }
@@ -31,7 +40,7 @@ export function trackGoogleAdsPageView(pagePath: string) {
     return;
   }
 
-  for (const id of GOOGLE_ADS_IDS) {
+  for (const id of GTAG_IDS) {
     window.gtag("config", id, { page_path: pagePath });
   }
 }
@@ -42,7 +51,7 @@ export function trackGoogleAdsConversion(conversionName: string, params: GtagPar
   }
 
   window.gtag("event", "conversion", {
-    send_to: GOOGLE_ADS_IDS,
+    send_to: GTAG_IDS,
     event_category: "lead",
     event_label: conversionName,
     ...params,

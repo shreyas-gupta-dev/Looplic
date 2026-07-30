@@ -433,3 +433,44 @@ CREATE TABLE IF NOT EXISTS buyback_question_options (
 );
 
 CREATE INDEX IF NOT EXISTS idx_buyback_question_options_question_id ON buyback_question_options(question_id);
+
+-- ─── WhatsApp bot ────────────────────────────────────────────────────────────
+-- One row per customer WhatsApp number, plus an append-only message log.
+CREATE TABLE IF NOT EXISTS whatsapp_conversations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  wa_id TEXT NOT NULL UNIQUE,             -- customer phone in E.164 without '+'
+  profile_name TEXT,
+  state TEXT NOT NULL DEFAULT 'new',      -- new | menu | ai | handoff | flow
+  last_booking_code TEXT,
+  last_inbound_at TIMESTAMPTZ,
+  last_outbound_at TIMESTAMPTZ,
+  flow_step TEXT NOT NULL DEFAULT 'idle', -- guided-booking wizard step
+  flow_context JSONB,                     -- selections made so far in the wizard
+  flow_updated_at TIMESTAMPTZ,
+  handoff_until TIMESTAMPTZ,              -- bot stays silent while a human owns the chat
+  opted_out BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Idempotency ledger: Meta redelivers a webhook when our 200 is slow or lost,
+-- and a replayed tap on the confirm step would create a duplicate booking.
+CREATE TABLE IF NOT EXISTS whatsapp_processed_messages (
+  message_id TEXT PRIMARY KEY,
+  wa_id TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_whatsapp_processed_messages_created_at ON whatsapp_processed_messages(created_at);
+
+CREATE TABLE IF NOT EXISTS whatsapp_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  wa_id TEXT NOT NULL,
+  direction TEXT NOT NULL,                -- inbound | outbound
+  message_id TEXT,                        -- WhatsApp message id (wamid...) when known
+  type TEXT NOT NULL DEFAULT 'text',
+  body TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_whatsapp_messages_wa_id ON whatsapp_messages(wa_id, created_at);
