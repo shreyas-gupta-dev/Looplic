@@ -20,7 +20,10 @@ applications:
             - export NODE_OPTIONS=--max-old-space-size=4096
             # Amplify WEB_COMPUTE injects env vars only at build time; persist
             # them so Next.js loads them at runtime (fixes ECONNREFUSED on RDS).
-            - env | grep -E '^(DATABASE_|SUPABASE_|RESEND_|APP_AWS_|NEXT_PUBLIC_)' >> apps/user/.env.production
+            # WHATSAPP_/ANTHROPIC_ are needed by the WhatsApp bot's webhook,
+            # which runs server-side at request time — without them here
+            # isWhatsappConfigured() is false in prod and the bot goes silent.
+            - env | grep -E '^(DATABASE_|SUPABASE_|RESEND_|APP_AWS_|NEXT_PUBLIC_|WHATSAPP_|ANTHROPIC_)' >> apps/user/.env.production
             - npm run build -w @looplic/user
       artifacts:
         baseDirectory: apps/user/.next
