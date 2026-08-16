@@ -1,22 +1,24 @@
 import type { Metadata } from "next";
-import { Nunito } from "next/font/google";
+import { Poppins } from "next/font/google";
 import Script from "next/script";
 
 import "@/app/globals.css";
 import { AppProviders } from "@/components/Providers";
+import { LazyOverlays } from "@/components/LazyOverlays";
 import { GOOGLE_ADS_ID, GTAG_IDS } from "@/src/lib/gtag";
 import { siteConfig } from "@/src/lib/site";
 
-const nunito = Nunito({
+const poppins = Poppins({
   subsets: ["latin"],
-  variable: "--font-nunito",
-  weight: ["400", "500", "600", "700", "800", "900"],
+  variable: "--font-poppins",
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: "Device Repair & Tech Support at Home",
+    default: "Sell & Buy Refurbished Phones, Laptops & More",
     template: "%s | Looplic",
   },
   description: siteConfig.description,
@@ -41,7 +43,7 @@ const organizationJsonLd = {
   url: siteConfig.url,
   logo: new URL("/looplic-app-icon-512.png", siteConfig.url).toString(),
   description: siteConfig.description,
-  sameAs: ["https://www.instagram.com/thelooplic/", "https://www.linkedin.com/company/looplic"],
+  sameAs: ["https://www.instagram.com/looplic/", "https://www.linkedin.com/company/looplic"],
   contactPoint: {
     "@type": "ContactPoint",
     telephone: "+91-88844-45924",
@@ -66,7 +68,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={nunito.variable} suppressHydrationWarning>
+      <body className={poppins.variable} suppressHydrationWarning>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }} />
         <Script async src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ADS_ID}`} strategy="afterInteractive" />
         <Script id="looplic-google-ads" strategy="afterInteractive">
@@ -77,7 +79,7 @@ export default function RootLayout({
             ${GTAG_IDS.map((id) => `gtag('config', '${id}');`).join("\n            ")}
           `}
         </Script>
-        <Script id="looplic-pwa-install" strategy="beforeInteractive">
+        <Script id="looplic-pwa-install" strategy="afterInteractive">
           {`
             (function () {
               if (window.__looplicPwaInstallSetup) return;
@@ -111,6 +113,7 @@ export default function RootLayout({
           `}
         </Script>
         {children}
+        <LazyOverlays />
         <AppProviders />
       </body>
     </html>

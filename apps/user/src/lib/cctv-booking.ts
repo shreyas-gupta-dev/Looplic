@@ -34,6 +34,15 @@ export function buildCctvBrandSelectionHref(serviceValue?: string) {
   return `/service/cctv/brands${params.toString() ? `?${params.toString()}` : ""}`;
 }
 
+// Jumps straight into the booking wizard, which now has its own in-flow
+// service/brand picker step — skips the separate /service/cctv/brands page
+// and its extra full-page navigation.
+export function buildCctvBookingEntryHref(serviceValue?: string) {
+  const params = new URLSearchParams();
+  if (serviceValue) params.set("cctv_service", serviceValue);
+  return `/book/cctv${params.toString() ? `?${params.toString()}` : ""}`;
+}
+
 export function buildCctvBookingHref(serviceValue: string, brand: string) {
   const params = new URLSearchParams({
     cctv_service: serviceValue,

@@ -89,6 +89,7 @@ type FlowStep =
   | "service-select"
   | "repair-select"
   | "laptop-specs"
+  | "cctv-select"
   | "cctv-config"
   | "notes"
   | "details"
@@ -98,6 +99,7 @@ const FLOW_STEPS: FlowStep[] = [
   "service-select",
   "repair-select",
   "laptop-specs",
+  "cctv-select",
   "cctv-config",
   "notes",
   "details",
@@ -228,11 +230,19 @@ export function UniversalBookingFlow({
   const [laptopStorage, setLaptopStorage] = useState("");
   const [laptopOs, setLaptopOs] = useState("");
 
+  // ─ CCTV service + brand ─
+  // Editable in-flow state (seeded from the URL) so picking a service/brand no
+  // longer requires a separate full-page navigation to /service/cctv/brands.
+  const [selectedCctvService, setSelectedCctvService] = useState(() => {
+    const v = searchParams.get("cctv_service") || "";
+    return isCctvServiceValue(v) ? v : "";
+  });
+  const [selectedCctvBrand, setSelectedCctvBrand] = useState(() => {
+    const v = searchParams.get("cctv_brand") || "";
+    return isCctvBrandValue(v) ? v : "";
+  });
+
   // ─ CCTV config ─
-  const requestedCctvService = searchParams.get("cctv_service") || "";
-  const requestedCctvBrand = searchParams.get("cctv_brand") || "";
-  const selectedCctvService = isCctvServiceValue(requestedCctvService) ? requestedCctvService : "";
-  const selectedCctvBrand = isCctvBrandValue(requestedCctvBrand) ? requestedCctvBrand : "";
   const [cctvCameraCount, setCctvCameraCount] = useState("");
   const [cctvLocationType, setCctvLocationType] = useState("");
   const [cctvDvrPreference, setCctvDvrPreference] = useState("");
@@ -253,7 +263,7 @@ export function UniversalBookingFlow({
   // The step the flow naturally starts on, before any URL state is applied.
   function flowEntryStep(): FlowStep {
     if (isDeviceFlow) return "service-select";
-    if (isCctv) return "cctv-config";
+    if (isCctv) return selectedCctvService && selectedCctvBrand ? "cctv-config" : "cctv-select";
     return "notes";
   }
   const stepParam = searchParams.get("step");
@@ -352,9 +362,10 @@ export function UniversalBookingFlow({
   }
 
   function getPreviousStep(): FlowStep | null {
-    if (currentStep === "service-select" || currentStep === "cctv-config" || currentStep === "notes") return null;
+    if (currentStep === "service-select" || currentStep === "cctv-select" || currentStep === "notes") return null;
     if (currentStep === "repair-select") return "service-select";
     if (currentStep === "laptop-specs") return "repair-select";
+    if (currentStep === "cctv-config") return "cctv-select";
     if (currentStep === "details") {
       if (isDeviceFlow) return isLaptop ? "laptop-specs" : (isRepair ? "repair-select" : "service-select");
       if (isCctv) return "cctv-config";
@@ -407,12 +418,24 @@ export function UniversalBookingFlow({
           setCity(p.city || "");
           setPincode(p.pincode || "");
         }
-        // 2. customer_profiles (authoritative)
-        const { data: profileData } = await dataClient
-          .from("customer_profiles")
-          .select("full_name, phone, address, city, pincode, inspect_latitude, inspect_longitude")
-          .eq("user_id", user.id)
-          .maybeSingle();
+        // 2. customer_profiles (authoritative) + 3. last booking, fired together
+        // instead of sequentially — the booking query is discarded when a
+        // profile exists, but running both in parallel halves the round-trip
+        // latency for new users who don't have a profile yet.
+        const [{ data: profileData }, { data: lastBooking }] = await Promise.all([
+          dataClient
+            .from("customer_profiles")
+            .select("full_name, phone, address, city, pincode, inspect_latitude, inspect_longitude")
+            .eq("user_id", user.id)
+            .maybeSingle(),
+          dataClient
+            .from("bookings")
+            .select("customer_name, customer_phone, location, pincode, inspect_latitude, inspect_longitude")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+        ]);
         if (!ignore && profileData) {
           const p = profileData as any;
           setName(p.full_name || "");
@@ -425,29 +448,19 @@ export function UniversalBookingFlow({
           setLatitude(profileLat);
           setLongitude(profileLng);
           if (profileLat !== null && profileLng !== null) shouldCenterMapRef.current = true;
-        } else if (!ignore) {
-          // 3. Fall back to last booking
-          const { data: lastBooking } = await dataClient
-            .from("bookings")
-            .select("customer_name, customer_phone, location, pincode, inspect_latitude, inspect_longitude")
-            .eq("user_id", user.id)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          if (!ignore && lastBooking) {
-            const b = lastBooking as any;
-            const loc = parseBookingLocation(b.location);
-            setName(b.customer_name || "");
-            setPhone(b.customer_phone || "");
-            setAddress(loc.address);
-            setCity(loc.city);
-            setPincode(b.pincode || "");
-            const bookingLat = toFiniteCoord(b.inspect_latitude);
-            const bookingLng = toFiniteCoord(b.inspect_longitude);
-            setLatitude(bookingLat);
-            setLongitude(bookingLng);
-            if (bookingLat !== null && bookingLng !== null) shouldCenterMapRef.current = true;
-          }
+        } else if (!ignore && lastBooking) {
+          const b = lastBooking as any;
+          const loc = parseBookingLocation(b.location);
+          setName(b.customer_name || "");
+          setPhone(b.customer_phone || "");
+          setAddress(loc.address);
+          setCity(loc.city);
+          setPincode(b.pincode || "");
+          const bookingLat = toFiniteCoord(b.inspect_latitude);
+          const bookingLng = toFiniteCoord(b.inspect_longitude);
+          setLatitude(bookingLat);
+          setLongitude(bookingLng);
+          if (bookingLat !== null && bookingLng !== null) shouldCenterMapRef.current = true;
         }
       } finally {
         if (!ignore) setProfileLoaded(true);
@@ -564,6 +577,12 @@ export function UniversalBookingFlow({
     persistProfileLocally();
     toast.success("Details saved");
     goTo("schedule");
+  }
+
+  function handleContinueFromCctvSelect() {
+    if (!selectedCctvService) { toast.error("Please select the CCTV service you need."); return; }
+    if (!selectedCctvBrand) { toast.error("Please select your CCTV brand (or Other / Not Sure)."); return; }
+    goTo("cctv-config");
   }
 
   function handleContinueFromCctvConfig() {
@@ -732,7 +751,10 @@ export function UniversalBookingFlow({
 
   // ─── Early returns ────────────────────────────────────────────────────────────
 
-  if (authLoading) {
+  // Auth state only gates the "details" step (it branches on whether `user` is
+  // signed in). Earlier steps (service/CCTV/laptop config) don't need it, so
+  // don't block them behind the session round-trip with a full-page spinner.
+  if (authLoading && currentStep === "details") {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
         <Loader2 className="size-6 animate-spin text-primary" />
@@ -984,6 +1006,48 @@ export function UniversalBookingFlow({
             <button
               type="button"
               onClick={handleContinueFromLaptopSpecs}
+              className="mt-6 rounded-2xl gradient-brand px-5 py-3 text-sm font-bold text-primary-foreground"
+            >
+              Continue
+            </button>
+          </section>
+        )}
+
+        {/* ── STEP: cctv-select ── */}
+        {currentStep === "cctv-select" && isCctv && (
+          <section className="rounded-2xl border border-border bg-card p-5 shadow-card-brand">
+            <h1 className="mb-1 text-xl font-semibold text-foreground">CCTV Installation</h1>
+            <p className="mb-5 text-xs text-muted-foreground">Choose your service and camera brand to get started</p>
+
+            <div className="space-y-6">
+              <div>
+                <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">What do you need?</p>
+                <div className="flex flex-wrap gap-2">
+                  {cctvServiceOptions.map((opt) => (
+                    <button key={opt.value} type="button" onClick={() => setSelectedCctvService(opt.value)}
+                      className={`rounded-xl border px-4 py-2 text-sm font-bold transition-all ${selectedCctvService === opt.value ? "border-primary bg-primary/5 text-foreground shadow-elevated-brand" : "border-border bg-background text-muted-foreground hover:border-primary/30"}`}>
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">CCTV Brand</p>
+                <div className="flex flex-wrap gap-2">
+                  {cctvBrandOptions.map((brandOption) => (
+                    <button key={brandOption} type="button" onClick={() => setSelectedCctvBrand(brandOption)}
+                      className={`rounded-xl border px-4 py-2 text-sm font-bold transition-all ${selectedCctvBrand === brandOption ? "border-primary bg-primary/5 text-foreground shadow-elevated-brand" : "border-border bg-background text-muted-foreground hover:border-primary/30"}`}>
+                      {brandOption}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleContinueFromCctvSelect}
               className="mt-6 rounded-2xl gradient-brand px-5 py-3 text-sm font-bold text-primary-foreground"
             >
               Continue

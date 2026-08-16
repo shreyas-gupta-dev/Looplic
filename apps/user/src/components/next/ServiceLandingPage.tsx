@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, ChevronRight, Laptop, Smartphone } from "lucide-react";
+import { ChevronDown, ChevronRight, Laptop, Smartphone, Shield, Clock, Wrench, Monitor, Battery, Zap, Cpu, Volume2, Camera } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -21,29 +21,43 @@ type ServiceLandingPageProps = {
 
 const serviceConfig = {
   "mobile-repair": {
-    title: "Mobile Repair",
+    title: "Mobile Phone Repair at Your Doorstep",
     subtitle: "Expert mobile repair service at your location",
     searchPlaceholder: "Search your phone model...",
-    brandLabel: "Pick a mobile brand",
+    brandLabel: "Select Your Brand",
     allHref: "/service/mobile-repair/brands",
-    color: "from-orange-500 to-red-500",
     icon: Smartphone,
   },
   "laptop-repair": {
-    title: "Laptop Repair",
+    title: "Laptop Repair at Your Doorstep",
     subtitle: "Professional laptop repair at your doorstep",
     searchPlaceholder: "Search your laptop model...",
-    brandLabel: "Pick a laptop brand",
+    brandLabel: "Select Your Brand",
     allHref: "/service/laptop-repair/brands",
-    color: "from-violet-500 to-purple-600",
     icon: Laptop,
   },
 } as const;
 
-const stats = [
-  { value: "2000+", label: "Installs" },
-  { value: "4.8+", label: "Rating" },
-  { value: "30min", label: "Service" },
+const repairTypes = [
+  { icon: Monitor, label: "Screen Repair", description: "Cracked or broken display" },
+  { icon: Battery, label: "Battery Replacement", description: "Weak or dead battery" },
+  { icon: Zap, label: "Charging Port", description: "Loose or faulty port" },
+  { icon: Cpu, label: "Motherboard", description: "Complex board-level repair" },
+  { icon: Volume2, label: "Speaker/Mic", description: "Audio issues fixed" },
+  { icon: Camera, label: "Camera Repair", description: "Front or rear camera" },
+];
+
+const howItWorksSteps = [
+  { step: "1", title: "Select Your Device", description: "Choose your brand & model from our catalog" },
+  { step: "2", title: "Pick a Repair", description: "Select the issue you're facing with your device" },
+  { step: "3", title: "Book a Slot", description: "Choose a convenient time for doorstep visit" },
+  { step: "4", title: "Get It Fixed", description: "Our expert technician repairs it at your location" },
+];
+
+const trustSignals = [
+  { icon: Shield, title: "6 Month Warranty", description: "On all repairs performed" },
+  { icon: Wrench, title: "Expert Technicians", description: "Certified & experienced professionals" },
+  { icon: Clock, title: "30 Min Service", description: "Most repairs completed on spot" },
 ];
 
 export function ServiceLandingPage({
@@ -66,50 +80,41 @@ export function ServiceLandingPage({
         setVisibleCount(15);
         return;
       }
-
       if (window.innerWidth >= 640) {
         setVisibleCount(12);
         return;
       }
-
       setVisibleCount(9);
     };
 
     updateVisibleCount();
     window.addEventListener("resize", updateVisibleCount);
-
     return () => window.removeEventListener("resize", updateVisibleCount);
   }, []);
 
-  const heroBrands = brands.slice(0, 6);
-  const moreBrandsData = brands.slice(6);
+  const heroBrands = brands.slice(0, 8);
+  const moreBrandsData = brands.slice(8);
   const hasMore = moreBrandsData.length > visibleCount;
   const displayedBrands = showAll ? moreBrandsData : moreBrandsData.slice(0, hasMore ? visibleCount - 1 : visibleCount);
 
-  const Icon = config.icon;
-
   return (
     <>
-      <section className="relative overflow-hidden pb-6 pt-8 md:pb-20 md:pt-16">
-        <div className="absolute inset-0 gradient-hero-bg" />
-        <div className="absolute right-0 top-0 size-80 rounded-full gradient-brand opacity-[0.06] blur-[100px]" />
+      {/* Hero Section */}
+      <section className="bg-white py-12 md:py-16">
+        <div className="mx-auto max-w-4xl px-4 text-center">
+          {eyebrow && (
+            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-green-600">
+              {eyebrow}
+            </p>
+          )}
+          <h1 className="text-3xl font-bold text-gray-900 md:text-4xl lg:text-5xl">
+            {heroTitle ?? config.title}
+          </h1>
+          <p className="mx-auto mt-4 max-w-xl text-base text-gray-500">
+            {heroDescription ?? config.subtitle}
+          </p>
 
-        <div className="container relative z-10">
-          <div className="mx-auto max-w-lg text-center">
-            {eyebrow ? (
-              <p className="mb-3 text-[11px] font-black uppercase tracking-[0.24em] text-primary/80">
-                {eyebrow}
-              </p>
-            ) : null}
-            <h1 className="px-4 text-[26px] font-semibold leading-[1.15] tracking-tight text-foreground md:text-5xl">
-              {heroTitle ?? (
-                <>
-                  {config.title} <span className="mt-1 block gradient-brand-text">{config.subtitle.split(" ").slice(-4).join(" ")}</span>
-                </>
-              )}
-            </h1>
-            <p className="mx-auto mt-3 max-w-xs text-[13px] leading-relaxed text-muted-foreground">{heroDescription ?? config.subtitle}</p>
-
+          <div className="mx-auto mt-8 max-w-lg">
             <DeviceSearchBox
               placeholder={searchPlaceholder ?? config.searchPlaceholder}
               browseHref={config.allHref}
@@ -119,111 +124,146 @@ export function ServiceLandingPage({
               mode={serviceType}
             />
           </div>
+        </div>
+      </section>
 
-          <div className="mx-auto mt-8 max-w-md">
-            <div className="mb-3 flex items-center justify-between px-1">
-              <p className="text-xs font-bold text-muted-foreground">- {config.brandLabel} -</p>
-              <Link href={config.allHref} className="flex items-center gap-0.5 text-[10px] font-bold text-primary">
-                All <ChevronRight className="size-3" />
-              </Link>
-            </div>
+      {/* Repair Types */}
+      <section className="border-t border-gray-100 bg-gray-50 py-12 md:py-16">
+        <div className="mx-auto max-w-6xl px-4">
+          <h2 className="text-center text-2xl font-bold text-gray-900">What needs fixing?</h2>
+          <p className="mt-2 text-center text-sm text-gray-500">Select the repair type for your device</p>
 
-            {heroBrands.length > 0 ? (
-              <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-                {heroBrands.map((brand) => (
-                  <Link
-                    key={brand.id}
-                    href={`/service/${serviceType}/brands/${brand.slug}`}
-                    className="flex flex-col items-center gap-1.5 rounded-2xl border border-border bg-card px-2 py-3 shadow-card-brand transition-all hover:border-primary/30 hover:shadow-elevated-brand active:scale-95"
-                  >
-                    <BrandLogo
-                      name={brand.name}
-                      imageUrl={brand.image_url}
-                      letter={brand.letter}
-                      gradient={brand.gradient}
-                      className="size-10 rounded-xl object-contain"
-                      fallbackClassName="size-10 rounded-xl"
-                    />
-                    <span className="text-[10px] font-bold text-foreground">{brand.name}</span>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <p className="py-4 text-center text-sm text-muted-foreground">No brands available yet</p>
-            )}
-          </div>
-
-          <div className="mx-auto mt-6 max-w-xs">
-            <div className="flex items-center justify-around rounded-2xl border border-border bg-card/80 p-3.5 shadow-card-brand backdrop-blur-sm">
-              {stats.map((stat, index) => (
-                <div key={stat.label} className="relative flex-1 text-center">
-                  <div className="text-base font-extrabold leading-none gradient-brand-text">{stat.value}</div>
-                  <div className="mt-1 text-[9px] font-bold uppercase tracking-widest text-muted-foreground">{stat.label}</div>
-                  {index < stats.length - 1 ? <div className="absolute right-0 top-1/2 h-6 w-px -translate-y-1/2 bg-border" /> : null}
+          <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+            {repairTypes.map((repair) => {
+              const Icon = repair.icon;
+              return (
+                <div
+                  key={repair.label}
+                  className="flex flex-col items-center rounded-lg border border-gray-200 bg-white p-5 text-center transition-shadow hover:shadow-md"
+                >
+                  <div className="flex size-12 items-center justify-center rounded-full bg-green-50">
+                    <Icon className="size-6 text-green-600" />
+                  </div>
+                  <h3 className="mt-3 text-sm font-semibold text-gray-900">{repair.label}</h3>
+                  <p className="mt-1 text-xs text-gray-500">{repair.description}</p>
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {moreBrandsData.length > 0 ? (
-        <section className="bg-background py-10 md:py-16">
-          <div className="container">
-            <div className="mb-5 flex items-center justify-between px-1">
-              <div>
-                <h2 className="text-xl font-semibold text-foreground md:text-2xl">More Brands</h2>
-                <p className="mt-1 text-xs text-muted-foreground">Tap a brand to explore models</p>
-              </div>
-              <Link href={config.allHref} className="flex items-center gap-0.5 text-xs font-bold text-primary">
-                View All <ChevronRight className="size-3.5" />
-              </Link>
+      {/* Brand Picker */}
+      <section className="bg-white py-12 md:py-16">
+        <div className="mx-auto max-w-6xl px-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">{config.brandLabel}</h2>
+              <p className="mt-1 text-sm text-gray-500">Tap a brand to explore models & repairs</p>
             </div>
-            <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 md:grid-cols-5 md:gap-3">
-              {displayedBrands.map((brand) => (
+            <Link href={config.allHref} className="flex items-center gap-1 text-sm font-semibold text-green-600 hover:text-green-700">
+              View All <ChevronRight className="size-4" />
+            </Link>
+          </div>
+
+          {heroBrands.length > 0 ? (
+            <div className="mt-6 grid grid-cols-4 gap-3 sm:grid-cols-4 md:grid-cols-8">
+              {heroBrands.map((brand) => (
                 <Link
                   key={brand.id}
                   href={`/service/${serviceType}/brands/${brand.slug}`}
-                  className="flex cursor-pointer flex-col items-center gap-2 rounded-2xl border border-border bg-card px-2 py-3.5 shadow-card-brand transition-all duration-200 hover:border-primary/30 hover:shadow-elevated-brand active:bg-secondary/60"
+                  className="flex flex-col items-center gap-2 rounded-lg border border-gray-200 bg-white p-4 transition-all hover:border-green-300 hover:shadow-sm"
                 >
                   <BrandLogo
                     name={brand.name}
                     imageUrl={brand.image_url}
                     letter={brand.letter}
                     gradient={brand.gradient}
-                    className="size-10 rounded-xl object-contain"
-                    fallbackClassName="size-10 rounded-xl shadow-sm"
+                    className="size-10 rounded-lg object-contain"
+                    fallbackClassName="size-10 rounded-lg"
                   />
-                  <span className="text-[11px] font-bold text-foreground">{brand.name}</span>
+                  <span className="text-xs font-semibold text-gray-700">{brand.name}</span>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-6 py-4 text-center text-sm text-gray-500">No brands available yet</p>
+          )}
+
+          {/* More Brands */}
+          {moreBrandsData.length > 0 && (
+            <div className="mt-6 grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
+              {displayedBrands.map((brand) => (
+                <Link
+                  key={brand.id}
+                  href={`/service/${serviceType}/brands/${brand.slug}`}
+                  className="flex flex-col items-center gap-2 rounded-lg border border-gray-200 bg-white p-3 transition-all hover:border-green-300 hover:shadow-sm"
+                >
+                  <BrandLogo
+                    name={brand.name}
+                    imageUrl={brand.image_url}
+                    letter={brand.letter}
+                    gradient={brand.gradient}
+                    className="size-9 rounded-lg object-contain"
+                    fallbackClassName="size-9 rounded-lg"
+                  />
+                  <span className="text-xs font-medium text-gray-700">{brand.name}</span>
                 </Link>
               ))}
 
-              {hasMore && !showAll ? (
+              {hasMore && !showAll && (
                 <button
                   onClick={() => setShowAll(true)}
-                  className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-card px-2 py-3.5 transition-all duration-200 hover:border-primary/40 hover:bg-secondary/40"
+                  className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-gray-300 bg-white p-3 transition-all hover:border-green-400 hover:bg-green-50"
                 >
-                  <div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
-                    <ChevronDown className="size-5 text-muted-foreground" />
+                  <div className="flex size-9 items-center justify-center rounded-lg bg-gray-100">
+                    <ChevronDown className="size-5 text-gray-500" />
                   </div>
-                  <span className="text-[11px] font-bold text-muted-foreground">Show More</span>
+                  <span className="text-xs font-medium text-gray-500">Show More</span>
                 </button>
-              ) : null}
+              )}
             </div>
-          </div>
-        </section>
-      ) : null}
+          )}
+        </div>
+      </section>
 
-      <section className="container pb-10">
-        <div className="rounded-[2rem] border border-border bg-card p-6 shadow-card-brand">
-          <div className="flex items-center gap-3">
-            <div className={`flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br ${config.color}`}>
-              <Icon className="size-6 text-white" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">{config.title} at Your Doorstep</h2>
-              <p className="text-sm text-muted-foreground">Browse by brand, choose your device, and continue into the dedicated booking flow.</p>
-            </div>
+      {/* How it Works */}
+      <section className="border-t border-gray-100 bg-gray-50 py-12 md:py-16">
+        <div className="mx-auto max-w-5xl px-4">
+          <h2 className="text-center text-2xl font-bold text-gray-900">How It Works</h2>
+          <p className="mt-2 text-center text-sm text-gray-500">Get your device repaired in 4 simple steps</p>
+
+          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {howItWorksSteps.map((step) => (
+              <div key={step.step} className="text-center">
+                <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-green-600 text-lg font-bold text-white">
+                  {step.step}
+                </div>
+                <h3 className="mt-4 text-sm font-bold text-gray-900">{step.title}</h3>
+                <p className="mt-1 text-xs text-gray-500">{step.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Trust Signals */}
+      <section className="bg-white py-12 md:py-16">
+        <div className="mx-auto max-w-5xl px-4">
+          <h2 className="text-center text-2xl font-bold text-gray-900">Why Choose Looplic?</h2>
+          <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-3">
+            {trustSignals.map((signal) => {
+              const Icon = signal.icon;
+              return (
+                <div key={signal.title} className="flex flex-col items-center rounded-lg border border-gray-200 bg-white p-6 text-center">
+                  <div className="flex size-14 items-center justify-center rounded-full bg-green-50">
+                    <Icon className="size-7 text-green-600" />
+                  </div>
+                  <h3 className="mt-4 text-base font-bold text-gray-900">{signal.title}</h3>
+                  <p className="mt-1 text-sm text-gray-500">{signal.description}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>

@@ -11,7 +11,7 @@ const popupSeenKey = "looplic-repair-popup-shown";
 
 function shouldShowOnPath(pathname: string | null) {
   if (!pathname) return false;
-  if (pathname === "/" || pathname === "/bangalore" || pathname === "/brand-pages" || pathname === "/service/cctv") return true;
+  if (pathname === "/bangalore" || pathname === "/brand-pages" || pathname === "/service/cctv") return true;
 
   const segments = pathname.split("/").filter(Boolean);
   return segments[0] === "service" && segments[2] === "brands" && (segments.length === 3 || segments.length === 4);

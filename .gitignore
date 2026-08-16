@@ -1,6 +1,7 @@
 # Logs
 logs
 *.log
+dev_*.txt
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -27,6 +28,10 @@ test-db*.cjs
 test.js
 db_schema.sql
 
+# AWS account migration capture — contains live production secrets
+# (DATABASE_URL with password, service-role keys, API keys). Never commit.
+migration-capture/
+
 # Raw design/source assets
 *.psd
 *.ai
@@ -41,6 +46,7 @@ db_schema.sql
 !.vscode/extensions.json
 .idea
 .DS_Store
+~$*
 *.suo
 *.ntvs*
 *.njsproj

@@ -5,16 +5,21 @@ export const supportPhoneDisplay = "+91 88844 45924";
 export const whatsappPhone = "8884445924";
 export const whatsappPhoneDisplay = "+91 88844 45924";
 export const whatsappUrl = `https://wa.me/91${whatsappPhone}`;
-export const companyAddress = "1st Floor, Shawkat Building, SJP Road, opp. Dasappa Hospital, near Town Hall, Dodpete, Nagarathpete, Bengaluru, Karnataka 560002";
+export const companyAddress =
+  "1st Floor, Shawkat Building, SJP Road, opp. Dasappa Hospital, near Town Hall, Dodpete, Nagarathpete, Bengaluru, Karnataka 560002";
 export const companyAddressMapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(companyAddress)}`;
 
 export const footerLinks = [
-  { href: "/bangalore", label: "Bangalore" },
-  { href: "/service/mobile-repair", label: "Mobile Repair" },
-  { href: "/samsung-screen-replacement", label: "Samsung Screen Replacement" },
+  { href: "/sell", label: "Sell Phone" },
+  { href: "/sell/laptop", label: "Sell Laptop" },
+  { href: "/buy", label: "Buy Refurbished" },
+  { href: "/sell/corporate", label: "Bulk/Corporate" },
   { href: "/blog", label: "Blog" },
   { href: "/about-us", label: "About Us" },
   { href: "/contact-us", label: "Contact Us" },
+  { href: "/faq", label: "FAQ" },
+  { href: "/store-locator", label: "Store Locator" },
+  { href: "/partners", label: "Partners" },
   { href: "/privacy-policy", label: "Privacy Policy" },
   { href: "/terms-and-conditions", label: "Terms & Conditions" },
 ] as const;

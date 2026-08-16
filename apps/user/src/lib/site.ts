@@ -1,5 +1,5 @@
 export const siteConfig = {
   name: "Looplic",
-  description: "Doorstep mobile repair, laptop repair, desktop assembly, CCTV installation, IT support, and managed IT services booking platform.",
+  description: "India's most trusted platform to sell and buy refurbished devices. Get instant price quotes, free doorstep pickup, and quick payments.",
   url: "https://www.looplic.com",
 } as const;

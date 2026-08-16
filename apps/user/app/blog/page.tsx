@@ -166,7 +166,6 @@ export default async function BlogPage() {
           links={[
             { href: "/service/mobile-repair", label: "Mobile repair" },
             { href: "/service/mobile-repair/brands", label: "Mobile brands" },
-            { href: "/service/mobile-repair", label: "Mobile repair" },
             { href: "/bangalore", label: "Bangalore service areas" },
             { href: "/contact-us", label: "Contact Looplic" },
           ]}

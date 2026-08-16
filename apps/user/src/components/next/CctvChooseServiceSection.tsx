@@ -1,14 +1,14 @@
 import { ArrowUpRight, Camera, HardDrive, Network, ShieldCheck, Smartphone, Wifi } from "lucide-react";
 import Link from "next/link";
 
-import { buildCctvBrandSelectionHref } from "@/src/lib/cctv-booking";
+import { buildCctvBookingEntryHref } from "@/src/lib/cctv-booking";
 
 const cctvServiceChoices = [
   {
     title: "New CCTV Installation",
     description: "For homes, shops, offices, apartments, and commercial spaces.",
     badge: "INSTALL",
-    href: buildCctvBrandSelectionHref("new_installation"),
+    href: buildCctvBookingEntryHref("new_installation"),
     icon: Camera,
     iconColor: "text-emerald-500",
     iconBg: "bg-emerald-50",
@@ -17,7 +17,7 @@ const cctvServiceChoices = [
     title: "CCTV Repair & Service",
     description: "Camera not working, DVR issue, wiring issue, or display problem.",
     badge: "REPAIR",
-    href: buildCctvBrandSelectionHref("repair_service"),
+    href: buildCctvBookingEntryHref("repair_service"),
     icon: Wifi,
     iconColor: "text-sky-500",
     iconBg: "bg-sky-50",
@@ -26,7 +26,7 @@ const cctvServiceChoices = [
     title: "CCTV Upgrade",
     description: "Upgrade old cameras to HD/IP cameras with better clarity.",
     badge: "UPGRADE",
-    href: buildCctvBrandSelectionHref("upgrade"),
+    href: buildCctvBookingEntryHref("upgrade"),
     icon: HardDrive,
     iconColor: "text-purple-500",
     iconBg: "bg-purple-50",
@@ -35,7 +35,7 @@ const cctvServiceChoices = [
     title: "CCTV Relocation",
     description: "Shift existing CCTV setup to a new place or better angle.",
     badge: "RELOCATE",
-    href: buildCctvBrandSelectionHref("relocation"),
+    href: buildCctvBookingEntryHref("relocation"),
     icon: Network,
     iconColor: "text-orange-500",
     iconBg: "bg-orange-50",
@@ -44,7 +44,7 @@ const cctvServiceChoices = [
     title: "CCTV AMC / Maintenance",
     description: "Regular checkup and support for businesses and apartments.",
     badge: "AMC",
-    href: buildCctvBrandSelectionHref("amc_maintenance"),
+    href: buildCctvBookingEntryHref("amc_maintenance"),
     icon: ShieldCheck,
     iconColor: "text-rose-500",
     iconBg: "bg-rose-50",
@@ -53,7 +53,7 @@ const cctvServiceChoices = [
     title: "CCTV Brand Support",
     description: "Choose Hikvision, CP Plus, Dahua, Godrej, EZVIZ, TP-Link Tapo, or not sure.",
     badge: "BRAND",
-    href: buildCctvBrandSelectionHref(),
+    href: buildCctvBookingEntryHref(),
     icon: Smartphone,
     iconColor: "text-cyan-500",
     iconBg: "bg-cyan-50",

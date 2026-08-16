@@ -1,7 +1,7 @@
 export const companyName = "Looplic";
 export const supportEmail = "support@looplic.com";
-export const supportPhone = "8884445924";
-export const supportPhoneDisplay = "+91 88844 45924";
+export const supportPhone = "8884445206";
+export const supportPhoneDisplay = "+91 88844 45206";
 export const whatsappPhone = "8884445924";
 export const whatsappPhoneDisplay = "+91 88844 45924";
 export const whatsappUrl = `https://wa.me/91${whatsappPhone}`;

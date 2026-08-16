@@ -2,14 +2,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { CatalogNavbar } from "@/src/components/next/CatalogNavbar";
-import { CatalogServiceTabs } from "@/src/components/next/CatalogServiceTabs";
 import { CrawlableInternalLinks } from "@/src/components/next/CrawlableInternalLinks";
-import { HomepageView } from "@/src/components/next/HomepageView";
-import { HowItWorks } from "@/src/components/next/HowItWorks";
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
-import { LaptopBrandBookingPrompt } from "@/src/components/next/LaptopBrandBookingPrompt";
 import { ServiceLandingPage } from "@/src/components/next/ServiceLandingPage";
-import { TrustSignals } from "@/src/components/next/TrustSignals";
 import { getBrandsForListing, getCatalogSearchIndex } from "@/src/lib/data/catalog";
 import { buildPageMetadata } from "@/src/lib/metadata";
 import { seoServicePages } from "@/src/lib/seo-service-pages";
@@ -69,36 +64,30 @@ export default async function ServicePage({ params }: PageProps) {
 
   const [brands, searchIndex] = await Promise.all([getBrandsForListing(config.listingType), getCatalogSearchIndex(config.listingType)]);
 
-  if (serviceType === "mobile-repair") {
-    return (
-      <HomepageView
-        brands={brands}
-        searchBrands={searchIndex.brands}
-        searchSeries={searchIndex.series}
-        searchModels={searchIndex.models}
-        heroTitle="Mobile Repair at Your Doorstep in Bangalore"
-        heroDescription="Pick your model, choose a repair, and book a doorstep technician in minutes."
-        heroBrowseHref="/service/mobile-repair/brands"
-        heroSearchPlaceholder="Search your phone model in Bangalore..."
-        internalLinksTitle="Popular screen replacements in Bangalore"
-        internalLinks={seoServicePages.map((page) => ({ href: `/${page.slug}`, label: page.eyebrow }))}
-      />
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       <CatalogNavbar />
-      <CatalogServiceTabs active={config.activeTab} />
       <ServiceLandingPage
         serviceType={serviceType as "mobile-repair" | "laptop-repair"}
         brands={brands}
         searchSeries={searchIndex.series}
         searchModels={searchIndex.models}
+        heroTitle={
+          serviceType === "mobile-repair"
+            ? "Mobile Phone Repair at Your Doorstep"
+            : "Laptop Repair at Your Doorstep"
+        }
+        heroDescription={
+          serviceType === "mobile-repair"
+            ? "Pick your model, choose a repair, and book a doorstep technician in minutes."
+            : "Professional laptop repair with certified technicians at your location."
+        }
+        searchPlaceholder={
+          serviceType === "mobile-repair"
+            ? "Search your phone model..."
+            : "Search your laptop model..."
+        }
       />
-      {config.listingType === "laptop" ? (
-        <LaptopBrandBookingPrompt initialOpen showFloatingButton={false} />
-      ) : null}
       <CrawlableInternalLinks
         title={`${config.label} internal links`}
         links={[
@@ -107,10 +96,11 @@ export default async function ServicePage({ params }: PageProps) {
             href: `/service/${serviceType}/brands/${brand.slug}`,
             label: `${brand.name} ${config.label}`,
           })),
+          ...(serviceType === "mobile-repair"
+            ? seoServicePages.map((page) => ({ href: `/${page.slug}`, label: page.eyebrow }))
+            : []),
         ]}
       />
-      <HowItWorks />
-      <TrustSignals />
       <HomepageFooter />
     </div>
   );

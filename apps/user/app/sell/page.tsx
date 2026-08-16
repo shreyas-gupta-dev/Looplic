@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { SellHomepageView, type SellSearchBrand, type SellSearchModel } from "@/src/components/next/SellHomepageView";
+import { getBrandsForListing } from "@/src/lib/data/catalog";
 import { getCatalogSearchIndex } from "@/src/lib/data/catalog";
 import { buildPageMetadata } from "@/src/lib/metadata";
 import { siteConfig } from "@/src/lib/site";
@@ -8,15 +9,15 @@ import { siteConfig } from "@/src/lib/site";
 export const revalidate = 300;
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Sell Your Phone or Laptop for Instant Cash in Bangalore",
+  title: "Sell Your Old Phone or Laptop for Instant Cash",
   description:
-    "Sell your old phone or laptop at your doorstep in Bangalore. Instant quote, free pickup, and same-day payment via UPI or bank transfer. Best price guaranteed.",
+    "Sell your old phone or laptop with Looplic. Get instant price quotes, free doorstep pickup, and same-day payment via UPI or bank transfer. Best price guaranteed across India.",
   pathname: "/sell",
   keywords: [
     "sell old phone",
-    "sell used phone Bangalore",
+    "sell used phone",
     "sell old laptop",
-    "sell used laptop Bangalore",
+    "sell used laptop",
     "phone buyback",
     "laptop buyback",
     "instant cash for phone",
@@ -33,9 +34,37 @@ const CATEGORY_BY_SERVICE = {
   audio: "audio",
 } as const;
 
+type CategoryBrand = {
+  id: string;
+  name: string;
+  slug: string;
+  image_url: string | null;
+  letter: string;
+  gradient: string;
+  category: string;
+  href: string;
+};
+
 export default async function SellHomePage() {
   const serviceTypes = Object.keys(CATEGORY_BY_SERVICE) as Array<keyof typeof CATEGORY_BY_SERVICE>;
   const indexes = await Promise.all(serviceTypes.map((serviceType) => getCatalogSearchIndex(serviceType)));
+
+  // Get brands for each category to show in category tabs
+  const brandsByCategory: Record<string, CategoryBrand[]> = {};
+  for (const serviceType of serviceTypes) {
+    const category = CATEGORY_BY_SERVICE[serviceType];
+    const brands = await getBrandsForListing(serviceType);
+    brandsByCategory[category] = brands.map((brand) => ({
+      id: brand.id,
+      name: brand.name,
+      slug: brand.slug,
+      image_url: brand.image_url,
+      letter: brand.letter,
+      gradient: brand.gradient,
+      category,
+      href: `/sell/${category}/${brand.slug}`,
+    }));
+  }
 
   const searchBrands: SellSearchBrand[] = [];
   const searchModels: SellSearchModel[] = [];
@@ -83,7 +112,11 @@ export default async function SellHomePage() {
           }),
         }}
       />
-      <SellHomepageView searchBrands={searchBrands} searchModels={searchModels} />
+      <SellHomepageView
+        searchBrands={searchBrands}
+        searchModels={searchModels}
+        brandsByCategory={brandsByCategory}
+      />
     </>
   );
 }

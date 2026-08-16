@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { verifySignature } from "@/src/lib/whatsapp/client";
 import { whatsappConfig } from "@/src/lib/whatsapp/config";
 import { handleIncomingMessage, type IncomingMessage } from "@/src/lib/whatsapp/bot";
+import { runWithPhoneNumberId } from "@/src/lib/whatsapp/phone-context";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -32,6 +33,11 @@ function extractMessages(payload: any): IncomingMessage[] {
       const value = change?.value;
       const messages = Array.isArray(value?.messages) ? value.messages : [];
       const contactName = value?.contacts?.[0]?.profile?.name ?? null;
+      // Which of our (potentially several) business numbers this arrived on —
+      // Meta includes it on every webhook value, regardless of how many
+      // numbers share this app. Replies must go back out from this same
+      // number, so it's carried alongside the message rather than assumed.
+      const phoneNumberId: string | null = value?.metadata?.phone_number_id ?? null;
 
       for (const m of messages) {
         const waId: string = m?.from;
@@ -58,7 +64,7 @@ function extractMessages(payload: any): IncomingMessage[] {
           text = m.button?.text ?? "";
         }
 
-        out.push({ waId, profileName: contactName, messageId, type: m.type ?? "text", text, buttonId });
+        out.push({ waId, profileName: contactName, messageId, type: m.type ?? "text", text, buttonId, phoneNumberId });
       }
     }
   }
@@ -91,7 +97,15 @@ export async function POST(request: Request) {
   // Meta doesn't retry (a non-200 triggers redelivery of the same messages).
   for (const msg of messages) {
     try {
-      await handleIncomingMessage(msg);
+      // Every reply generated while handling this message — including ones
+      // several calls deep in the wizard or the AI lane — must go out from
+      // the same number the customer messaged. Scoping it here, once, means
+      // no send* call site elsewhere needs to know or care which number it is.
+      if (msg.phoneNumberId) {
+        await runWithPhoneNumberId(msg.phoneNumberId, () => handleIncomingMessage(msg));
+      } else {
+        await handleIncomingMessage(msg);
+      }
     } catch (err) {
       console.error(`[whatsapp:webhook] handler error: ${err instanceof Error ? err.message : err}`);
     }

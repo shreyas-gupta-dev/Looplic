@@ -69,8 +69,9 @@ Status: **SHIPPED & VERIFIED LIVE** via PR #28 (main pass) + PR #29 (homepage ca
 - Self-referencing canonicals verified on every page.
 
 ## Open item (infra, not code)
-- **Apex→www redirect is a 302 at CloudFront** — should be a **301** to fully
-  consolidate link equity. Change in the CloudFront/Amplify console.
+- ~~**Apex→www redirect is a 302 at CloudFront**~~ **FIXED 2026-07-16**: the Amplify
+  app's custom rule (`https://looplic.com` → `https://www.looplic.com`) was changed
+  from 302 to **301**. Verified live: apex returns 301 with path+query preserved.
 
 ## Google Search Console (Phase 7) — your action
 1. GSC → Add property → **Domain** → enter `looplic.com`.

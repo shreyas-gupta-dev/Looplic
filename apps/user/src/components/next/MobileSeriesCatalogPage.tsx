@@ -15,11 +15,7 @@ import type { CatalogBrand, CatalogSeries } from "@/src/lib/data/catalog";
 // original name if stripping leaves nothing.
 function formatSeriesLabel(name: string, brandName?: string) {
   let label = name.replace(/\s*series\s*$/i, "").trim();
-  if (brandName) {
-    const escaped = brandName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    label = label.replace(new RegExp(`^${escaped}\\s+`, "i"), "").trim();
-  }
-  return label || name.replace(/\s*series\s*$/i, "").trim() || name;
+  return label || name;
 }
 
 // Rank a series for newest-first ordering. The `series` table has no manual
@@ -134,8 +130,12 @@ export function MobileSeriesCatalogPage({
                 className="group flex items-center justify-between gap-2 rounded-2xl border border-border bg-card px-3 py-3 shadow-card-brand transition-all hover:border-primary/30 hover:shadow-elevated-brand active:scale-95 sm:gap-3 sm:px-4 sm:py-4"
               >
                 <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-                  <div className="flex size-9 flex-shrink-0 items-center justify-center rounded-xl bg-secondary sm:size-11">
-                    <Smartphone className="size-4 text-primary sm:size-5" />
+                  <div className="flex size-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-secondary sm:size-11">
+                    {(series.image_url || brand.image_url) ? (
+                      <img src={series.image_url || brand.image_url!} alt={series.name} className="size-full object-contain p-1" loading="lazy" />
+                    ) : (
+                      <Smartphone className="size-4 text-primary sm:size-5" />
+                    )}
                   </div>
                   <span className="min-w-0 text-[13px] font-bold leading-snug text-foreground sm:text-sm">
                     {formatSeriesLabel(series.name, brand.name)}

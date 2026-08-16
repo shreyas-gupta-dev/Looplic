@@ -1,8 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 const OAUTH_REDIRECT_COOKIE = "looplic-auth-redirect";
-const CANONICAL_HOST = "www.looplic.com";
-const APEX_HOST = "looplic.com";
+const CANONICAL_HOST = "www.cashify.in";
+const APEX_HOST = "cashify.in";
 
 function sanitizeRedirect(value: string | null | undefined) {
   if (!value || !value.startsWith("/")) {
@@ -20,7 +20,7 @@ function decodeRedirectCookie(value: string) {
   }
 }
 
-function isLooplicHost(host: string) {
+function isCashifyHost(host: string) {
   return host === APEX_HOST || host === CANONICAL_HOST;
 }
 
@@ -38,7 +38,7 @@ export function middleware(request: NextRequest) {
   // Only looplic.com may serve the site. Any other host (the *.amplifyapp.com
   // default domain, Amplify preview URLs, raw CloudFront, etc.) redirects to the
   // canonical domain so it is never "the website" on its own.
-  if (host && !isLooplicHost(host) && !isLocalHost(host)) {
+  if (host && !isCashifyHost(host) && !isLocalHost(host)) {
     const canonicalUrl = nextUrl.clone();
     canonicalUrl.protocol = "https:";
     canonicalUrl.host = CANONICAL_HOST;

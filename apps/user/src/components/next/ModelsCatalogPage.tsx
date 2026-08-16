@@ -130,6 +130,8 @@ export function ModelsCatalogPage({
                       height={72}
                       className="h-full w-full object-contain"
                     />
+                  ) : brand.image_url ? (
+                    <img src={brand.image_url} alt={brand.name} className="h-full w-full object-contain p-1" loading="lazy" />
                   ) : (
                     <DeviceIcon className="size-7 text-primary" />
                   )}

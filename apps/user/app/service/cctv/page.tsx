@@ -6,7 +6,7 @@ import { ServiceJsonLd } from "@/src/components/seo/ServiceJsonLd";
 import { CctvChooseServiceSection } from "@/src/components/next/CctvChooseServiceSection";
 import { SimpleServiceDetailPage } from "@/src/components/next/SimpleServiceDetailPage";
 import { cctvAreaLinks } from "@/src/lib/cctv-area-pages";
-import { buildCctvBrandSelectionHref } from "@/src/lib/cctv-booking";
+import { buildCctvBookingEntryHref } from "@/src/lib/cctv-booking";
 import { buildPageMetadata } from "@/src/lib/metadata";
 
 export const metadata: Metadata = buildPageMetadata({
@@ -29,7 +29,7 @@ export default function CctvServicePage() {
         eyebrow="CCTV Installation"
         title="CCTV installation and security camera setup for homes, shops, and offices."
         description="Get clean CCTV camera installation in Bangalore with camera placement planning, DVR/NVR setup, mobile viewing, network connection checks, and practical handover support."
-        bookingHref={buildCctvBrandSelectionHref()}
+        bookingHref={buildCctvBookingEntryHref()}
         ctaLabel="Book CCTV Installation"
         highlights={["Camera installation", "DVR/NVR setup", "Mobile viewing", "Network and recording checks"]}
         highlightsPosition="afterHeroContent"

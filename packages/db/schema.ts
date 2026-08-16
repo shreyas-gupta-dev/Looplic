@@ -366,6 +366,69 @@ export const whatsappMessages = pgTable("whatsapp_messages", {
 });
 
 export type AppRole = "admin" | "operation" | "technician" | "user";
+
+// ─── Buy / Refurbished Products ──────────────────────────────────────────────
+export const productConditionEnum = pgEnum("product_condition", ["fair", "good", "excellent", "superb", "unboxed"]);
+
+export const products = pgTable("products", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  brandId: uuid("brand_id").references(() => brands.id, { onDelete: "set null" }),
+  modelId: uuid("model_id").references(() => models.id, { onDelete: "set null" }),
+  category: text("category").notNull().default("phone"),
+  condition: productConditionEnum("condition").notNull().default("good"),
+  price: numeric("price").notNull().default("0"),
+  originalPrice: numeric("original_price").notNull().default("0"),
+  storage: text("storage"),
+  ram: text("ram"),
+  color: text("color"),
+  description: text("description"),
+  specifications: jsonb("specifications"),
+  warrantyMonths: integer("warranty_months").notNull().default(6),
+  stock: integer("stock").notNull().default(0),
+  featured: boolean("featured").notNull().default(false),
+  active: boolean("active").notNull().default(true),
+  coverImageUrl: text("cover_image_url"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const productImages = pgTable("product_images", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  productId: uuid("product_id").notNull().references(() => products.id, { onDelete: "cascade" }),
+  imageUrl: text("image_url").notNull(),
+  altText: text("alt_text").notNull().default(""),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const cartItems = pgTable("cart_items", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: text("user_id").notNull(),
+  productId: uuid("product_id").notNull().references(() => products.id, { onDelete: "cascade" }),
+  quantity: integer("quantity").notNull().default(1),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const buyOrders = pgTable("buy_orders", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  orderCode: text("order_code").notNull().unique(),
+  userId: text("user_id").notNull(),
+  productId: uuid("product_id").notNull().references(() => products.id, { onDelete: "set null" }),
+  quantity: integer("quantity").notNull().default(1),
+  totalAmount: numeric("total_amount").notNull().default("0"),
+  shippingAddress: text("shipping_address").notNull(),
+  shippingCity: text("shipping_city"),
+  shippingPincode: text("shipping_pincode"),
+  paymentMethod: text("payment_method").notNull().default("online"),
+  paymentStatus: text("payment_status").notNull().default("pending"),
+  paymentId: text("payment_id"),
+  status: text("status").notNull().default("pending"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export type Brand = typeof brands.$inferSelect;
 export type BrandInsert = typeof brands.$inferInsert;
 export type Series = typeof series.$inferSelect;
@@ -395,3 +458,9 @@ export type WhatsappConversation = typeof whatsappConversations.$inferSelect;
 export type WhatsappConversationInsert = typeof whatsappConversations.$inferInsert;
 export type WhatsappMessage = typeof whatsappMessages.$inferSelect;
 export type WhatsappMessageInsert = typeof whatsappMessages.$inferInsert;
+export type Product = typeof products.$inferSelect;
+export type ProductInsert = typeof products.$inferInsert;
+export type ProductImage = typeof productImages.$inferSelect;
+export type CartItem = typeof cartItems.$inferSelect;
+export type BuyOrder = typeof buyOrders.$inferSelect;
+export type BuyOrderInsert = typeof buyOrders.$inferInsert;

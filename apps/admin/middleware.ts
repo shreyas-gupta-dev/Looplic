@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
 
 // The same Next app is deployed to two Amplify apps behind two canonical hosts:
 //   - admin.looplic.com    — the full admin/operator back-office
@@ -16,7 +17,7 @@ function isLocalHost(host: string) {
   return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]";
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { nextUrl } = request;
   const host = request.headers.get("host")?.toLowerCase();
   const hostname = host?.split(":")[0];
@@ -61,7 +62,39 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  return NextResponse.next();
+  // Refresh the Supabase auth session on every request. This ensures the
+  // server-side session (used by db-proxy to authorize requests) stays valid
+  // even after the JWT expires. Without this, the db-proxy route returns
+  // "Unauthorized" because cookies contain an expired token.
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return NextResponse.next();
+  }
+
+  let supabaseResponse = NextResponse.next({ request });
+
+  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+        supabaseResponse = NextResponse.next({ request });
+        cookiesToSet.forEach(({ name, value, options }) =>
+          supabaseResponse.cookies.set(name, value, options)
+        );
+      },
+    },
+  });
+
+  // This call refreshes the session if the access token is expired and writes
+  // fresh cookies via setAll above.
+  await supabase.auth.getUser();
+
+  return supabaseResponse;
 }
 
 export const config = {

@@ -40,6 +40,11 @@ export type IncomingMessage = {
   type: string; // text | interactive | image | ...
   text: string; // best-effort plain text (button id/title folded in)
   buttonId?: string | null; // set when the user tapped a quick-reply button or list row
+  // Which of our business numbers this arrived on (Meta's phone_number_id, NOT
+  // the phone number itself). The webhook already scopes the whole handling of
+  // this message to it via phone-context.ts, so nothing downstream needs to
+  // read this field — it's here for logging/debugging only.
+  phoneNumberId?: string | null;
 };
 
 const GREETING_RE = /^(hi|hii+|hey|hello|hola|start|menu|main menu|namaste|good (morning|evening|afternoon))\b/i;

@@ -115,10 +115,19 @@ async function main() {
     die(`Profile update failed: ${data?.error?.message || res.status}\n  ${JSON.stringify(data)}`);
   }
 
-  console.log("\n✓ Looplic business profile updated.");
-  console.log("  Note: the verified DISPLAY NAME (shown as the contact name) is changed");
+  console.log("\n✓ Business profile fields updated (about / address / email / website).");
+  if (profilePictureHandle) {
+    console.log("✓ Profile picture (logo) set from", IMAGE_PATH);
+  } else {
+    console.warn(
+      "\n✗ LOGO NOT SET — the picture was skipped (see the warning above).\n" +
+        "  Either re-run with WHATSAPP_APP_ID set, or upload it by hand in\n" +
+        "  WhatsApp Manager → Phone numbers → Settings → Profile → Profile picture.",
+    );
+  }
+  console.log("\n  Note: the verified DISPLAY NAME (shown as the contact name) is changed");
   console.log("  separately in Meta → WhatsApp Manager → Phone numbers → Name, and needs");
-  console.log("  Meta review. This script sets about/address/email/website/logo only.");
+  console.log("  Meta review. This script cannot set it.");
 }
 
 main().catch((err) => die(err instanceof Error ? err.message : String(err)));

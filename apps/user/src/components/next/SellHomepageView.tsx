@@ -1,15 +1,13 @@
 "use client";
 
-import { ArrowRight, ArrowUpRight, BadgeIndianRupee, Banknote, Headphones, IndianRupee, Laptop, Search, ShieldCheck, Smartphone, Sparkles, Tablet, Truck, Watch, Zap } from "lucide-react";
+import { ArrowRight, Banknote, IndianRupee, Laptop, Search, ShieldCheck, Smartphone, Tablet, Truck, Watch, Headphones } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { HomepageNavbar } from "@/src/components/next/HomepageNavbar";
+import { BrandLogo } from "@/src/components/next/BrandLogo";
+import { CatalogNavbar } from "@/src/components/next/CatalogNavbar";
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
-import { RepairSellToggle } from "@/src/components/next/RepairSellToggle";
-import { TrustSignals } from "@/src/components/next/TrustSignals";
-import { whatsappPhone } from "@/src/lib/company";
 
 export type SellSearchCategory = "phone" | "laptop" | "tablet" | "smartwatch" | "audio";
 
@@ -29,6 +27,17 @@ export type SellSearchModel = {
   href: string;
 };
 
+type CategoryBrand = {
+  id: string;
+  name: string;
+  slug: string;
+  image_url: string | null;
+  letter: string;
+  gradient: string;
+  category: string;
+  href: string;
+};
+
 type SearchResult = {
   id: string;
   title: string;
@@ -45,6 +54,38 @@ function scoreMatch(query: string, value: string) {
   return 0;
 }
 
+/* ---------- Category Tabs ---------- */
+const categoryTabs = [
+  { id: "phone" as const, label: "Phone", icon: Smartphone },
+  { id: "laptop" as const, label: "Laptop", icon: Laptop },
+  { id: "tablet" as const, label: "Tablet", icon: Tablet },
+  { id: "smartwatch" as const, label: "Smartwatch", icon: Watch },
+  { id: "audio" as const, label: "Audio", icon: Headphones },
+];
+
+/* ---------- How It Works ---------- */
+const howItWorks = [
+  {
+    step: 1,
+    icon: IndianRupee,
+    title: "Get Instant Price",
+    description: "Select your device, answer a few questions about its condition, and get an exact price instantly.",
+  },
+  {
+    step: 2,
+    icon: Truck,
+    title: "Schedule Free Pickup",
+    description: "Book a convenient time slot. Our executive comes to your doorstep — no packing or shipping needed.",
+  },
+  {
+    step: 3,
+    icon: Banknote,
+    title: "Get Paid Instantly",
+    description: "Device verified on the spot and payment transferred immediately via UPI or bank transfer.",
+  },
+];
+
+/* ---------- Search Box ---------- */
 function SellSearchBox({ brands, models }: { brands: SellSearchBrand[]; models: SellSearchModel[] }) {
   const [query, setQuery] = useState("");
   const router = useRouter();
@@ -93,46 +134,52 @@ function SellSearchBox({ brands, models }: { brands: SellSearchBrand[]; models: 
   }
 
   return (
-    <div className="relative mx-auto mt-6 max-w-xl">
+    <div className="relative mx-auto max-w-lg">
       <form
         onSubmit={handleSubmit}
-        className="flex items-center rounded-full bg-white p-1.5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-shadow focus-within:shadow-[0_8px_30px_rgb(79,70,229,0.15)]"
+        className="flex items-center rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow focus-within:border-blue-300 focus-within:shadow-md"
       >
-        <Search className="ml-3.5 size-4 flex-shrink-0 text-gray-400" />
+        <Search className="ml-4 size-4 flex-shrink-0 text-gray-400" />
         <input
           type="text"
-          placeholder="Enter model to get quote e.g. iPhone 13"
+          placeholder="Search your device e.g. iPhone 13, MacBook Pro"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          className="w-full bg-transparent p-3 text-[14px] font-medium text-gray-900 outline-none placeholder:text-gray-400"
+          className="w-full bg-transparent px-3 py-3.5 text-sm text-gray-900 outline-none placeholder:text-gray-400"
         />
         <button
           type="submit"
-          className="flex-shrink-0 rounded-full bg-gradient-to-r from-[#4F46E5] to-[#8B3DFF] p-3 transition-transform active:scale-95"
-          aria-label="Get instant quote"
+          className="mr-1.5 flex-shrink-0 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+          aria-label="Search"
         >
-          <ArrowRight className="size-4 text-white" />
+          Search
         </button>
       </form>
 
       {query.trim().length >= 2 ? (
-        <div className="absolute left-0 right-0 z-20 mt-2 overflow-hidden rounded-2xl border border-gray-100 bg-white text-left shadow-[0_24px_70px_rgba(15,23,42,0.12)]">
+        <div className="absolute left-0 right-0 z-20 mt-1 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
           {results.length > 0 ? (
             <div className="divide-y divide-gray-100">
               {results.map((result) => (
-                <Link key={result.id} href={result.href} className="flex items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-gray-50">
+                <Link
+                  key={result.id}
+                  href={result.href}
+                  className="flex items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-gray-50"
+                >
                   <div className="min-w-0">
-                    <div className="truncate text-[13px] font-semibold text-gray-900">{result.title}</div>
-                    <div className="truncate text-[11px] text-gray-500">{result.subtitle}</div>
+                    <div className="truncate text-sm font-medium text-gray-900">{result.title}</div>
+                    <div className="truncate text-xs text-gray-500">{result.subtitle}</div>
                   </div>
-                  <span className="shrink-0 rounded-full bg-violet-50 px-2 py-1 text-[10px] font-bold text-violet-600">{result.kind}</span>
+                  <span className="shrink-0 rounded bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+                    {result.kind}
+                  </span>
                 </Link>
               ))}
             </div>
           ) : (
             <div className="p-4">
-              <p className="text-[13px] font-semibold text-gray-900">No results found.</p>
-              <p className="mt-1 text-[11px] text-gray-500">Try a brand or model name, or pick a category below.</p>
+              <p className="text-sm text-gray-600">No results found for &ldquo;{query}&rdquo;</p>
+              <p className="mt-1 text-xs text-gray-500">Try a brand or model name.</p>
             </div>
           )}
         </div>
@@ -141,401 +188,208 @@ function SellSearchBox({ brands, models }: { brands: SellSearchBrand[]; models: 
   );
 }
 
-const sellCategories = [
-  {
-    id: "sell-phone",
-    title: "Sell Phone",
-    description: "iPhone, Samsung, OnePlus & more",
-    badge: "INSTANT",
-    href: "/sell/phone",
-    icon: Smartphone,
-    iconColor: "text-teal-500",
-    iconBg: "bg-teal-50",
-  },
-  {
-    id: "sell-laptop",
-    title: "Sell Laptop",
-    description: "Mac, Dell, HP, Lenovo — any age",
-    badge: "TOP PRICE",
-    href: "/sell/laptop",
-    icon: Laptop,
-    iconColor: "text-amber-500",
-    iconBg: "bg-amber-50",
-  },
-  {
-    id: "sell-tablet",
-    title: "Sell Tablet",
-    description: "iPad & Android tablets",
-    badge: null,
-    href: "/sell/tablet",
-    icon: Tablet,
-    iconColor: "text-cyan-500",
-    iconBg: "bg-cyan-50",
-  },
-  {
-    id: "smartwatch",
-    title: "Smartwatch",
-    description: "Apple Watch, Galaxy Watch",
-    badge: null,
-    href: "/sell/smartwatch",
-    icon: Watch,
-    iconColor: "text-violet-500",
-    iconBg: "bg-violet-50",
-  },
-  {
-    id: "audio-buds",
-    title: "Audio & Buds",
-    description: "AirPods, headphones, buds",
-    badge: null,
-    href: "/sell/audio",
-    icon: Headphones,
-    iconColor: "text-pink-500",
-    iconBg: "bg-pink-50",
-  },
-  {
-    id: "bulk-corporate",
-    title: "Bulk / Corporate",
-    description: "Company IT asset buy-back",
-    badge: "B2B",
-    href: "/sell/corporate",
-    icon: BadgeIndianRupee,
-    iconColor: "text-emerald-500",
-    iconBg: "bg-emerald-50",
-  },
-] as Array<{
-  id: string;
-  title: string;
-  description: string;
-  badge: string | null;
-  href?: string;
-  whatsappMessage?: string;
-  icon: typeof Smartphone;
-  iconColor: string;
-  iconBg: string;
-}>;
+/* ---------- Main View ---------- */
+export function SellHomepageView({
+  searchBrands,
+  searchModels,
+  brandsByCategory,
+}: {
+  searchBrands: SellSearchBrand[];
+  searchModels: SellSearchModel[];
+  brandsByCategory: Record<string, CategoryBrand[]>;
+}) {
+  const [activeCategory, setActiveCategory] = useState<SellSearchCategory>("phone");
+  const [brandSearch, setBrandSearch] = useState("");
 
-const howItWorks = [
-  {
-    icon: IndianRupee,
-    title: "Get an instant quote",
-    description: "Pick your model, answer a few quick questions about its condition, and see your price on the spot.",
-  },
-  {
-    icon: Truck,
-    title: "Free doorstep pickup",
-    description: "Our executive comes to you, verifies the device condition, and confirms the final price in front of you.",
-  },
-  {
-    icon: Banknote,
-    title: "Instant payment",
-    description: "Get paid the same day via UPI or bank transfer — before the executive leaves your door.",
-  },
-];
+  const currentBrands = brandsByCategory[activeCategory] || [];
 
-const whySell = [
-  {
-    icon: Zap,
-    iconColor: "text-yellow-500",
-    iconBg: "bg-yellow-50",
-    badge: "FAST",
-    title: "Instant Quote",
-    description: "Real-time price in 30 seconds",
-  },
-  {
-    icon: Truck,
-    iconColor: "text-emerald-500",
-    iconBg: "bg-emerald-50",
-    badge: "FREE",
-    title: "Free Doorstep Pickup",
-    description: "We come to you — no shipping hassle",
-  },
-  {
-    icon: ShieldCheck,
-    iconColor: "text-sky-500",
-    iconBg: "bg-sky-50",
-    badge: null,
-    title: "Secure Data Wipe",
-    description: "Certified factory reset on the spot",
-  },
-  {
-    icon: BadgeIndianRupee,
-    iconColor: "text-amber-500",
-    iconBg: "bg-amber-50",
-    badge: "HOT",
-    title: "Best Price Promise",
-    description: "Beat any quote by ₹500 or ₹500 extra",
-  },
-  {
-    icon: Sparkles,
-    iconColor: "text-violet-500",
-    iconBg: "bg-violet-50",
-    badge: null,
-    title: "Same-Day Payment",
-    description: "UPI / IMPS the moment we pick up",
-  },
-  {
-    icon: Smartphone,
-    iconColor: "text-violet-400",
-    iconBg: "bg-violet-50",
-    badge: null,
-    title: "Any Condition",
-    description: "Broken screen? Dead battery? Still cash.",
-  },
-];
+  const filteredBrands = useMemo(() => {
+    const q = brandSearch.trim().toLowerCase();
+    if (!q) return currentBrands;
+    return currentBrands.filter((b) => b.name.toLowerCase().includes(q));
+  }, [currentBrands, brandSearch]);
 
-export function SellHomepageView({ searchBrands, searchModels }: { searchBrands: SellSearchBrand[]; searchModels: SellSearchModel[] }) {
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
-      <HomepageNavbar />
+    <div className="min-h-screen bg-white">
+      <CatalogNavbar />
 
       {/* Hero Section */}
-      <section className="bg-[#F1F0FB] px-4 pt-6 pb-10 sm:pt-8 sm:pb-12">
-        <div className="container mx-auto max-w-2xl text-center">
-          <RepairSellToggle active="sell" />
-
-          <h1 className="mx-auto mt-7 max-w-[22rem] text-[26px] font-semibold leading-[1.1] tracking-tight text-[#111827] sm:max-w-xl sm:text-[32px] md:text-[44px]">
-            Sell Your Phone or Laptop.{" "}
-            <span className="bg-gradient-to-r from-[#7C3AED] to-[#F59E0B] bg-clip-text text-transparent">Instant Cash</span> at Your Door.
+      <section className="border-b border-gray-100 bg-gradient-to-b from-gray-50 to-white px-4 pb-10 pt-8 sm:pt-12 sm:pb-14">
+        <div className="mx-auto max-w-3xl text-center">
+          <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl md:text-5xl">
+            Sell Your Old Device
           </h1>
-          <p className="mx-auto mt-4 max-w-3xl text-[14px] leading-relaxed text-gray-500 sm:text-[15px]">
-            Free doorstep pickup, instant quote &amp; same-day payment.
+          <p className="mx-auto mt-3 max-w-xl text-base text-gray-500 sm:text-lg">
+            Get instant price, free doorstep pickup, and same-day payment. Best price guaranteed.
           </p>
 
-          <SellSearchBox brands={searchBrands} models={searchModels} />
-
-          <p className="mt-4 text-[12px] text-gray-500">
-            Already sold a device?{" "}
-            <Link href="/sell/track" className="font-bold text-violet-600 hover:underline">Track your order</Link>
-          </p>
+          <div className="mt-8">
+            <SellSearchBox brands={searchBrands} models={searchModels} />
+          </div>
         </div>
       </section>
 
-      {/* Category Cards */}
-      <section className="container mx-auto max-w-3xl px-4 pt-10 pb-6">
-        <div className="mb-6">
-          <div className="mb-2 flex items-center gap-2">
-            <div className="h-1 w-6 rounded-full bg-[#8B3DFF]"></div>
-            <span className="text-xs font-bold uppercase tracking-widest text-[#8B3DFF]">What are you selling?</span>
-          </div>
-          <h2 className="text-2xl font-semibold text-[#111827]">Pick a category to get instant cash</h2>
-        </div>
+      {/* Category Tabs + Brand Grid */}
+      <section className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <h2 className="mb-6 text-xl font-bold text-gray-900 sm:text-2xl">
+          Select Your Brand
+        </h2>
 
-        <div className="grid grid-cols-2 gap-3 sm:gap-4">
-          {sellCategories.map((category) => {
-            const Icon = category.icon;
-            const cardClassName =
-              "group relative block rounded-[20px] border border-gray-200 bg-white p-3 shadow-[0_18px_50px_rgba(15,23,42,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_70px_rgba(15,23,42,0.12)] sm:rounded-3xl sm:p-5";
-            const cardBody = (
-              <>
-                <div
-                  className="absolute inset-0 rounded-3xl opacity-[0.03]"
-                  style={{
-                    backgroundImage: "linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)",
-                    backgroundSize: "20px 20px",
-                  }}
-                />
-
-                <div className="relative z-10">
-                  <div className="mb-4 flex items-start justify-between sm:mb-8">
-                    <div className={`flex size-10 items-center justify-center rounded-xl sm:size-12 sm:rounded-2xl ${category.iconBg}`}>
-                      <Icon className={`size-5 sm:size-6 ${category.iconColor}`} />
-                    </div>
-                    <ArrowUpRight className="size-4 text-gray-400 transition-colors group-hover:text-gray-900 sm:size-5" />
-                  </div>
-
-                  <h3 className="mb-1 text-[15px] font-semibold leading-tight text-gray-900 sm:text-[17px] sm:leading-normal">
-                    {category.title}
-                  </h3>
-                  <p className={`text-[11px] leading-snug text-gray-500 sm:text-[13px] sm:leading-relaxed ${category.badge ? "mb-4 sm:mb-6" : ""}`}>
-                    {category.description}
-                  </p>
-
-                  {category.badge ? (
-                    <div className="inline-block rounded-full border border-emerald-100 bg-emerald-50 px-2 py-1 sm:px-3 sm:py-1.5">
-                      <span className="text-[9px] font-bold uppercase tracking-wide text-emerald-600 sm:text-[10px]">
-                        {category.badge}
-                      </span>
-                    </div>
-                  ) : null}
-                </div>
-              </>
-            );
-
-            return category.href ? (
-              <Link key={category.id} href={category.href} className={cardClassName}>
-                {cardBody}
-              </Link>
-            ) : (
-              <a
-                key={category.id}
-                href={`https://wa.me/91${whatsappPhone}?text=${encodeURIComponent(category.whatsappMessage ?? "")}`}
-                target="_blank"
-                rel="noreferrer"
-                className={cardClassName}
-              >
-                {cardBody}
-              </a>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Why Looplic */}
-      <section className="container mx-auto max-w-3xl px-4 py-6">
-        <div className="mb-6">
-          <div className="mb-2 flex items-center gap-2">
-            <div className="h-1 w-6 rounded-full bg-[#00D28E]"></div>
-            <span className="text-xs font-bold uppercase tracking-widest text-[#00B47D]">Why Looplic</span>
-          </div>
-          <h2 className="text-2xl font-semibold text-[#111827]">India&apos;s easiest way to sell</h2>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
-          {whySell.map((item) => {
-            const Icon = item.icon;
+        {/* Tabs */}
+        <div className="mb-6 flex items-center gap-1 overflow-x-auto rounded-lg border border-gray-200 bg-gray-50 p-1">
+          {categoryTabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeCategory === tab.id;
             return (
-              <div key={item.title} className="rounded-[20px] border border-gray-200 bg-white p-4 shadow-[0_18px_50px_rgba(15,23,42,0.08)] sm:rounded-3xl">
-                <div className="mb-3 flex items-start justify-between">
-                  <div className={`flex size-9 items-center justify-center rounded-xl ${item.iconBg} sm:size-10`}>
-                    <Icon className={`size-4 ${item.iconColor} sm:size-5`} />
-                  </div>
-                  {item.badge ? (
-                    <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-emerald-500">
-                      {item.badge}
-                    </span>
-                  ) : null}
-                </div>
-                <h3 className="mb-1 text-[13px] font-semibold leading-tight text-gray-900 sm:text-[14px]">{item.title}</h3>
-                <p className="text-[11px] leading-snug text-gray-500 sm:text-[12px]">{item.description}</p>
-              </div>
+              <button
+                key={tab.id}
+                onClick={() => { setActiveCategory(tab.id); setBrandSearch(""); }}
+                className={`flex items-center gap-2 whitespace-nowrap rounded-md px-4 py-2.5 text-sm font-medium transition-colors ${
+                  isActive
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                <Icon className="size-4" />
+                {tab.label}
+              </button>
             );
           })}
         </div>
-      </section>
 
-      {/* Top Offers */}
-      <section className="container mx-auto max-w-3xl px-4 py-6">
-        <div className="mb-6">
-          <div className="mb-2 flex items-center gap-2">
-            <div className="h-1 w-6 rounded-full bg-[#8B3DFF]"></div>
-            <span className="text-xs font-bold uppercase tracking-widest text-[#8B3DFF]">Top Offers</span>
-          </div>
-          <h2 className="text-2xl font-semibold text-[#111827]">Get a quote in 60 seconds</h2>
+        {/* Brand Search within category */}
+        <div className="relative mb-6 max-w-sm">
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            value={brandSearch}
+            onChange={(e) => setBrandSearch(e.target.value)}
+            placeholder={`Search ${activeCategory} brands...`}
+            className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2.5 pl-9 pr-4 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition-colors focus:border-blue-300 focus:bg-white focus:ring-2 focus:ring-blue-50"
+          />
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
-          {/* Offer 1: Sell Phone */}
-          <div className="flex flex-col rounded-[20px] border border-violet-100/60 bg-gradient-to-br from-violet-50/80 to-indigo-50/40 p-5 md:rounded-3xl md:p-6">
-            <div className="mb-4 flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-xl bg-white shadow-sm">
-                <Smartphone className="size-5 text-violet-400" />
-              </div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-gray-700 sm:text-xs">Sell Phone</span>
-            </div>
-
-            <h3 className="mb-2 text-[18px] font-semibold leading-tight text-gray-900 sm:text-[20px]">
-              Upgrading? Turn Your Old Phone Into Cash.
-            </h3>
-
-            <p className="mb-5 text-[13px] leading-relaxed text-gray-500 sm:text-[14px]">
-              Answer a few questions about its condition and get an exact price — paid the moment we pick it up.
+        {/* Brand Grid */}
+        {filteredBrands.length === 0 ? (
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center">
+            <p className="text-sm text-gray-600">
+              {brandSearch
+                ? `No brands found for "${brandSearch}".`
+                : "No brands available in this category yet."}
             </p>
-
-            <div className="mb-6 mt-auto flex flex-wrap gap-2">
-              <div className="flex items-center gap-1.5 rounded-full border border-white bg-white/60 px-2.5 py-1 sm:px-3 sm:py-1.5">
-                <Zap className="h-3 w-3 text-gray-400 sm:h-3.5 sm:w-3.5" />
-                <span className="text-[10px] font-medium text-gray-600 sm:text-[11px]">Instant quote</span>
-              </div>
-              <div className="flex items-center gap-1.5 rounded-full border border-white bg-white/60 px-2.5 py-1 sm:px-3 sm:py-1.5">
-                <Truck className="h-3 w-3 text-gray-400 sm:h-3.5 sm:w-3.5" />
-                <span className="text-[10px] font-medium text-gray-600 sm:text-[11px]">Free pickup</span>
-              </div>
-              <div className="flex items-center gap-1.5 rounded-full border border-white bg-white/60 px-2.5 py-1 sm:px-3 sm:py-1.5">
-                <IndianRupee className="h-3 w-3 text-gray-400 sm:h-3.5 sm:w-3.5" />
-                <span className="text-[10px] font-medium text-gray-600 sm:text-[11px]">Same-day UPI</span>
-              </div>
-            </div>
-
-            <Link
-              href="/sell/phone"
-              className="inline-flex items-center justify-center gap-2 self-start rounded-full bg-gradient-to-r from-[#4F46E5] to-[#8B3DFF] px-5 py-2.5 text-[12px] font-bold text-white shadow-sm shadow-violet-500/20 transition-all hover:opacity-90 sm:px-6 sm:py-3 sm:text-[13px]"
-            >
-              Get Instant Quote <ArrowRight className="size-3.5 sm:size-4" />
-            </Link>
           </div>
-
-          {/* Offer 2: Sell Laptop */}
-          <div className="flex flex-col rounded-[20px] border border-amber-100/60 bg-gradient-to-br from-amber-50/80 to-orange-50/40 p-5 md:rounded-3xl md:p-6">
-            <div className="mb-4 flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-xl bg-white shadow-sm">
-                <Laptop className="size-5 text-amber-400" />
-              </div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-gray-700 sm:text-xs">Sell Laptop</span>
-            </div>
-
-            <h3 className="mb-2 text-[18px] font-semibold leading-tight text-gray-900 sm:text-[20px]">
-              Old Laptop Lying Around? It&apos;s Worth Money.
-            </h3>
-
-            <p className="mb-5 text-[13px] leading-relaxed text-gray-500 sm:text-[14px]">
-              Mac, Dell, HP, Lenovo — any age, any condition. Get a top-price quote and doorstep pickup.
-            </p>
-
-            <div className="mb-6 mt-auto flex flex-wrap gap-2">
-              <div className="flex items-center gap-1.5 rounded-full border border-white bg-white/60 px-2.5 py-1 sm:px-3 sm:py-1.5">
-                <BadgeIndianRupee className="h-3 w-3 text-gray-400 sm:h-3.5 sm:w-3.5" />
-                <span className="text-[10px] font-medium text-gray-600 sm:text-[11px]">Top price</span>
-              </div>
-              <div className="flex items-center gap-1.5 rounded-full border border-white bg-white/60 px-2.5 py-1 sm:px-3 sm:py-1.5">
-                <Truck className="h-3 w-3 text-gray-400 sm:h-3.5 sm:w-3.5" />
-                <span className="text-[10px] font-medium text-gray-600 sm:text-[11px]">Free pickup</span>
-              </div>
-              <div className="flex items-center gap-1.5 rounded-full border border-white bg-white/60 px-2.5 py-1 sm:px-3 sm:py-1.5">
-                <ShieldCheck className="h-3 w-3 text-gray-400 sm:h-3.5 sm:w-3.5" />
-                <span className="text-[10px] font-medium text-gray-600 sm:text-[11px]">Data wiped</span>
-              </div>
-            </div>
-
-            <Link
-              href="/sell/laptop"
-              className="inline-flex items-center justify-center gap-2 self-start rounded-full bg-gradient-to-r from-[#4F46E5] to-[#8B3DFF] px-5 py-2.5 text-[12px] font-bold text-white shadow-sm shadow-violet-500/20 transition-all hover:opacity-90 sm:px-6 sm:py-3 sm:text-[13px]"
-            >
-              Quote My Laptop <ArrowRight className="size-3.5 sm:size-4" />
-            </Link>
+        ) : (
+          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
+            {filteredBrands.map((brand) => (
+              <Link
+                key={brand.id}
+                href={brand.href}
+                className="flex flex-col items-center gap-3 rounded-xl border border-gray-200 bg-white px-3 py-5 transition-all duration-150 hover:border-gray-300 hover:shadow-md"
+              >
+                <BrandLogo
+                  name={brand.name}
+                  imageUrl={brand.image_url}
+                  letter={brand.letter}
+                  gradient={brand.gradient}
+                  className="size-12 rounded-lg object-contain"
+                  fallbackClassName="size-12 rounded-lg"
+                />
+                <span className="text-center text-xs font-medium text-gray-800 leading-tight">
+                  {brand.name}
+                </span>
+              </Link>
+            ))}
           </div>
+        )}
+
+        {/* View all link */}
+        <div className="mt-6 text-center">
+          <Link
+            href={`/sell/${activeCategory}`}
+            className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
+          >
+            View all {activeCategory} brands <ArrowRight className="size-3.5" />
+          </Link>
         </div>
       </section>
 
       {/* How It Works */}
-      <section className="container mx-auto max-w-3xl px-4 py-6 pb-12">
-        <div className="mb-6">
-          <div className="mb-2 flex items-center gap-2">
-            <div className="h-1 w-6 rounded-full bg-[#4F46E5]"></div>
-            <span className="text-xs font-bold uppercase tracking-widest text-[#4F46E5]">How it works</span>
-          </div>
-          <h2 className="text-2xl font-semibold text-[#111827]">Sold in 3 simple steps</h2>
-        </div>
+      <section className="border-t border-gray-100 bg-gray-50 px-4 py-12 sm:py-16">
+        <div className="mx-auto max-w-4xl">
+          <h2 className="mb-2 text-center text-xl font-bold text-gray-900 sm:text-2xl">
+            How It Works
+          </h2>
+          <p className="mb-10 text-center text-sm text-gray-500 sm:text-base">
+            Sell your device in 3 simple steps
+          </p>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
-          {howItWorks.map((step, index) => {
-            const Icon = step.icon;
-            return (
-              <div key={step.title} className="relative rounded-[20px] border border-gray-200 bg-white p-4 shadow-[0_18px_50px_rgba(15,23,42,0.08)] sm:rounded-3xl sm:p-5">
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="flex size-10 items-center justify-center rounded-xl bg-violet-50 sm:size-12 sm:rounded-2xl">
-                    <Icon className="size-5 text-violet-500 sm:size-6" />
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-8">
+            {howItWorks.map((step) => {
+              const Icon = step.icon;
+              return (
+                <div key={step.step} className="text-center">
+                  <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-blue-50">
+                    <Icon className="size-6 text-blue-600" />
                   </div>
-                  <span className="text-[28px] font-extrabold leading-none text-gray-100">{index + 1}</span>
+                  <div className="mb-2 text-xs font-bold uppercase tracking-wider text-blue-600">
+                    Step {step.step}
+                  </div>
+                  <h3 className="mb-2 text-base font-semibold text-gray-900">
+                    {step.title}
+                  </h3>
+                  <p className="text-sm leading-relaxed text-gray-500">
+                    {step.description}
+                  </p>
                 </div>
-                <h3 className="mb-1 text-[14px] font-semibold text-gray-900 sm:text-[16px]">{step.title}</h3>
-                <p className="text-[12px] leading-relaxed text-gray-500 sm:text-[13px]">{step.description}</p>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </section>
 
-      <TrustSignals />
+      {/* Trust Signals */}
+      <section className="border-t border-gray-100 px-4 py-12 sm:py-16">
+        <div className="mx-auto max-w-4xl">
+          <h2 className="mb-8 text-center text-xl font-bold text-gray-900 sm:text-2xl">
+            Why Sell With Us
+          </h2>
+
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
+            <div className="flex flex-col items-center rounded-xl border border-gray-200 bg-white p-5 text-center">
+              <div className="mb-3 flex size-10 items-center justify-center rounded-full bg-green-50">
+                <IndianRupee className="size-5 text-green-600" />
+              </div>
+              <h3 className="mb-1 text-sm font-semibold text-gray-900">Best Price</h3>
+              <p className="text-xs text-gray-500">Guaranteed best market value for your device</p>
+            </div>
+
+            <div className="flex flex-col items-center rounded-xl border border-gray-200 bg-white p-5 text-center">
+              <div className="mb-3 flex size-10 items-center justify-center rounded-full bg-blue-50">
+                <Truck className="size-5 text-blue-600" />
+              </div>
+              <h3 className="mb-1 text-sm font-semibold text-gray-900">Free Pickup</h3>
+              <p className="text-xs text-gray-500">Doorstep pickup at your convenience, no cost</p>
+            </div>
+
+            <div className="flex flex-col items-center rounded-xl border border-gray-200 bg-white p-5 text-center">
+              <div className="mb-3 flex size-10 items-center justify-center rounded-full bg-purple-50">
+                <Banknote className="size-5 text-purple-600" />
+              </div>
+              <h3 className="mb-1 text-sm font-semibold text-gray-900">Instant Payment</h3>
+              <p className="text-xs text-gray-500">Get paid immediately via UPI or bank transfer</p>
+            </div>
+
+            <div className="flex flex-col items-center rounded-xl border border-gray-200 bg-white p-5 text-center">
+              <div className="mb-3 flex size-10 items-center justify-center rounded-full bg-orange-50">
+                <ShieldCheck className="size-5 text-orange-600" />
+              </div>
+              <h3 className="mb-1 text-sm font-semibold text-gray-900">Data Safety</h3>
+              <p className="text-xs text-gray-500">Certified data wipe before and after handover</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <HomepageFooter />
     </div>
   );

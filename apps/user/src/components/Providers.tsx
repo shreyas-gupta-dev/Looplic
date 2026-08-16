@@ -2,13 +2,19 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import dynamic from "next/dynamic";
 
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
-import { RepairBookingPopup } from "@/src/components/next/RepairBookingPopup";
 import { RouteLoadingIndicator } from "@/src/components/next/RouteLoadingIndicator";
 import { GoogleAdsNavigationTracker } from "@/src/components/next/GoogleAdsNavigationTracker";
 import { appUrl } from "@/src/lib/auth/config";
+
+// Lazy-load the popup — only shows on specific paths, not needed at initial load
+const RepairBookingPopup = dynamic(
+  () => import("@/src/components/next/RepairBookingPopup").then((m) => m.RepairBookingPopup),
+  { ssr: false },
+);
 
 // Safety net for the production build only: if a user somehow loads the deployed
 // app from a localhost address (stale OAuth redirect, browser autocomplete, an

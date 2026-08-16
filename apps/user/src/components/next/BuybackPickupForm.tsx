@@ -361,7 +361,7 @@ export function BuybackPickupForm({ mode, brandName, modelName, variantLabel, qu
           {isPickup ? "Pickup booked!" : "Quote request received!"}
         </h3>
         {bookingCode ? (
-          <p className="mt-1 text-[13px] font-bold tracking-wide text-violet-600">Booking ID: {bookingCode}</p>
+          <p className="mt-1 text-[13px] font-bold tracking-wide text-[#48C479]">Booking ID: {bookingCode}</p>
         ) : null}
         <p className="mx-auto mt-1.5 max-w-sm text-[13px] leading-relaxed text-gray-600">
           {isPickup
@@ -373,7 +373,7 @@ export function BuybackPickupForm({ mode, brandName, modelName, variantLabel, qu
   }
 
   const inputClassName =
-    "w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-[13px] font-medium text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-violet-400";
+    "w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-[13px] font-medium text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-[#48C479] focus:ring-1 focus:ring-[#48C479]";
   const staticInspectMapUrl = getStaticInspectMapUrl(getInspectPosition());
 
   // Pickup booking requires a signed-in account so the pickup is saved to the
@@ -383,16 +383,16 @@ export function BuybackPickupForm({ mode, brandName, modelName, variantLabel, qu
     if (authLoading) {
       return (
         <div className="flex items-center justify-center py-10">
-          <Loader2 className="size-5 animate-spin text-violet-500" />
+          <Loader2 className="size-5 animate-spin text-[#48C479]" />
         </div>
       );
     }
     if (!user) {
       const redirectTo = typeof window !== "undefined" ? window.location.pathname + window.location.search : "/sell";
       return (
-        <div className="rounded-2xl border border-violet-100 bg-violet-50/50 p-6 text-center">
+        <div className="rounded-2xl border border-green-100 bg-green-50/50 p-6 text-center">
           <div className="mx-auto mb-3 flex size-12 items-center justify-center rounded-full bg-white shadow-sm">
-            <LogIn className="size-5 text-violet-600" />
+            <LogIn className="size-5 text-[#48C479]" />
           </div>
           <h3 className="text-[15px] font-semibold text-gray-900">Sign in to book your pickup</h3>
           <p className="mx-auto mt-1.5 max-w-sm text-[13px] leading-relaxed text-gray-600">
@@ -401,7 +401,7 @@ export function BuybackPickupForm({ mode, brandName, modelName, variantLabel, qu
           </p>
           <a
             href={`/auth?redirect=${encodeURIComponent(redirectTo)}`}
-            className="mt-4 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#4F46E5] to-[#8B3DFF] px-6 py-3 text-[13px] font-bold text-white transition-all hover:opacity-90"
+            className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#48C479] px-6 py-3 text-[13px] font-bold text-white transition-all hover:bg-[#3daa68]"
           >
             <LogIn className="size-4" /> Sign In or Create Account
           </a>
@@ -438,10 +438,10 @@ export function BuybackPickupForm({ mode, brandName, modelName, variantLabel, qu
           </label>
 
           {/* Pickup location map — same picker as the service booking form */}
-          <div className="rounded-2xl border border-violet-200 bg-violet-50/40 p-3.5">
+          <div className="rounded-2xl border border-green-200 bg-green-50/40 p-3.5">
             <div className="mb-2.5 flex items-start justify-between gap-3">
               <span className="text-[13px] font-bold text-gray-900">Pickup Location</span>
-              <div className="flex size-9 items-center justify-center rounded-full bg-violet-100 text-violet-600">
+              <div className="flex size-9 items-center justify-center rounded-full bg-green-100 text-green-600">
                 <MapPinned className="size-4" />
               </div>
             </div>
@@ -449,12 +449,12 @@ export function BuybackPickupForm({ mode, brandName, modelName, variantLabel, qu
               type="button"
               onClick={fetchCurrentLocation}
               disabled={locating}
-              className="mb-2.5 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-violet-300 bg-violet-50 px-4 py-2.5 text-[12px] font-bold text-gray-800 transition-colors hover:border-violet-400 hover:bg-violet-100/70 disabled:opacity-60"
+              className="mb-2.5 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-green-300 bg-green-50 px-4 py-2.5 text-[12px] font-bold text-gray-800 transition-colors hover:border-green-400 hover:bg-green-100/70 disabled:opacity-60"
             >
-              {locating ? <Loader2 className="size-4 animate-spin text-violet-600" /> : <Navigation className="size-4 text-violet-600" />}
+              {locating ? <Loader2 className="size-4 animate-spin text-green-600" /> : <Navigation className="size-4 text-green-600" />}
               {locating ? "Fetching current location" : "Fetch Current Location"}
             </button>
-            <div className={`relative h-36 overflow-hidden rounded-2xl border border-gray-200 bg-slate-100 shadow-inner ${pinEditable ? "ring-2 ring-violet-300" : ""}`}>
+            <div className={`relative h-36 overflow-hidden rounded-2xl border border-gray-200 bg-slate-100 shadow-inner ${pinEditable ? "ring-2 ring-green-300" : ""}`}>
               {!mapReady ? (
                 staticInspectMapUrl ? (
                   <img src={staticInspectMapUrl} alt="Map preview" className="absolute inset-0 z-0 size-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
@@ -467,20 +467,20 @@ export function BuybackPickupForm({ mode, brandName, modelName, variantLabel, qu
               ) : null}
               <div ref={mapElementRef} className={`size-full ${mapReady ? "relative z-10" : "pointer-events-none absolute inset-0 z-0"}`} />
               <div className="pointer-events-none absolute left-1/2 top-1/2 z-30 flex -translate-x-1/2 -translate-y-full flex-col items-center">
-                <div className={`flex size-9 items-center justify-center rounded-full border-4 border-white shadow-xl transition-colors ${pinEditable ? "bg-violet-600 text-white" : "bg-slate-900 text-white"}`}>
+                <div className={`flex size-9 items-center justify-center rounded-full border-4 border-white shadow-xl transition-colors ${pinEditable ? "bg-[#48C479] text-white" : "bg-slate-900 text-white"}`}>
                   <MapPin className="size-5" />
                 </div>
                 <div className="h-3 w-0.5 bg-slate-900/70" />
               </div>
               {pinEditable ? (
-                <div className="pointer-events-none absolute bottom-3 left-3 z-30 rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-black text-violet-700 shadow-lg">
+                <div className="pointer-events-none absolute bottom-3 left-3 z-30 rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-black text-green-700 shadow-lg">
                   Move map to place pin
                 </div>
               ) : null}
               <button
                 type="button"
                 onClick={() => setPinEditable((v) => !v)}
-                className={`absolute right-3 top-3 z-40 flex size-10 items-center justify-center rounded-full bg-white shadow-lg transition-colors ${pinEditable ? "text-violet-600 ring-2 ring-violet-200" : "text-violet-500 hover:text-violet-700"}`}
+                className={`absolute right-3 top-3 z-40 flex size-10 items-center justify-center rounded-full bg-white shadow-lg transition-colors ${pinEditable ? "text-green-600 ring-2 ring-green-200" : "text-green-500 hover:text-green-700"}`}
                 title={pinEditable ? "Lock pin" : "Edit pin"}
               >
                 <Pencil className="size-5" />
@@ -525,7 +525,7 @@ export function BuybackPickupForm({ mode, brandName, modelName, variantLabel, qu
                     type="button"
                     onClick={() => setTimeSlot(timeSlot === slot ? "" : slot)}
                     className={`rounded-full border px-2.5 py-1.5 text-[11px] font-semibold transition-colors ${
-                      timeSlot === slot ? "border-violet-500 bg-violet-50 text-violet-700" : "border-gray-200 bg-white text-gray-600 hover:border-violet-200"
+                      timeSlot === slot ? "border-[#48C479] bg-green-50 text-green-700" : "border-gray-200 bg-white text-gray-600 hover:border-green-200"
                     }`}
                   >
                     {slot}
@@ -546,7 +546,7 @@ export function BuybackPickupForm({ mode, brandName, modelName, variantLabel, qu
       <button
         type="submit"
         disabled={status === "submitting"}
-        className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#4F46E5] to-[#8B3DFF] px-6 py-3.5 text-[14px] font-bold text-white transition-all hover:opacity-90 disabled:opacity-60"
+        className="flex w-full items-center justify-center gap-2 rounded-full bg-[#48C479] px-6 py-3.5 text-[14px] font-bold text-white transition-all hover:bg-[#3daa68] disabled:opacity-60"
       >
         {status === "submitting" ? (
           <>

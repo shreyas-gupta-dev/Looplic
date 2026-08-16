@@ -56,7 +56,7 @@ export default async function SellSeriesPage({ params }: PageProps) {
     id: series.id,
     name: series.name,
     seriesName: brand.name,
-    imageUrl: series.image_url,
+    imageUrl: series.image_url || brand.image_url,
     href: `/sell/${sellCategory}/${brand.slug}/${series.slug}`,
   }));
 

@@ -1,115 +1,214 @@
-import { Instagram, Linkedin, Mail, MapPin, Phone } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
+"use client";
 
-import logo from "@/assets/looplic-logo.webp";
-import { InstallAppButton } from "@/src/components/next/InstallAppButton";
-import { companyAddress, companyAddressMapUrl, companyName, footerLinks, supportEmail, supportPhone, supportPhoneDisplay, whatsappUrl } from "@/src/lib/company";
+import { Facebook, Instagram, Linkedin, Mail, MapPin, Phone, Twitter, Youtube } from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
+
+import { companyAddress, companyName, supportEmail, supportPhone, supportPhoneDisplay } from "@/src/lib/company";
+
+const sellLinks = [
+  { href: "/sell", label: "Sell Old Mobile Phone" },
+  { href: "/sell/laptop", label: "Sell Old Laptop" },
+  { href: "/sell/tablet", label: "Sell Old Tablet" },
+  { href: "/sell/smartwatch", label: "Sell Old Smartwatch" },
+  { href: "/sell/desktop", label: "Sell Old Desktop/iMac" },
+  { href: "/sell/gaming-console", label: "Sell Gaming Console" },
+];
+
+const sellBrandLinks = [
+  { href: "/sell/phone/apple", label: "Sell Old iPhone" },
+  { href: "/sell/phone/samsung", label: "Sell Old Samsung" },
+  { href: "/sell/phone/oneplus", label: "Sell Old OnePlus" },
+  { href: "/sell/phone/xiaomi", label: "Sell Old Xiaomi" },
+  { href: "/sell/phone/vivo", label: "Sell Old Vivo" },
+  { href: "/sell/phone/oppo", label: "Sell Old OPPO" },
+  { href: "/sell/laptop/apple", label: "Sell Old MacBook" },
+];
+
+const buyLinks = [
+  { href: "/buy?category=phone", label: "Refurbished Phones" },
+  { href: "/buy?category=laptop", label: "Refurbished Laptops" },
+  { href: "/buy?category=tablet", label: "Refurbished Tablets" },
+  { href: "/buy?brand=Apple", label: "Refurbished iPhones" },
+  { href: "/buy?brand=Samsung", label: "Refurbished Samsung" },
+  { href: "/buy?brand=OnePlus", label: "Refurbished OnePlus" },
+];
+
+const companyLinks = [
+  { href: "/about-us", label: "About Us" },
+  { href: "/blog", label: "Blog" },
+  { href: "/partners", label: "Partners/Franchise" },
+  { href: "/sell/corporate", label: "Corporate / Bulk" },
+  { href: "/store-locator", label: "Store Locator" },
+  { href: "/careers", label: "Careers" },
+];
+
+const supportLinks = [
+  { href: "/faq", label: "FAQ / Help Center" },
+  { href: "/contact-us", label: "Contact Us" },
+  { href: "/sell/track", label: "Track Your Order" },
+  { href: "/terms-and-conditions", label: "Terms & Conditions" },
+  { href: "/privacy-policy", label: "Privacy Policy" },
+  { href: "/refund-policy", label: "Return & Refund Policy" },
+];
+
+const socialLinks = [
+  { href: "https://instagram.com/looplic", icon: Instagram, label: "Instagram" },
+  { href: "https://facebook.com/looplic", icon: Facebook, label: "Facebook" },
+  { href: "https://twitter.com/looplic", icon: Twitter, label: "Twitter/X" },
+  { href: "https://linkedin.com/company/looplic", icon: Linkedin, label: "LinkedIn" },
+  { href: "https://youtube.com/looplic", icon: Youtube, label: "YouTube" },
+];
 
 export function HomepageFooter() {
   return (
-    <footer id="contact" className="border-t border-border bg-card py-8">
-      <div className="container max-w-6xl px-4 sm:px-6">
-        <div className="flex flex-col gap-8">
-          <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-            <div className="overflow-hidden rounded-[28px] border border-border bg-[radial-gradient(circle_at_top_left,_hsl(211_100%_50%_/_0.14),_transparent_35%),linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(241,245,249,0.92))] p-6 shadow-card-brand">
-              <img src={logo.src} alt="Looplic" className="mb-4 h-8" />
-              <h3 className="max-w-md text-2xl font-semibold leading-tight text-foreground">
-                Fast mobile repair, cleaner booking flow, and real support when customers need it.
-              </h3>
-              <p className="mt-3 max-w-xl text-sm leading-7 text-muted-foreground">
-                Doorstep device repair and tech support, built to feel quick, clear, and dependable from first tap to final confirmation.
-              </p>
-              <div className="mt-5 flex flex-wrap gap-2">
-                <Link href="/service/mobile-repair/brands" className="rounded-full border border-border bg-card px-4 py-2 text-xs font-bold text-foreground transition-colors hover:border-primary/30 hover:text-primary">
-                  Browse Brands
-                </Link>
-                <Link href="/bangalore" className="rounded-full border border-border bg-card px-4 py-2 text-xs font-bold text-foreground transition-colors hover:border-primary/30 hover:text-primary">
-                  Bangalore
-                </Link>
-                <Link href="/service/mobile-repair" className="rounded-full border border-border bg-card px-4 py-2 text-xs font-bold text-foreground transition-colors hover:border-primary/30 hover:text-primary">
-                  Mobile Repair
-                </Link>
-                <InstallAppButton compact />
+    <footer className="border-t border-gray-200 bg-gray-900 text-gray-300">
+      {/* Main footer content */}
+      <div className="container mx-auto max-w-7xl px-4 py-12 lg:px-8">
+        <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+          {/* Column 1: Brand + Contact */}
+          <div className="sm:col-span-2 md:col-span-3 lg:col-span-2">
+            <Link href="/" className="inline-block">
+              <Image
+                src="/looplic-logo.webp"
+                alt={companyName}
+                width={130}
+                height={36}
+                className="h-9 w-auto brightness-0 invert"
+              />
+            </Link>
+            <p className="mt-3 text-sm leading-relaxed text-gray-400">
+              India&apos;s most trusted platform to sell and buy refurbished devices.
+              Get instant price quotes, free doorstep pickup, and certified refurbished with warranty.
+            </p>
+
+            <div className="mt-5 space-y-2.5">
+              <a href={`tel:+91${supportPhone}`} className="flex items-center gap-2 text-sm text-gray-400 transition-colors hover:text-white">
+                <Phone className="size-4" /> {supportPhoneDisplay}
+              </a>
+              <a href={`mailto:${supportEmail}`} className="flex items-center gap-2 text-sm text-gray-400 transition-colors hover:text-white">
+                <Mail className="size-4" /> {supportEmail}
+              </a>
+              <div className="flex items-start gap-2 text-sm text-gray-400">
+                <MapPin className="mt-0.5 size-4 shrink-0" />
+                <span>{companyAddress}</span>
               </div>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-[28px] border border-border bg-secondary/40 p-5 shadow-card-brand">
-                <div className="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground">Menu</div>
-                <div className="mt-4 grid gap-2 text-sm font-semibold">
-                  <Link href="/" className="transition-colors hover:text-foreground">
-                    Home
-                  </Link>
-                  <Link href="/service/mobile-repair/brands" className="transition-colors hover:text-foreground">
-                    Services
-                  </Link>
-                  <Link href="/service-pages" className="transition-colors hover:text-foreground">
-                    Service Pages
-                  </Link>
-                  <Link href="/brand-pages" className="transition-colors hover:text-foreground">
-                    Brand Pages
-                  </Link>
-                  {footerLinks.map((link) => (
-                    <Link key={link.href} href={link.href} className="transition-colors hover:text-foreground">
-                      {link.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              <div className="rounded-[28px] border border-border bg-card p-5 shadow-card-brand">
-                <div className="text-xs font-black uppercase tracking-[0.18em] text-muted-foreground">Support</div>
-                <div className="mt-4 flex flex-col gap-2">
-                  <a href={`tel:+91${supportPhone}`} className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-secondary p-3 text-sm font-semibold text-foreground md:justify-start">
-                    <Phone className="size-4" /> {supportPhoneDisplay}
+            {/* Social icons */}
+            <div className="mt-5 flex items-center gap-2.5">
+              {socialLinks.map((social) => {
+                const Icon = social.icon;
+                return (
+                  <a
+                    key={social.label}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={social.label}
+                    className="flex size-9 items-center justify-center rounded-full bg-gray-800 text-gray-400 transition-colors hover:bg-primary hover:text-white"
+                  >
+                    <Icon className="size-4" />
                   </a>
-                  <a href={`mailto:${supportEmail}`} className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-secondary p-3 text-sm font-semibold text-foreground md:justify-start">
-                    <Mail className="size-4" /> {supportEmail}
-                  </a>
-                  <a href={whatsappUrl} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-sm font-semibold text-emerald-700 md:justify-start">
-                    <Image src="/whatsapp.svg" alt="" width={16} height={16} className="size-4" aria-hidden="true" /> WhatsApp support
-                  </a>
-                  <a href={companyAddressMapUrl} target="_blank" rel="noreferrer" className="inline-flex items-start gap-2 rounded-2xl border border-border bg-secondary p-3 text-left text-sm font-semibold leading-6 text-foreground">
-                    <MapPin className="mt-1 size-4 shrink-0" /> <span>{companyAddress}</span>
-                  </a>
-                </div>
-              </div>
+                );
+              })}
             </div>
           </div>
 
-          <div className="flex justify-center gap-3">
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="flex size-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 transition-all hover:bg-emerald-100"
-              aria-label="WhatsApp support"
-            >
-              <Image src="/whatsapp.svg" alt="" width={16} height={16} className="size-4" aria-hidden="true" />
-            </a>
-            <a
-              href="https://www.instagram.com/thelooplic/"
-              target="_blank"
-              rel="noreferrer"
-              className="flex size-9 items-center justify-center rounded-xl bg-rose-50 text-rose-600 transition-all hover:bg-rose-100"
-              aria-label="Looplic on Instagram"
-            >
-              <Instagram className="size-4" aria-hidden="true" />
-            </a>
-            <a
-              href="https://www.linkedin.com/company/looplic"
-              target="_blank"
-              rel="noreferrer"
-              className="flex size-9 items-center justify-center rounded-xl bg-sky-50 text-sky-700 transition-all hover:bg-sky-100"
-              aria-label="Looplic on LinkedIn"
-            >
-              <Linkedin className="size-4" aria-hidden="true" />
-            </a>
+          {/* Column 2: Sell */}
+          <div>
+            <h4 className="mb-4 text-sm font-bold uppercase tracking-wider text-white">
+              Sell Device
+            </h4>
+            <ul className="space-y-2.5">
+              {sellLinks.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="text-sm text-gray-400 transition-colors hover:text-primary">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          <div className="border-t border-border pt-4 text-center">
-            <p className="text-[10px] text-muted-foreground">Copyright {new Date().getFullYear()} {companyName}. All rights reserved.</p>
+          {/* Column 3: Buy Refurbished */}
+          <div>
+            <h4 className="mb-4 text-sm font-bold uppercase tracking-wider text-white">
+              Buy Refurbished
+            </h4>
+            <ul className="space-y-2.5">
+              {buyLinks.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="text-sm text-gray-400 transition-colors hover:text-primary">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 4: Company */}
+          <div>
+            <h4 className="mb-4 text-sm font-bold uppercase tracking-wider text-white">
+              Company
+            </h4>
+            <ul className="space-y-2.5">
+              {companyLinks.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="text-sm text-gray-400 transition-colors hover:text-primary">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 5: Support */}
+          <div>
+            <h4 className="mb-4 text-sm font-bold uppercase tracking-wider text-white">
+              Support
+            </h4>
+            <ul className="space-y-2.5">
+              {supportLinks.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="text-sm text-gray-400 transition-colors hover:text-primary">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* App Download */}
+        <div className="mt-10 flex flex-col items-center justify-between gap-4 rounded-xl border border-gray-800 bg-gray-800/50 p-5 sm:flex-row">
+          <div>
+            <p className="text-sm font-semibold text-white">Download the Looplic App</p>
+            <p className="mt-0.5 text-xs text-gray-400">Sell & buy on the go. Available on Android & iOS.</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <a href="#" className="rounded-lg bg-white px-4 py-2 text-xs font-bold text-gray-900 transition-opacity hover:opacity-90">
+              Google Play
+            </a>
+            <a href="#" className="rounded-lg bg-white px-4 py-2 text-xs font-bold text-gray-900 transition-opacity hover:opacity-90">
+              App Store
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom bar */}
+      <div className="border-t border-gray-800">
+        <div className="container mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 py-4 sm:flex-row lg:px-8">
+          <p className="text-xs text-gray-500">
+            © {new Date().getFullYear()} {companyName}. All rights reserved.
+          </p>
+          <div className="flex items-center gap-3 text-xs text-gray-500">
+            <span>ISO 27001 Certified</span>
+            <span className="text-gray-700">•</span>
+            <span>Startup India Recognized</span>
+            <span className="text-gray-700">•</span>
+            <span>DIPP Registered</span>
           </div>
         </div>
       </div>

@@ -8,6 +8,8 @@
     "packages/*"
   ],
   "scripts": {
+    "dev": "npx concurrently -n \"user,admin,tech,operator\" -c \"blue,green,yellow,magenta\" \"npm:dev:user\" \"npm:dev:admin\" \"npm:dev:technician\" \"npm:dev:operator\"",
+    "dev:all": "npx concurrently -n \"user,admin,tech,operator\" -c \"blue,green,yellow,magenta\" \"npm:dev:user\" \"npm:dev:admin\" \"npm:dev:technician\" \"npm:dev:operator\"",
     "dev:user": "npm run dev -w @looplic/user",
     "dev:admin": "npm run dev -w @looplic/admin",
     "dev:technician": "npm run dev -w @looplic/technician",
@@ -20,6 +22,7 @@
   },
   "devDependencies": {
     "@types/pg": "^8.20.0",
+    "concurrently": "^9.1.2",
     "drizzle-kit": "^0.31.10",
     "drizzle-orm": "^0.45.2",
     "pg": "^8.21.0",

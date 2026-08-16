@@ -9,6 +9,8 @@ import { getBrandsForListing } from "@/src/lib/data/catalog";
 import { buildPageMetadata } from "@/src/lib/metadata";
 import { buildSellBrandRoute, resolveSellCategory, SELL_CATEGORIES } from "@/src/lib/sell";
 
+import { SellCategoryBrandGrid } from "@/src/components/next/SellCategoryBrandGrid";
+
 export const revalidate = 300;
 
 type PageProps = {
@@ -61,8 +63,18 @@ export default async function SellBrandsPage({ params }: PageProps) {
     },
   ];
 
+  const brandsData = brands.map((brand) => ({
+    id: brand.id,
+    name: brand.name,
+    slug: brand.slug,
+    image_url: brand.image_url,
+    letter: brand.letter,
+    gradient: brand.gradient,
+    href: buildSellBrandRoute(sellCategory, brand.slug),
+  }));
+
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-white">
       <CatalogNavbar />
       <script
         type="application/ld+json"
@@ -79,61 +91,56 @@ export default async function SellBrandsPage({ params }: PageProps) {
         }}
       />
 
-      <main className="container mx-auto max-w-3xl px-4 py-8">
-        <nav aria-label="Breadcrumb" className="mb-5 text-[12px] text-gray-500">
-          <Link href="/sell" className="font-semibold text-violet-600 hover:underline">Home</Link>
-          <span className="mx-1.5">/</span>
-          <span>Sell Old {oldLabel}</span>
+      <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+        {/* Breadcrumb */}
+        <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-sm text-gray-500">
+          <Link href="/" className="hover:text-gray-900 transition-colors">Home</Link>
+          <span className="text-gray-300">/</span>
+          <Link href="/sell" className="hover:text-gray-900 transition-colors">Sell</Link>
+          <span className="text-gray-300">/</span>
+          <span className="font-medium text-gray-900">Sell Old {oldLabel}</span>
         </nav>
 
-        <div className="mb-6">
-          <div className="mb-2 flex items-center gap-2">
-            <div className="h-1 w-6 rounded-full bg-[#8B3DFF]"></div>
-            <span className="text-xs font-bold uppercase tracking-widest text-[#8B3DFF]">Sell {label}</span>
-          </div>
-          <h1 className="text-2xl font-semibold text-[#111827]">Sell Old {oldLabel} in Bangalore</h1>
-          <p className="mt-1 max-w-xl text-[13px] leading-relaxed text-gray-500">
-            Get an instant quote for your old {noun}, free doorstep pickup, and same-day payment via UPI or bank
-            transfer. Pick your brand to get started.
+        {/* Heading */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
+            Sell Old {oldLabel}
+          </h1>
+          <p className="mt-2 text-sm text-gray-500 sm:text-base">
+            Select your {noun} brand to get an instant price quote. Free doorstep pickup & same-day payment.
           </p>
         </div>
 
         {brands.length === 0 ? (
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 text-center">
-            <p className="text-[13px] font-semibold text-gray-900">The {noun} catalog is being stocked.</p>
-            <p className="mt-1 text-[12px] text-gray-500">
-              We still buy them! <Link href="/contact-us" className="font-semibold text-violet-600 hover:underline">Contact us</Link> for a manual quote while we finish setting this up.
+          <div className="rounded-xl border border-gray-200 bg-gray-50 p-8 text-center">
+            <p className="text-base font-semibold text-gray-900">The {noun} catalog is being stocked.</p>
+            <p className="mt-2 text-sm text-gray-500">
+              We still buy them!{" "}
+              <Link href="/contact-us" className="font-semibold text-blue-600 hover:underline">
+                Contact us
+              </Link>{" "}
+              for a manual quote while we finish setting this up.
             </p>
           </div>
-        ) : null}
+        ) : (
+          <SellCategoryBrandGrid brands={brandsData} noun={noun} />
+        )}
 
-        <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 md:grid-cols-5 md:gap-3">
-          {brands.map((brand) => (
-            <Link
-              href={buildSellBrandRoute(sellCategory, brand.slug)}
-              key={brand.id}
-              className="flex cursor-pointer flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white px-2 py-3.5 shadow-[0_18px_50px_rgba(15,23,42,0.06)] transition-all duration-200 hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-[0_24px_70px_rgba(15,23,42,0.1)]"
-            >
-              <BrandLogo
-                name={brand.name}
-                imageUrl={brand.image_url}
-                letter={brand.letter}
-                gradient={brand.gradient}
-                className="size-10 rounded-xl object-contain"
-                fallbackClassName="size-10 rounded-xl shadow-sm"
-              />
-              <span className="text-[11px] font-bold text-gray-900">{brand.name}</span>
-            </Link>
-          ))}
-        </div>
         {/* FAQs */}
-        <section className="mt-10">
-          <h2 className="mb-4 text-lg font-semibold text-[#111827]">Frequently asked questions</h2>
-          <div className="space-y-2.5">
+        <section className="mt-12 border-t border-gray-100 pt-10">
+          <h2 className="mb-6 text-xl font-bold text-gray-900">Frequently Asked Questions</h2>
+          <div className="space-y-3">
             {faqs.map((f) => (
-              <details key={f.q} className="group rounded-2xl border border-gray-200 bg-white p-4 shadow-[0_18px_50px_rgba(15,23,42,0.05)]">
-                <summary className="cursor-pointer list-none text-[13px] font-bold text-gray-900">{f.q}</summary>
-                <p className="mt-2 text-[13px] leading-relaxed text-gray-500">{f.a}</p>
+              <details
+                key={f.q}
+                className="group rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-sm"
+              >
+                <summary className="cursor-pointer select-none px-5 py-4 text-sm font-semibold text-gray-900 sm:text-base">
+                  {f.q}
+                </summary>
+                <p className="px-5 pb-4 text-sm leading-relaxed text-gray-600">
+                  {f.a}
+                </p>
               </details>
             ))}
           </div>

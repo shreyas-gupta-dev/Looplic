@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS blog_posts (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug text NOT NULL UNIQUE,
+  title text NOT NULL,
+  excerpt text NOT NULL DEFAULT '',
+  body_html text NOT NULL DEFAULT '',
+  cover_image_url text,
+  cover_image_alt text NOT NULL DEFAULT '',
+  status text NOT NULL DEFAULT 'draft',
+  published_at timestamptz,
+  author text NOT NULL DEFAULT '',
+  category text NOT NULL DEFAULT '',
+  tags text[],
+  reading_time text NOT NULL DEFAULT '',
+  seo_title text NOT NULL DEFAULT '',
+  seo_description text NOT NULL DEFAULT '',
+  og_image_url text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);

@@ -1,38 +1,36 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 210 20% 97%;
-    --foreground: 210 25% 13%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 210 25% 13%;
+    --card-foreground: 0 0% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 210 25% 13%;
+    --popover-foreground: 0 0% 10%;
 
-    --primary: 211 100% 50%;
+    --primary: 145 52% 53%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 210 20% 94%;
-    --secondary-foreground: 210 25% 13%;
+    --secondary-foreground: 0 0% 10%;
 
-    --muted: 210 15% 93%;
+    --muted: 210 20% 96%;
     --muted-foreground: 210 10% 46%;
 
-    --accent: 165 100% 42%;
+    --accent: 145 52% 53%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 18% 90%;
-    --input: 210 18% 90%;
-    --ring: 211 100% 50%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 145 52% 53%;
 
     --radius: 0.75rem;
 
@@ -42,12 +40,12 @@
     --navy: 210 25% 13%;
     --navy-foreground: 0 0% 100%;
 
-    --gradient-brand: linear-gradient(135deg, hsl(211 100% 50%), hsl(165 100% 42%));
-    --gradient-hero: linear-gradient(180deg, hsl(210 20% 97%) 0%, hsl(211 60% 95%) 100%);
+    --gradient-brand: linear-gradient(135deg, hsl(145 52% 53%), hsl(160 60% 40%));
+    --gradient-hero: linear-gradient(180deg, hsl(145 52% 95%) 0%, hsl(0 0% 100%) 100%);
 
-    --shadow-card: 0 1px 3px 0 hsl(210 25% 13% / 0.06), 0 1px 2px -1px hsl(210 25% 13% / 0.06);
-    --shadow-elevated: 0 10px 25px -5px hsl(211 100% 50% / 0.12), 0 8px 10px -6px hsl(211 100% 50% / 0.08);
-    --shadow-search: 0 4px 20px -2px hsl(211 100% 50% / 0.15);
+    --shadow-card: 0 1px 3px 0 hsl(145 52% 53% / 0.06), 0 1px 2px -1px hsl(145 52% 53% / 0.06);
+    --shadow-elevated: 0 10px 25px -5px hsl(145 52% 53% / 0.12), 0 8px 10px -6px hsl(145 52% 53% / 0.08);
+    --shadow-search: 0 4px 20px -2px hsl(145 52% 53% / 0.15);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -56,7 +54,7 @@
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 145 52% 53%;
   }
 
   .dark {
@@ -66,27 +64,27 @@
     --card-foreground: 210 20% 95%;
     --popover: 210 25% 11%;
     --popover-foreground: 210 20% 95%;
-    --primary: 211 100% 55%;
+    --primary: 145 52% 58%;
     --primary-foreground: 0 0% 100%;
     --secondary: 210 20% 15%;
     --secondary-foreground: 210 20% 95%;
     --muted: 210 15% 18%;
     --muted-foreground: 210 10% 60%;
-    --accent: 165 100% 42%;
+    --accent: 145 52% 58%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 210 20% 18%;
     --input: 210 20% 18%;
-    --ring: 211 100% 55%;
+    --ring: 145 52% 58%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary: 145 52% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 145 52% 58%;
   }
 }
 
@@ -96,7 +94,7 @@
   }
 
   body {
-    @apply bg-background text-foreground font-body antialiased;
+    @apply bg-background text-foreground font-body antialiased overflow-x-hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -106,18 +104,18 @@
 
 @layer utilities {
   .gradient-brand {
-    background: linear-gradient(135deg, hsl(211 100% 50%), hsl(165 100% 42%));
+    background: linear-gradient(135deg, hsl(145 52% 53%), hsl(160 60% 40%));
   }
 
   .gradient-brand-text {
-    background: linear-gradient(135deg, hsl(211 100% 50%), hsl(165 100% 42%));
+    background: linear-gradient(135deg, hsl(145 52% 53%), hsl(160 60% 40%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .gradient-hero-bg {
-    background: linear-gradient(180deg, hsl(210 20% 97%) 0%, hsl(211 40% 94%) 100%);
+    background: linear-gradient(180deg, hsl(145 52% 95%) 0%, hsl(0 0% 100%) 100%);
   }
 
   .shadow-search {
@@ -233,45 +231,6 @@
     transform: translate(-50%, -50%) scale(1);
   }
 
-  .service-tab-cycle {
-    position: relative;
-    display: inline-grid;
-    width: 3.2rem;
-    height: 1rem;
-    align-items: center;
-    overflow: hidden;
-  }
-
-  .service-tab-cycle__word {
-    grid-area: 1 / 1;
-    transform: translateY(115%);
-    opacity: 0;
-    will-change: transform, opacity;
-  }
-
-  .service-tab-cycle__word--first {
-    animation: service-tab-first-word-cycle 5.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
-  }
-
-  .service-tab-cycle__word--second {
-    animation: service-tab-repair-word-cycle 5.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .service-tab-cycle__word {
-      animation: none;
-    }
-
-    .service-tab-cycle__word--first {
-      transform: translateY(0);
-      opacity: 1;
-    }
-
-    .service-tab-cycle__word--second {
-      display: none;
-    }
-  }
-
   @keyframes looplic-spin {
     to {
       transform: rotate(1turn);
@@ -296,33 +255,150 @@
     }
   }
 
-  @keyframes service-tab-first-word-cycle {
-    0%, 32%, 100% {
-      transform: translateY(0);
-      opacity: 1;
+  /* ─── Splash Screen ──────────────────────────────────────────── */
+
+  .splash-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  .splash-screen--fade-out {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .splash-screen__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .splash-screen__logo-wrapper {
+    width: 160px;
+    height: 80px;
+    perspective: 800px;
+    animation: splash-float 2s ease-in-out infinite;
+  }
+
+  .splash-screen__logo {
+    width: 100%;
+    height: 100%;
+    animation: splash-3d-rotate 2s ease-in-out infinite;
+    transform-style: preserve-3d;
+  }
+
+  .splash-screen__infinity-path {
+    stroke-dasharray: 500;
+    stroke-dashoffset: 500;
+    animation: splash-draw 1.5s ease-out forwards;
+  }
+
+  .splash-screen__infinity-trace {
+    stroke-dasharray: 80 420;
+    stroke-dashoffset: 0;
+    opacity: 0.6;
+    animation: splash-trace 1.8s linear infinite;
+  }
+
+  .splash-screen__brand {
+    font-family: var(--font-poppins), 'Poppins', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #1a2744 0%, #2563eb 50%, #10b981 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    opacity: 0;
+    animation: splash-brand-fade 0.8s ease-out 0.6s forwards;
+  }
+
+  @keyframes splash-3d-rotate {
+    0% {
+      transform: rotateY(0deg) rotateX(0deg);
     }
-    42%, 88% {
-      transform: translateY(-115%);
-      opacity: 0;
+    25% {
+      transform: rotateY(15deg) rotateX(5deg);
     }
-    88.01% {
-      transform: translateY(115%);
-      opacity: 0;
+    50% {
+      transform: rotateY(0deg) rotateX(0deg);
+    }
+    75% {
+      transform: rotateY(-15deg) rotateX(-5deg);
+    }
+    100% {
+      transform: rotateY(0deg) rotateX(0deg);
     }
   }
 
-  @keyframes service-tab-repair-word-cycle {
-    0%, 38% {
-      transform: translateY(115%);
-      opacity: 0;
+  @keyframes splash-float {
+    0%, 100% {
+      transform: translateY(0px);
     }
-    48%, 88% {
-      transform: translateY(0);
+    50% {
+      transform: translateY(-6px);
+    }
+  }
+
+  @keyframes splash-draw {
+    0% {
+      stroke-dashoffset: 500;
+    }
+    100% {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes splash-trace {
+    0% {
+      stroke-dashoffset: 0;
+    }
+    100% {
+      stroke-dashoffset: -500;
+    }
+  }
+
+  @keyframes splash-brand-fade {
+    0% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    100% {
       opacity: 1;
-    }
-    98%, 100% {
-      transform: translateY(-115%);
-      opacity: 0;
+      transform: translateY(0);
     }
   }
 }
+
+
+  /* ─── Hero Banner Animations ─────────────────────────────────── */
+
+  @keyframes hero-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  @keyframes hero-float-card {
+    0%, 100% { transform: translateY(0); opacity: 1; }
+    50% { transform: translateY(-8px); opacity: 0.95; }
+  }
+  @keyframes hero-pulse-ring {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.08); }
+  }
+
+  .animate-hero-float {
+    animation: hero-float 4s ease-in-out infinite;
+  }
+  .animate-hero-float-card {
+    animation: hero-float-card 3.5s ease-in-out infinite;
+  }
+  .animate-hero-pulse-ring {
+    animation: hero-pulse-ring 5s ease-in-out infinite;
+  }

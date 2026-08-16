@@ -286,12 +286,12 @@ export function SellEvaluationFlow({ model, variants, questions, optionsByQuesti
             <h2 className="text-[18px] font-semibold text-gray-900">{deviceDisplayName(model.brandName, model.name)}</h2>
             {soldCount ? (
               <p className="mt-1 text-[12px] text-gray-500">
-                <span className="font-bold text-teal-500">{soldCount.toLocaleString("en-IN")}+</span> already sold on Looplic
+                <span className="font-bold text-[#48C479]">{soldCount.toLocaleString("en-IN")}+</span> already sold on Looplic
               </p>
             ) : null}
 
             {variants.length > 1 ? (
-              <div className="mt-4 rounded-2xl border border-violet-200 bg-violet-50/40 p-4">
+              <div className="mt-4 rounded-2xl border border-green-200 bg-green-50/40 p-4">
                 <div className="mb-3 text-[13px] font-bold text-gray-900">Choose a variant</div>
                 <div className="flex flex-wrap gap-2">
                   {variants.map((variant) => {
@@ -302,12 +302,12 @@ export function SellEvaluationFlow({ model, variants, questions, optionsByQuesti
                         type="button"
                         onClick={() => setVariantId(variant.id)}
                         className={`flex items-center gap-2 rounded-xl border-2 bg-white px-4 py-2.5 text-[13px] font-semibold transition-all ${
-                          isSelected ? "border-violet-500 text-violet-700" : "border-gray-200 text-gray-700 hover:border-violet-300"
+                          isSelected ? "border-[#48C479] text-green-700" : "border-gray-200 text-gray-700 hover:border-green-300"
                         }`}
                       >
                         <span
                           className={`flex size-4 items-center justify-center rounded-full border-2 ${
-                            isSelected ? "border-violet-500 bg-violet-500" : "border-gray-300 bg-white"
+                            isSelected ? "border-[#48C479] bg-[#48C479]" : "border-gray-300 bg-white"
                           }`}
                         >
                           {isSelected ? <Check className="size-2.5 text-white" /> : null}
@@ -323,7 +323,7 @@ export function SellEvaluationFlow({ model, variants, questions, optionsByQuesti
             {selectedVariant ? (
               <div className="mt-4">
                 <div className="text-[12px] font-semibold text-gray-500">Get Upto</div>
-                <div className="text-[34px] font-extrabold leading-tight text-violet-600">{formatInr(selectedVariant.basePrice)}</div>
+                <div className="text-[34px] font-extrabold leading-tight text-[#48C479]">{formatInr(selectedVariant.basePrice)}</div>
                 <div className="text-[11px] text-gray-400">Exact value depends on your device&apos;s condition</div>
               </div>
             ) : null}
@@ -332,7 +332,7 @@ export function SellEvaluationFlow({ model, variants, questions, optionsByQuesti
               type="button"
               disabled={!selectedVariant}
               onClick={() => setStage(totalSteps === 0 ? "result" : "questions")}
-              className="mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#4F46E5] to-[#8B3DFF] px-7 py-3 text-[14px] font-bold text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:from-gray-200 disabled:to-gray-200 disabled:text-gray-400"
+              className="mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-[#48C479] px-7 py-3 text-[14px] font-bold text-white transition-all hover:bg-[#3daa68] disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400"
             >
               Get Exact Value <ArrowRight className="size-4" />
             </button>
@@ -351,7 +351,7 @@ export function SellEvaluationFlow({ model, variants, questions, optionsByQuesti
         <ModelHeader model={model} subtitle={`Sell ${model.categoryLabel}${variantSuffix} · Quote ready`} />
 
         <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
-          <div className="bg-gradient-to-r from-[#4F46E5] to-[#8B3DFF] px-5 py-6 text-center text-white">
+          <div className="bg-gradient-to-r from-[#48C479] to-[#2ecc71] px-5 py-6 text-center text-white">
             <div className="text-[11px] font-bold uppercase tracking-widest text-white/70">Your instant quote</div>
             <div className="mt-1 text-[38px] font-extrabold leading-none">{formatInr(quote.finalQuote)}</div>
             <div className="mt-2 text-[11px] text-white/70">Final price confirmed after a quick check at pickup</div>
@@ -395,7 +395,7 @@ export function SellEvaluationFlow({ model, variants, questions, optionsByQuesti
               <button
                 type="button"
                 onClick={() => setBookingOpen(true)}
-                className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#4F46E5] to-[#8B3DFF] px-6 py-3.5 text-[14px] font-bold text-white transition-all hover:opacity-90"
+                className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-[#48C479] px-6 py-3.5 text-[14px] font-bold text-white transition-all hover:bg-[#3daa68]"
               >
                 Book Free Pickup <ArrowRight className="size-4" />
               </button>
@@ -442,7 +442,7 @@ export function SellEvaluationFlow({ model, variants, questions, optionsByQuesti
           </div>
           <div className="h-1.5 overflow-hidden rounded-full bg-gray-200">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-[#4F46E5] to-[#8B3DFF] transition-all duration-300"
+              className="h-full rounded-full bg-[#48C479] transition-all duration-300"
               style={{ width: `${Math.max(4, (stepIndex / Math.max(1, totalSteps)) * 100)}%` }}
             />
           </div>
@@ -471,12 +471,12 @@ export function SellEvaluationFlow({ model, variants, questions, optionsByQuesti
                               type="button"
                               onClick={() => selectSingle(question.id, option.id)}
                               className={`flex items-center gap-2.5 rounded-xl border-2 px-3.5 py-2.5 text-left transition-all ${
-                                isSelected ? "border-violet-500 bg-violet-50" : "border-gray-200 bg-white hover:border-violet-200"
+                                isSelected ? "border-[#48C479] bg-green-50" : "border-gray-200 bg-white hover:border-green-200"
                               }`}
                             >
                               <span
                                 className={`flex size-4 shrink-0 items-center justify-center rounded-full border-2 ${
-                                  isSelected ? "border-violet-500 bg-violet-500" : "border-gray-300 bg-white"
+                                  isSelected ? "border-[#48C479] bg-[#48C479]" : "border-gray-300 bg-white"
                                 }`}
                               >
                                 {isSelected ? <Check className="size-2.5 text-white" /> : null}
@@ -509,16 +509,16 @@ export function SellEvaluationFlow({ model, variants, questions, optionsByQuesti
                       onClick={() => toggleMulti(step.question.id, option.id)}
                       title={option.description || undefined}
                       className={`relative flex flex-col items-center gap-3 rounded-2xl border-2 p-4 text-center transition-all ${
-                        isSelected ? "border-violet-500 bg-violet-50" : "border-gray-200 bg-white hover:border-violet-200"
+                        isSelected ? "border-[#48C479] bg-green-50" : "border-gray-200 bg-white hover:border-green-200"
                       }`}
                     >
                       {isSelected ? (
-                        <span className="absolute right-2 top-2 flex size-5 items-center justify-center rounded-full bg-violet-500">
+                        <span className="absolute right-2 top-2 flex size-5 items-center justify-center rounded-full bg-[#48C479]">
                           <Check className="size-3 text-white" />
                         </span>
                       ) : null}
-                      <span className={`flex size-12 items-center justify-center rounded-2xl ${isSelected ? "bg-violet-100" : "bg-gray-50"}`}>
-                        <Icon className={`size-6 ${isSelected ? "text-violet-600" : "text-gray-400"}`} />
+                      <span className={`flex size-12 items-center justify-center rounded-2xl ${isSelected ? "bg-green-100" : "bg-gray-50"}`}>
+                        <Icon className={`size-6 ${isSelected ? "text-green-600" : "text-gray-400"}`} />
                       </span>
                       <span className="text-[12px] font-semibold leading-snug text-gray-800">{option.label}</span>
                     </button>
@@ -542,12 +542,12 @@ export function SellEvaluationFlow({ model, variants, questions, optionsByQuesti
                       type="button"
                       onClick={() => selectSingle(step.question.id, option.id)}
                       className={`flex w-full items-center gap-3 rounded-2xl border-2 p-3.5 text-left transition-all ${
-                        isSelected ? "border-violet-500 bg-violet-50" : "border-gray-100 bg-white hover:border-violet-200 hover:bg-gray-50"
+                        isSelected ? "border-[#48C479] bg-green-50" : "border-gray-100 bg-white hover:border-green-200 hover:bg-gray-50"
                       }`}
                     >
                       <span
                         className={`flex size-5 shrink-0 items-center justify-center rounded-full border-2 ${
-                          isSelected ? "border-violet-500 bg-violet-500" : "border-gray-300 bg-white"
+                          isSelected ? "border-[#48C479] bg-[#48C479]" : "border-gray-300 bg-white"
                         }`}
                       >
                         {isSelected ? <Check className="size-3 text-white" /> : null}
@@ -578,7 +578,7 @@ export function SellEvaluationFlow({ model, variants, questions, optionsByQuesti
               type="button"
               disabled={!stepComplete}
               onClick={advance}
-              className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#4F46E5] to-[#8B3DFF] px-7 py-2.5 text-[13px] font-bold text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:from-gray-200 disabled:to-gray-200 disabled:text-gray-400"
+              className="inline-flex items-center gap-2 rounded-full bg-[#48C479] px-7 py-2.5 text-[13px] font-bold text-white transition-all hover:bg-[#3daa68] disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400"
             >
               Continue <ArrowRight className="size-3.5" />
             </button>

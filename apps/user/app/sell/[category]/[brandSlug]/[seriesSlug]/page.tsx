@@ -54,7 +54,7 @@ export default async function SellSeriesModelsPage({ params }: PageProps) {
     id: model.id,
     name: model.name,
     seriesName: series.name,
-    imageUrl: model.image_url,
+    imageUrl: model.image_url || brand.image_url,
     href: buildSellModelRoute(sellCategory, brand.slug, series.slug, model.slug),
   }));
 

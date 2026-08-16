@@ -29,6 +29,8 @@ const TABLE_MAP: Record<string, any> = {
   app_settings: schema.appSettings,
   model_repair_subcategory_prices: schema.modelRepairSubcategoryPrices,
   blog_posts: schema.blogPosts,
+  products: schema.products,
+  product_images: schema.productImages,
 };
 
 class PublicQueryBuilder {

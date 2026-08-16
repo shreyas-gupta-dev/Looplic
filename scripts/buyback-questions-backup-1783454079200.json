@@ -1,0 +1,544 @@
+[
+  {
+    "id": "9e76b226-1ee3-4f57-acb0-9a71cc75ea81",
+    "service_type": "laptop",
+    "title": "Is your laptop turning on?",
+    "description": "Whether the device powers on and boots normally",
+    "question_type": "single",
+    "sort_order": 1,
+    "active": true,
+    "created_at": "2026-07-05T20:50:09.645Z",
+    "options": [
+      {
+        "id": "050efd52-aa22-40b4-94c7-cecbfb8082c5",
+        "question_id": "9e76b226-1ee3-4f57-acb0-9a71cc75ea81",
+        "label": "Yes, turns on & works",
+        "description": "Boots to home screen normally",
+        "effect_type": "deduct_fixed",
+        "amount": 0,
+        "sort_order": 1,
+        "created_at": "2026-07-05T20:50:09.695543+00:00"
+      },
+      {
+        "id": "4c020e01-c238-4829-a960-0ac958df8fb3",
+        "question_id": "9e76b226-1ee3-4f57-acb0-9a71cc75ea81",
+        "label": "No, dead or won't boot",
+        "description": "Does not power on / no display",
+        "effect_type": "deduct_percent",
+        "amount": 60,
+        "sort_order": 2,
+        "created_at": "2026-07-05T20:50:09.745305+00:00"
+      }
+    ]
+  },
+  {
+    "id": "efd80539-45d7-4525-98d7-f94ede9c3267",
+    "service_type": "laptop",
+    "title": "Overall physical condition",
+    "description": "Screen, lid, keyboard deck and base",
+    "question_type": "single",
+    "sort_order": 2,
+    "active": true,
+    "created_at": "2026-07-05T20:50:09.796Z",
+    "options": [
+      {
+        "id": "acf5859a-2c6f-431c-a1a7-df721a427e68",
+        "question_id": "efd80539-45d7-4525-98d7-f94ede9c3267",
+        "label": "Like new",
+        "description": "No visible marks or dents",
+        "effect_type": "deduct_fixed",
+        "amount": 0,
+        "sort_order": 1,
+        "created_at": "2026-07-05T20:50:09.845567+00:00"
+      },
+      {
+        "id": "a328ec15-626b-41be-9f0f-1f1e07535445",
+        "question_id": "efd80539-45d7-4525-98d7-f94ede9c3267",
+        "label": "Minor wear",
+        "description": "Light scratches or scuffs",
+        "effect_type": "deduct_percent",
+        "amount": 10,
+        "sort_order": 2,
+        "created_at": "2026-07-05T20:50:09.895737+00:00"
+      },
+      {
+        "id": "2dbdb5f8-3dba-4329-a525-2b2f900786c8",
+        "question_id": "efd80539-45d7-4525-98d7-f94ede9c3267",
+        "label": "Heavy wear / dents",
+        "description": "Deep scratches, dents or worn keys",
+        "effect_type": "deduct_percent",
+        "amount": 20,
+        "sort_order": 3,
+        "created_at": "2026-07-05T20:50:09.94555+00:00"
+      },
+      {
+        "id": "9c20db6c-1333-4b38-8c4e-8e153d3c469d",
+        "question_id": "efd80539-45d7-4525-98d7-f94ede9c3267",
+        "label": "Cracked screen or broken hinge",
+        "description": "Panel damage or hinge not holding",
+        "effect_type": "deduct_percent",
+        "amount": 35,
+        "sort_order": 4,
+        "created_at": "2026-07-05T20:50:09.995175+00:00"
+      }
+    ]
+  },
+  {
+    "id": "e9172d48-fbdd-400f-8721-0fa943bd5c80",
+    "service_type": "laptop",
+    "title": "Any functional issues?",
+    "description": "Select every problem the laptop has",
+    "question_type": "multi",
+    "sort_order": 3,
+    "active": true,
+    "created_at": "2026-07-05T20:50:10.045Z",
+    "options": [
+      {
+        "id": "0048229f-eeaf-4d4d-8204-e8f5989f7edd",
+        "question_id": "e9172d48-fbdd-400f-8721-0fa943bd5c80",
+        "label": "Weak / dead battery",
+        "description": "Battery drains fast or not charging",
+        "effect_type": "deduct_percent",
+        "amount": 10,
+        "sort_order": 1,
+        "created_at": "2026-07-05T20:50:10.09541+00:00"
+      },
+      {
+        "id": "10a40128-f433-4945-a9b7-576f01f921c0",
+        "question_id": "e9172d48-fbdd-400f-8721-0fa943bd5c80",
+        "label": "Keyboard / trackpad issue",
+        "description": "Keys or trackpad not working properly",
+        "effect_type": "deduct_percent",
+        "amount": 8,
+        "sort_order": 2,
+        "created_at": "2026-07-05T20:50:10.145442+00:00"
+      },
+      {
+        "id": "fa1944ef-da13-4555-8ef6-7f12426f434c",
+        "question_id": "e9172d48-fbdd-400f-8721-0fa943bd5c80",
+        "label": "Display issue",
+        "description": "Lines, spots or flickering on screen",
+        "effect_type": "deduct_percent",
+        "amount": 15,
+        "sort_order": 3,
+        "created_at": "2026-07-05T20:50:10.195312+00:00"
+      },
+      {
+        "id": "fc8c9b86-2bc3-4625-84d9-08b627e540ab",
+        "question_id": "e9172d48-fbdd-400f-8721-0fa943bd5c80",
+        "label": "Speaker / mic issue",
+        "description": "Low or no sound",
+        "effect_type": "deduct_percent",
+        "amount": 5,
+        "sort_order": 4,
+        "created_at": "2026-07-05T20:50:10.240547+00:00"
+      },
+      {
+        "id": "8d8133d8-6a15-44b1-8af3-a1af66ba5b0f",
+        "question_id": "e9172d48-fbdd-400f-8721-0fa943bd5c80",
+        "label": "Ports not working",
+        "description": "USB / HDMI / audio jack faulty",
+        "effect_type": "deduct_percent",
+        "amount": 8,
+        "sort_order": 5,
+        "created_at": "2026-07-05T20:50:10.29533+00:00"
+      },
+      {
+        "id": "5d182d10-0ea9-4055-8239-bfc627924d4a",
+        "question_id": "e9172d48-fbdd-400f-8721-0fa943bd5c80",
+        "label": "Wi-Fi / Bluetooth issue",
+        "description": "Connectivity not working",
+        "effect_type": "deduct_percent",
+        "amount": 8,
+        "sort_order": 6,
+        "created_at": "2026-07-05T20:50:10.345669+00:00"
+      }
+    ]
+  },
+  {
+    "id": "3cd08d93-bbaa-4243-b6b0-40750b6b9858",
+    "service_type": "laptop",
+    "title": "How old is your laptop?",
+    "description": "Time since original purchase",
+    "question_type": "single",
+    "sort_order": 4,
+    "active": true,
+    "created_at": "2026-07-05T20:50:10.395Z",
+    "options": [
+      {
+        "id": "0e0b0e47-d21d-4ab0-ad5b-d3889876a513",
+        "question_id": "3cd08d93-bbaa-4243-b6b0-40750b6b9858",
+        "label": "Under 1 year",
+        "description": "Bought within the last 12 months",
+        "effect_type": "deduct_fixed",
+        "amount": 0,
+        "sort_order": 1,
+        "created_at": "2026-07-05T20:50:10.440631+00:00"
+      },
+      {
+        "id": "b93d0e6f-b5d9-49c2-b22b-0c2aef5a6a55",
+        "question_id": "3cd08d93-bbaa-4243-b6b0-40750b6b9858",
+        "label": "1 – 2 years",
+        "description": null,
+        "effect_type": "deduct_percent",
+        "amount": 12,
+        "sort_order": 2,
+        "created_at": "2026-07-05T20:50:10.485397+00:00"
+      },
+      {
+        "id": "a2cdb1e0-da60-4955-9d12-5c24e71aeddb",
+        "question_id": "3cd08d93-bbaa-4243-b6b0-40750b6b9858",
+        "label": "2 – 4 years",
+        "description": null,
+        "effect_type": "deduct_percent",
+        "amount": 25,
+        "sort_order": 3,
+        "created_at": "2026-07-05T20:50:10.540688+00:00"
+      },
+      {
+        "id": "92348bb7-f3ba-489b-bbd0-2f5fdbb4097d",
+        "question_id": "3cd08d93-bbaa-4243-b6b0-40750b6b9858",
+        "label": "More than 4 years",
+        "description": null,
+        "effect_type": "deduct_percent",
+        "amount": 40,
+        "sort_order": 4,
+        "created_at": "2026-07-05T20:50:10.595541+00:00"
+      }
+    ]
+  },
+  {
+    "id": "5e442e29-a220-40d6-981f-599d986410f8",
+    "service_type": "laptop",
+    "title": "What accessories do you have?",
+    "description": "Original accessories add to the quote",
+    "question_type": "multi",
+    "sort_order": 5,
+    "active": true,
+    "created_at": "2026-07-05T20:50:10.640Z",
+    "options": [
+      {
+        "id": "bc9479f9-dbd8-46ae-ae04-a50e933f0f91",
+        "question_id": "5e442e29-a220-40d6-981f-599d986410f8",
+        "label": "Original charger",
+        "description": "Brand adapter in working condition",
+        "effect_type": "add_fixed",
+        "amount": 500,
+        "sort_order": 1,
+        "created_at": "2026-07-05T20:50:10.68571+00:00"
+      },
+      {
+        "id": "76625936-4420-4a4b-930a-9923990d8041",
+        "question_id": "5e442e29-a220-40d6-981f-599d986410f8",
+        "label": "Original box",
+        "description": null,
+        "effect_type": "add_fixed",
+        "amount": 200,
+        "sort_order": 2,
+        "created_at": "2026-07-05T20:50:10.736059+00:00"
+      },
+      {
+        "id": "572107d5-994f-4923-9d68-f69a24e76274",
+        "question_id": "5e442e29-a220-40d6-981f-599d986410f8",
+        "label": "Purchase bill",
+        "description": "Valid invoice with serial number",
+        "effect_type": "add_fixed",
+        "amount": 300,
+        "sort_order": 3,
+        "created_at": "2026-07-05T20:50:11.005493+00:00"
+      }
+    ]
+  },
+  {
+    "id": "d5789c2e-3669-49f9-abe3-cfa3ee153df1",
+    "service_type": "mobile",
+    "title": "Is your phone turning on?",
+    "description": "Whether the device powers on and boots normally",
+    "question_type": "single",
+    "sort_order": 1,
+    "active": true,
+    "created_at": "2026-07-05T20:50:07.815Z",
+    "options": [
+      {
+        "id": "b5edec31-6d42-4fdb-9ef1-485621717eef",
+        "question_id": "d5789c2e-3669-49f9-abe3-cfa3ee153df1",
+        "label": "Yes, turns on & works",
+        "description": "Boots to home screen normally",
+        "effect_type": "deduct_fixed",
+        "amount": 0,
+        "sort_order": 1,
+        "created_at": "2026-07-05T20:50:07.875852+00:00"
+      },
+      {
+        "id": "53b0defb-309b-4f07-9140-4cea6238e4b5",
+        "question_id": "d5789c2e-3669-49f9-abe3-cfa3ee153df1",
+        "label": "No, dead or won't boot",
+        "description": "Does not power on / no display",
+        "effect_type": "deduct_percent",
+        "amount": 60,
+        "sort_order": 2,
+        "created_at": "2026-07-05T20:50:07.945486+00:00"
+      }
+    ]
+  },
+  {
+    "id": "41fb92bf-0fc9-4756-bd36-3c6f4c023a6e",
+    "service_type": "mobile",
+    "title": "Display condition",
+    "description": "Condition of the screen itself",
+    "question_type": "single",
+    "sort_order": 2,
+    "active": true,
+    "created_at": "2026-07-05T20:50:07.995Z",
+    "options": [
+      {
+        "id": "27366490-1a7f-49a0-88c9-4d2fd3ee39c0",
+        "question_id": "41fb92bf-0fc9-4756-bd36-3c6f4c023a6e",
+        "label": "Flawless / original",
+        "description": "No scratches, no dead pixels",
+        "effect_type": "deduct_fixed",
+        "amount": 0,
+        "sort_order": 1,
+        "created_at": "2026-07-05T20:50:08.065588+00:00"
+      },
+      {
+        "id": "5dd28cb7-a2f9-4f58-84f3-d15fc5be8562",
+        "question_id": "41fb92bf-0fc9-4756-bd36-3c6f4c023a6e",
+        "label": "Minor scratches",
+        "description": "Light marks, not visible when screen is on",
+        "effect_type": "deduct_percent",
+        "amount": 10,
+        "sort_order": 2,
+        "created_at": "2026-07-05T20:50:08.115681+00:00"
+      },
+      {
+        "id": "ee0ec96f-c910-4955-b4d3-71fa93891a00",
+        "question_id": "41fb92bf-0fc9-4756-bd36-3c6f4c023a6e",
+        "label": "Cracked or broken",
+        "description": "Cracks, lines, dead pixels or heavy scratches",
+        "effect_type": "deduct_percent",
+        "amount": 35,
+        "sort_order": 3,
+        "created_at": "2026-07-05T20:50:08.165474+00:00"
+      },
+      {
+        "id": "7bea3541-d6ff-49cb-b7c9-4a6b113070cf",
+        "question_id": "41fb92bf-0fc9-4756-bd36-3c6f4c023a6e",
+        "label": "Screen replaced (non-original)",
+        "description": "Display changed at a third-party shop",
+        "effect_type": "deduct_percent",
+        "amount": 20,
+        "sort_order": 4,
+        "created_at": "2026-07-05T20:50:08.215631+00:00"
+      }
+    ]
+  },
+  {
+    "id": "aad79335-5d82-4616-8842-adfc0bafa5be",
+    "service_type": "mobile",
+    "title": "Overall body condition",
+    "description": "Frame and back panel condition",
+    "question_type": "single",
+    "sort_order": 3,
+    "active": true,
+    "created_at": "2026-07-05T20:50:08.260Z",
+    "options": [
+      {
+        "id": "0e4a2ae1-edcb-45c8-9638-859f66ef3972",
+        "question_id": "aad79335-5d82-4616-8842-adfc0bafa5be",
+        "label": "Like new",
+        "description": "No visible marks",
+        "effect_type": "deduct_fixed",
+        "amount": 0,
+        "sort_order": 1,
+        "created_at": "2026-07-05T20:50:08.310392+00:00"
+      },
+      {
+        "id": "1eb1364c-56d6-49b4-9495-ef2ebdb3cb55",
+        "question_id": "aad79335-5d82-4616-8842-adfc0bafa5be",
+        "label": "Minor wear",
+        "description": "Small scratches or scuffs",
+        "effect_type": "deduct_percent",
+        "amount": 8,
+        "sort_order": 2,
+        "created_at": "2026-07-05T20:50:08.361022+00:00"
+      },
+      {
+        "id": "5d738df2-5fd9-4631-987a-24426997d80d",
+        "question_id": "aad79335-5d82-4616-8842-adfc0bafa5be",
+        "label": "Major dents / cracked back",
+        "description": "Bent frame, deep dents or broken glass back",
+        "effect_type": "deduct_percent",
+        "amount": 20,
+        "sort_order": 3,
+        "created_at": "2026-07-05T20:50:08.41029+00:00"
+      }
+    ]
+  },
+  {
+    "id": "3571e7f3-7776-431d-8f30-c802b4d97e90",
+    "service_type": "mobile",
+    "title": "Any functional issues?",
+    "description": "Select every problem the phone has",
+    "question_type": "multi",
+    "sort_order": 4,
+    "active": true,
+    "created_at": "2026-07-05T20:50:08.460Z",
+    "options": [
+      {
+        "id": "b9db39a0-4860-4d35-8758-fc72a766a9bd",
+        "question_id": "3571e7f3-7776-431d-8f30-c802b4d97e90",
+        "label": "Weak / dead battery",
+        "description": "Drains fast or not charging properly",
+        "effect_type": "deduct_percent",
+        "amount": 8,
+        "sort_order": 1,
+        "created_at": "2026-07-05T20:50:08.515404+00:00"
+      },
+      {
+        "id": "c1eb20cd-b7d9-4ea6-b0ac-dfdbe8f71bed",
+        "question_id": "3571e7f3-7776-431d-8f30-c802b4d97e90",
+        "label": "Camera not working",
+        "description": "Front or rear camera faulty / blurry",
+        "effect_type": "deduct_percent",
+        "amount": 10,
+        "sort_order": 2,
+        "created_at": "2026-07-05T20:50:08.565477+00:00"
+      },
+      {
+        "id": "369610b8-f156-44e8-97d4-7555cce59347",
+        "question_id": "3571e7f3-7776-431d-8f30-c802b4d97e90",
+        "label": "Speaker / mic issue",
+        "description": "Low or no sound on calls or media",
+        "effect_type": "deduct_percent",
+        "amount": 8,
+        "sort_order": 3,
+        "created_at": "2026-07-05T20:50:08.615612+00:00"
+      },
+      {
+        "id": "b98af150-2377-49f8-812a-78815a1e0bb4",
+        "question_id": "3571e7f3-7776-431d-8f30-c802b4d97e90",
+        "label": "Fingerprint / Face ID faulty",
+        "description": "Biometric unlock not working",
+        "effect_type": "deduct_percent",
+        "amount": 6,
+        "sort_order": 4,
+        "created_at": "2026-07-05T20:50:08.665295+00:00"
+      },
+      {
+        "id": "8c7da4eb-11cd-43c9-8436-1ca4986b8093",
+        "question_id": "3571e7f3-7776-431d-8f30-c802b4d97e90",
+        "label": "Charging port issue",
+        "description": "Loose or intermittent charging",
+        "effect_type": "deduct_percent",
+        "amount": 8,
+        "sort_order": 5,
+        "created_at": "2026-07-05T20:50:08.715396+00:00"
+      },
+      {
+        "id": "3d9c1266-2339-41d0-9f66-69c9a57eaabf",
+        "question_id": "3571e7f3-7776-431d-8f30-c802b4d97e90",
+        "label": "Wi-Fi / network issue",
+        "description": "Poor signal, SIM or Wi-Fi not detected",
+        "effect_type": "deduct_percent",
+        "amount": 10,
+        "sort_order": 6,
+        "created_at": "2026-07-05T20:50:08.765744+00:00"
+      }
+    ]
+  },
+  {
+    "id": "e8294118-1cd3-4ce9-b168-53067cfe948b",
+    "service_type": "mobile",
+    "title": "How old is your phone?",
+    "description": "Time since original purchase",
+    "question_type": "single",
+    "sort_order": 5,
+    "active": true,
+    "created_at": "2026-07-05T20:50:08.816Z",
+    "options": [
+      {
+        "id": "7ef13667-66f9-4c1e-9d8b-70f32f514a6c",
+        "question_id": "e8294118-1cd3-4ce9-b168-53067cfe948b",
+        "label": "Under 1 year",
+        "description": "Bought within the last 12 months",
+        "effect_type": "deduct_fixed",
+        "amount": 0,
+        "sort_order": 1,
+        "created_at": "2026-07-05T20:50:08.915746+00:00"
+      },
+      {
+        "id": "7135f0a0-c272-47e9-851d-e55747a512e8",
+        "question_id": "e8294118-1cd3-4ce9-b168-53067cfe948b",
+        "label": "1 – 2 years",
+        "description": null,
+        "effect_type": "deduct_percent",
+        "amount": 10,
+        "sort_order": 2,
+        "created_at": "2026-07-05T20:50:08.991291+00:00"
+      },
+      {
+        "id": "a7bbee88-f2e3-4487-8b96-757c62f7b239",
+        "question_id": "e8294118-1cd3-4ce9-b168-53067cfe948b",
+        "label": "2 – 3 years",
+        "description": null,
+        "effect_type": "deduct_percent",
+        "amount": 20,
+        "sort_order": 3,
+        "created_at": "2026-07-05T20:50:09.090715+00:00"
+      },
+      {
+        "id": "452f3f59-1489-4c2d-a441-e3736538276d",
+        "question_id": "e8294118-1cd3-4ce9-b168-53067cfe948b",
+        "label": "More than 3 years",
+        "description": null,
+        "effect_type": "deduct_percent",
+        "amount": 30,
+        "sort_order": 4,
+        "created_at": "2026-07-05T20:50:09.1909+00:00"
+      }
+    ]
+  },
+  {
+    "id": "67179866-69f0-43bb-9e67-ea5fe8054749",
+    "service_type": "mobile",
+    "title": "What do you have with the phone?",
+    "description": "Original accessories add to the quote",
+    "question_type": "multi",
+    "sort_order": 6,
+    "active": true,
+    "created_at": "2026-07-05T20:50:09.275Z",
+    "options": [
+      {
+        "id": "46b3e35b-b0d6-4e0d-841c-0c36382ccf5b",
+        "question_id": "67179866-69f0-43bb-9e67-ea5fe8054749",
+        "label": "Original box",
+        "description": "With matching IMEI",
+        "effect_type": "add_fixed",
+        "amount": 150,
+        "sort_order": 1,
+        "created_at": "2026-07-05T20:50:09.395771+00:00"
+      },
+      {
+        "id": "aea9cf85-f72d-4df6-bae6-0d0dffec6e0d",
+        "question_id": "67179866-69f0-43bb-9e67-ea5fe8054749",
+        "label": "Original charger",
+        "description": "Brand charger in working condition",
+        "effect_type": "add_fixed",
+        "amount": 200,
+        "sort_order": 2,
+        "created_at": "2026-07-05T20:50:09.495573+00:00"
+      },
+      {
+        "id": "153b4f02-7e33-4b37-bf76-4b62818e1882",
+        "question_id": "67179866-69f0-43bb-9e67-ea5fe8054749",
+        "label": "Purchase bill",
+        "description": "Valid invoice with IMEI",
+        "effect_type": "add_fixed",
+        "amount": 250,
+        "sort_order": 3,
+        "created_at": "2026-07-05T20:50:09.550429+00:00"
+      }
+    ]
+  }
+]
