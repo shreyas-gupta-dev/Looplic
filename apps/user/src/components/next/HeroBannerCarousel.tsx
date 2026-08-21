@@ -14,7 +14,7 @@ import {
   CreditCard,
   Eye,
   IndianRupee,
-  PhoneCall,
+  Laptop,
   RotateCcw,
   Shield,
   ShieldCheck,
@@ -188,6 +188,70 @@ function RepairPhoneVisual() {
   );
 }
 
+function LaptopRepairVisual() {
+  return (
+    <div className="relative mx-auto flex w-full max-w-[340px] flex-col items-center justify-center p-2 sm:max-w-[380px]">
+      <div className="absolute -inset-2 rounded-3xl bg-indigo-400/10 blur-xl" />
+
+      {/* Main Laptop Repair Card */}
+      <div className="relative w-full rounded-2xl border border-indigo-200/80 bg-white/95 p-4 shadow-xl backdrop-blur-sm sm:p-5">
+        {/* Card Header */}
+        <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+          <div className="flex items-center gap-2">
+            <div className="flex size-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+              <Laptop className="size-4" />
+            </div>
+            <div>
+              <p className="text-[11px] font-medium text-gray-500">Doorstep Laptop & Mac Care</p>
+              <p className="text-xs font-bold text-gray-900 sm:text-sm">Screen, Keyboard & SSD Upgrade</p>
+            </div>
+          </div>
+          <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700">
+            Free Visit
+          </span>
+        </div>
+
+        {/* Pricing & Offer */}
+        <div className="my-3 rounded-xl bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-transparent p-3 sm:my-4 sm:p-3.5">
+          <div className="flex items-baseline justify-between">
+            <span className="text-xs font-medium text-gray-600">Diagnosis & Service</span>
+            <span className="rounded bg-indigo-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
+              Mac & Windows
+            </span>
+          </div>
+          <div className="mt-1 flex items-baseline gap-1.5">
+            <span className="text-2xl font-black tracking-tight text-indigo-900 sm:text-3xl">
+              ₹0 Free Inspection
+            </span>
+          </div>
+          <p className="mt-1 flex items-center gap-1 text-[11px] text-indigo-900">
+            <CheckCircle2 className="size-3 text-indigo-600" />
+            Pay only when repair is approved
+          </p>
+        </div>
+
+        {/* Specs Grid */}
+        <div className="grid grid-cols-2 gap-2 text-[11px]">
+          <div className="flex items-center gap-1.5 rounded-lg bg-gray-50 p-2 text-gray-700">
+            <Shield className="size-3.5 text-indigo-600" />
+            <span>6 Mo Warranty</span>
+          </div>
+          <div className="flex items-center gap-1.5 rounded-lg bg-gray-50 p-2 text-gray-700">
+            <BadgeCheck className="size-3.5 text-indigo-600" />
+            <span>Genuine Parts</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Floating Pill */}
+      <div className="absolute -bottom-2 -left-2 z-10 hidden items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-600 px-3 py-1 text-[11px] font-bold text-white shadow-lg sm:flex">
+        <Sparkles className="size-3.5 text-indigo-200" />
+        <span>MacBook & Windows Experts</span>
+      </div>
+    </div>
+  );
+}
+
 function RefurbishedPhoneVisual() {
   return (
     <div className="relative mx-auto flex w-full max-w-[340px] flex-col items-center justify-center p-2 sm:max-w-[380px]">
@@ -356,7 +420,7 @@ const SLIDES: BannerSlide[] = [
     headlineHighlightColor: "text-blue-600",
     description:
       "Screen replacement, original battery & motherboard fixes in 30 mins at your home or office. 6-month warranty.",
-    ctaText: "Book Repair Now",
+    ctaText: "Book Mobile Repair",
     ctaHref: "/service/mobile-repair",
     ctaBg: "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/20",
     bgGradient: "bg-gradient-to-br from-[#F8FAFC] via-[#EFF6FF]/60 to-[#F0F9FF]",
@@ -369,6 +433,30 @@ const SLIDES: BannerSlide[] = [
       { icon: Clock, text: "30-Min Service" },
     ],
     renderVisual: () => <RepairPhoneVisual />,
+  },
+  {
+    id: "laptop-repair",
+    tagline: "DOORSTEP LAPTOP & MAC SERVICE",
+    taglineIcon: Laptop,
+    taglineStyle: "bg-indigo-100 text-indigo-800 border-indigo-200",
+    headlinePrefix: "Doorstep Laptop Repair ",
+    headlineHighlight: "Free Diagnosis",
+    headlineHighlightColor: "text-indigo-600",
+    description:
+      "Keyboard, screen, battery replacement & SSD upgrades for MacBook, Dell, HP, Lenovo & Asus with 6-month warranty.",
+    ctaText: "Book Laptop Repair",
+    ctaHref: "/service/laptop-repair",
+    ctaBg: "bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-600/20",
+    bgGradient: "bg-gradient-to-br from-[#F8FAFC] via-[#EEF2FF] to-[#E0E7FF]/40",
+    borderColor: "border-indigo-100",
+    trustNote: "Free doorstep pickup & inspection • Certified technicians",
+    features: [
+      { icon: Laptop, text: "MacBook & Windows" },
+      { icon: ShieldCheck, text: "6 Mo Warranty" },
+      { icon: CheckCircle2, text: "Free Inspection" },
+      { icon: Zap, text: "Same-Day Fix" },
+    ],
+    renderVisual: () => <LaptopRepairVisual />,
   },
   {
     id: "buy",
@@ -431,8 +519,22 @@ export function HeroBannerCarousel() {
   const autoplayTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const scrollTo = useCallback((index: number) => emblaApi?.scrollTo(index), [emblaApi]);
-  const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
-  const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
+  const scrollPrev = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      e.preventDefault();
+      emblaApi?.scrollPrev();
+    },
+    [emblaApi]
+  );
+  const scrollNext = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      e.preventDefault();
+      emblaApi?.scrollNext();
+    },
+    [emblaApi]
+  );
 
   useEffect(() => {
     if (!emblaApi) return;
@@ -476,8 +578,10 @@ export function HeroBannerCarousel() {
               const TagIcon = slide.taglineIcon;
               return (
                 <div key={slide.id} className="min-w-0 flex-[0_0_100%]">
-                  <div
-                    className={`relative overflow-hidden ${slide.bgGradient} p-5 sm:p-7 md:p-9 lg:p-10`}
+                  {/* The whole banner slide is an accessible, clickable Link */}
+                  <Link
+                    href={slide.ctaHref}
+                    className={`group relative block overflow-hidden ${slide.bgGradient} p-5 sm:p-7 md:p-9 lg:p-10 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20`}
                   >
                     {/* Subtle ambient light shapes */}
                     <div className="pointer-events-none absolute -right-16 -top-16 size-72 rounded-full bg-white/60 blur-3xl" />
@@ -526,13 +630,12 @@ export function HeroBannerCarousel() {
 
                         {/* CTA + Trust Note */}
                         <div className="mt-4.5 flex flex-col items-start gap-2 sm:mt-5 sm:flex-row sm:items-center sm:gap-4">
-                          <Link
-                            href={slide.ctaHref}
-                            className={`group inline-flex items-center gap-2 rounded-xl px-5 py-3 text-xs font-bold shadow-md transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] sm:text-sm ${slide.ctaBg}`}
+                          <span
+                            className={`inline-flex items-center gap-2 rounded-xl px-5 py-3 text-xs font-bold shadow-md transition-all duration-200 group-hover:scale-[1.03] active:scale-[0.98] sm:text-sm ${slide.ctaBg}`}
                           >
                             <span>{slide.ctaText}</span>
                             <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-                          </Link>
+                          </span>
 
                           <span className="text-[11px] font-medium text-slate-500 sm:text-xs">
                             {slide.trustNote}
@@ -545,7 +648,7 @@ export function HeroBannerCarousel() {
                         {slide.renderVisual()}
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 </div>
               );
             })}
@@ -573,7 +676,11 @@ export function HeroBannerCarousel() {
           {SLIDES.map((slide, idx) => (
             <button
               key={idx}
-              onClick={() => scrollTo(idx)}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                scrollTo(idx);
+              }}
               aria-label={`Go to ${slide.id} slide`}
               className={`rounded-full transition-all duration-300 ${
                 idx === selectedIndex
