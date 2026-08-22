@@ -4,51 +4,51 @@
 
 // Our Services grid
 export const ourServices = [
-  { id: "sell-phone", label: "Sell Phone", href: "/sell", image: "/images/services/sell-phone.webp" },
-  { id: "buy-phone", label: "Buy Phone", href: "/buy", image: "/images/services/buy-phone.webp" },
-  { id: "buy-laptop", label: "Buy Laptop", href: "/buy?category=laptop", image: "/images/services/buy-laptop.webp" },
-  { id: "repair-phone", label: "Repair Phone", href: "/service/mobile-repair", image: "/images/services/repair-phone.webp" },
-  { id: "repair-laptop", label: "Repair Laptop", href: "/service/laptop-repair", image: "/images/services/repair-laptop.webp" },
-  { id: "cctv", label: "CCTV Install", href: "/service/cctv", image: "/images/services/cctv.webp" },
-  { id: "it-support", label: "IT Support", href: "/service/it-support", image: "/images/services/it-support.webp" },
-  { id: "desktop", label: "Desktop Build", href: "/service/desktop-assembly", image: "/images/services/desktop.webp" },
-  { id: "screen-guard", label: "Screen Guard", href: "/service/mobile-repair", image: "/images/services/screen-guard.webp" },
-  { id: "store-locator", label: "Our Stores", href: "/store-locator", image: "/images/services/store-locator.webp" },
-  { id: "accessories", label: "Accessories", href: "/buy?category=accessories", image: "/images/services/accessories.webp" },
-  { id: "wifi", label: "WiFi Setup", href: "/service/it-support", image: "/images/services/wifi.webp" },
+  { id: "sell-phone", label: "Sell Phone", href: "/sell", image: "https://s3ng.cashify.in/builder/cd13764b153e46e19f9c6551ee52b5e6.webp?w=300" },
+  { id: "buy-phone", label: "Buy Phone", href: "/buy", image: "https://s3ng.cashify.in/builder/caa3a1efa51541a5aa37fd292790ea81.webp?w=300" },
+  { id: "buy-laptop", label: "Buy Laptop", href: "/buy?category=laptop", image: "https://s3ng.cashify.in/builder/3e1f26febd3f4056a7ac5104a122aa94.webp?w=300" },
+  { id: "repair-phone", label: "Repair Phone", href: "/service/mobile-repair", image: "https://s3ng.cashify.in/builder/b35c134330e5422699aed92d1254789d.webp?w=300" },
+  { id: "repair-laptop", label: "Repair Laptop", href: "/service/laptop-repair", image: "https://s3ng.cashify.in/builder/16f1d0a9fb4448f8a971e259dc612f54.webp?w=300" },
+  { id: "cctv", label: "CCTV Install", href: "/service/cctv", image: "https://s3ng.cashify.in/builder/16ee94e787b24915847842a6fee6b26a.webp?w=300" },
+  { id: "it-support", label: "IT Support", href: "/service/it-support", image: "https://s3ng.cashify.in/builder/0c3495851c3a4cce993176d995c53ab4.webp?w=300" },
+  { id: "desktop", label: "Desktop Build", href: "/service/desktop-assembly", image: "https://s3ng.cashify.in/builder/4060695bca3447c2b7296aa5ba9ce827.webp?w=300" },
+  { id: "screen-guard", label: "Screen Guard", href: "/service/mobile-repair", image: "https://s3ng.cashify.in/builder/75750a866d214239bf52a47ee57e6674.webp?w=300" },
+  { id: "store-locator", label: "Our Stores", href: "/store-locator", image: "https://s3ng.cashify.in/builder/522d89598f594f0ca6f9d22e40517db6.webp?w=300" },
+  { id: "accessories", label: "Accessories", href: "/buy?category=accessories", image: "https://s3ng.cashify.in/builder/f1f0df2917bd410b8da95675c63be2d1.webp?w=300" },
+  { id: "wifi", label: "WiFi Setup", href: "/service/it-support", image: "https://s3ng.cashify.in/builder/ed7d743ec18f40f6b0cbb58bc6783d5b.webp?w=300" },
 ];
 
 // Sell Your Old Device section
 export const sellCategories = [
-  { id: "mobile", label: "Sell Phone", href: "/sell", image: "/images/sell/phone.webp" },
-  { id: "laptop", label: "Sell Laptop", href: "/sell/laptop", image: "/images/sell/laptop.webp" },
-  { id: "tablet", label: "Sell Tablet", href: "/sell/tablet", image: "/images/sell/tablet.webp" },
-  { id: "smartwatch", label: "Sell Smartwatch", href: "/sell/smartwatch", image: "/images/sell/smartwatch.webp" },
-  { id: "gaming", label: "Sell Console", href: "/sell", image: "/images/sell/console.webp" },
-  { id: "earphones", label: "Sell Earphones", href: "/sell/audio", image: "/images/sell/earphones.webp" },
-  { id: "desktop", label: "Sell Desktop", href: "/sell/laptop", image: "/images/sell/desktop.webp" },
+  { id: "mobile", label: "Sell Phone", href: "/sell", image: "https://s3ng.cashify.in/builder/81c3c74f0683463da548ae2cbe1fec28.webp?w=300" },
+  { id: "laptop", label: "Sell Laptop", href: "/sell/laptop", image: "https://s3ng.cashify.in/builder/e6ba507509994216936925bdfeb6cfa8.webp?w=300" },
+  { id: "tablet", label: "Sell Tablet", href: "/sell/tablet", image: "https://s3ng.cashify.in/builder/a12ac14b386b4b5286d424a83db4cad5.webp?w=300" },
+  { id: "smartwatch", label: "Sell Smartwatch", href: "/sell/smartwatch", image: "https://s3ng.cashify.in/builder/b6a95f2838184c9889711ea20f6ff468.webp?w=300" },
+  { id: "gaming", label: "Sell Console", href: "/sell", image: "https://s3ng.cashify.in/builder/5aba5b44686349a4a54d457016a257ac.webp?w=300" },
+  { id: "earphones", label: "Sell Earphones", href: "/sell/audio", image: "https://s3ng.cashify.in/builder/abd3c512bbac4232a95e0e15f5d3bbaf.webp?w=300" },
+  { id: "desktop", label: "Sell Desktop", href: "/sell/laptop", image: "https://s3ng.cashify.in/builder/1a1126c5c49f47b29cbb3aa63e6b385e.webp?w=300" },
 ];
 
 // Buy Refurbished Devices
 export const refurbishedProducts = [
-  { name: "Samsung Galaxy S21 Ultra 5G", discount: "₹34,201 OFF", brand: "samsung", href: "/buy", image: "/images/products/samsung-s21-ultra.jpg" },
-  { name: "Samsung Galaxy S24 Ultra 5G", discount: "₹69,700 OFF", brand: "samsung", href: "/buy", image: "/images/products/samsung-s24-ultra.jpg" },
-  { name: "Samsung Galaxy S20 FE 5G", discount: "₹2,900 OFF", brand: "samsung", href: "/buy", image: "/images/products/samsung-s20-fe.jpg" },
-  { name: "Samsung Galaxy S25 Edge", discount: "₹69,400 OFF", brand: "samsung", href: "/buy", image: "/images/products/samsung-s25-edge.jpg" },
-  { name: "OnePlus Nord 2 5G", discount: "₹12,800 OFF", brand: "oneplus", href: "/buy", image: "/images/products/oneplus-nord-2.jpg" },
-  { name: "OnePlus 12", discount: "₹28,500 OFF", brand: "oneplus", href: "/buy", image: "/images/products/oneplus-12.jpg" },
+  { name: "Samsung Galaxy S21 Ultra 5G", discount: "₹34,201 OFF", brand: "samsung", href: "/buy", image: "https://s3ng.cashify.in/cashify/product/img/xxhdpi/5ab3d199-fdb7.jpg" },
+  { name: "Samsung Galaxy S24 Ultra 5G", discount: "₹69,700 OFF", brand: "samsung", href: "/buy", image: "https://s3ng.cashify.in/cashify/product/img/xxhdpi/a69ef28f-fe68.jpg" },
+  { name: "Samsung Galaxy S20 FE 5G", discount: "₹2,900 OFF", brand: "samsung", href: "/buy", image: "https://s3ng.cashify.in/cashify/product/img/xxhdpi/dcbaf057-2937.jpg" },
+  { name: "Samsung Galaxy S25 Edge", discount: "₹69,400 OFF", brand: "samsung", href: "/buy", image: "https://s3ng.cashify.in/cashify/product/img/xxhdpi/90cb48b8-8691.jpg" },
+  { name: "OnePlus Nord 2 5G", discount: "₹12,800 OFF", brand: "oneplus", href: "/buy", image: "https://s3ng.cashify.in/cashify/product/img/xxhdpi/f6bf429a-1a54.jpg" },
+  { name: "OnePlus 12", discount: "₹28,500 OFF", brand: "oneplus", href: "/buy", image: "https://s3ng.cashify.in/cashify/product/img/xxhdpi/3ba10c91-7df6.jpg" },
 ];
 
 // Popular Devices to Sell
 export const popularDevices = [
-  { name: "iPhone 15 Pro Max", price: "₹62,000", href: "/sell", image: "/images/products/iphone-15-pro-max.jpg" },
-  { name: "iPhone 14", price: "₹35,000", href: "/sell", image: "/images/products/iphone-14.jpg" },
-  { name: "Samsung Galaxy S24", price: "₹42,000", href: "/sell", image: "/images/products/samsung-s24.jpg" },
-  { name: "OnePlus 12", price: "₹32,000", href: "/sell", image: "/images/products/oneplus-12.jpg" },
-  { name: "MacBook Air M2", price: "₹58,000", href: "/sell/laptop", image: "/images/products/macbook-air-m2.jpg" },
-  { name: "iPhone 13", price: "₹25,000", href: "/sell", image: "/images/products/iphone-13.jpg" },
-  { name: "Samsung Galaxy S23", price: "₹28,000", href: "/sell", image: "/images/products/samsung-s23.jpg" },
-  { name: "Google Pixel 8", price: "₹28,000", href: "/sell", image: "/images/products/pixel-8.jpg" },
+  { name: "iPhone 15 Pro Max", price: "₹62,000", href: "/sell", image: "https://s3ng.cashify.in/cashify/product/img/xxhdpi/5ab3d199-fdb7.jpg" },
+  { name: "iPhone 14", price: "₹35,000", href: "/sell", image: "https://s3ng.cashify.in/cashify/product/img/xxhdpi/a69ef28f-fe68.jpg" },
+  { name: "Samsung Galaxy S24", price: "₹42,000", href: "/sell", image: "https://s3ng.cashify.in/cashify/product/img/xxhdpi/dcbaf057-2937.jpg" },
+  { name: "OnePlus 12", price: "₹32,000", href: "/sell", image: "https://s3ng.cashify.in/cashify/product/img/xxhdpi/3ba10c91-7df6.jpg" },
+  { name: "MacBook Air M2", price: "₹58,000", href: "/sell/laptop", image: "https://s3ng.cashify.in/estore/90d6714360974efd81d8912c8bf00638.png" },
+  { name: "iPhone 13", price: "₹25,000", href: "/sell", image: "https://s3ng.cashify.in/cashify/product/img/xxhdpi/f6bf429a-1a54.jpg" },
+  { name: "Samsung Galaxy S23", price: "₹28,000", href: "/sell", image: "https://s3ng.cashify.in/cashify/product/img/xxhdpi/90cb48b8-8691.jpg" },
+  { name: "Google Pixel 8", price: "₹28,000", href: "/sell", image: "https://s3ng.cashify.in/cashify/product/img/xxhdpi/a69ef28f-fe68.jpg" },
 ];
 
 // How It Works - uses string icon keys mapped to lucide icons in the component
