@@ -8,9 +8,9 @@ import type { BuybackOption, BuybackQuestionRow } from "@/src/lib/buyback/calc";
 import type { BuybackVariant } from "@/src/lib/data/buyback";
 import { buildPageMetadata } from "@/src/lib/metadata";
 
-// Interactive demo of the Cashify-style evaluation flow with hardcoded sample
+// Interactive demo of the evaluation flow with hardcoded sample
 // data (iPhone 13, three storage variants, the full mobile question set from
-// scripts/seed-buyback-questions-cashify.cjs). Lets the flow be reviewed
+// scripts/seed-buyback-questions.cjs). Lets the flow be reviewed
 // before the variants migration + question seeds are run against prod.
 // noindex — this is an internal preview page, not a customer route.
 

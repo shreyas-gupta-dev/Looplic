@@ -1,6 +1,6 @@
 // Buyback quote calculation.
 //
-// Modeled on how the major buyback/trade-in platforms (Cashify, Gazelle,
+// Modeled on how the major buyback/trade-in platforms (Gazelle,
 // ItsWorthMore, Decluttr, Swappa, BackMarket) price used devices:
 //
 //   1. Every model has a BASE PRICE — what the device is worth in perfect,

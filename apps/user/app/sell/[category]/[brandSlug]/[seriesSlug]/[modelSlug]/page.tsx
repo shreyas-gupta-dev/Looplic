@@ -64,7 +64,7 @@ export default async function SellEvaluatePage({ params }: PageProps) {
 
   const displayName = deviceDisplayName(brand.name, model.name);
   // Deterministic pseudo social-proof count derived from the model id, so it
-  // is stable across renders (Cashify-style "7400+ already sold").
+  // is stable across renders ("7400+ already sold").
   const soldCount = (Array.from(model.id).reduce((acc, ch) => (acc * 31 + ch.charCodeAt(0)) % 9007, 7) % 180 + 8) * 50;
 
   return (
@@ -98,7 +98,7 @@ export default async function SellEvaluatePage({ params }: PageProps) {
           optionsByQuestion={questionSet.optionsByQuestion}
         />
 
-        {/* Top Selling Brands (Cashify-style section under the model card) */}
+        {/* Top Selling Brands section under the model card */}
         <section className="mt-10">
           <h2 className="mb-4 text-lg font-semibold text-[#111827]">Top Selling Brands</h2>
           <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 md:grid-cols-6 md:gap-3">

@@ -552,7 +552,7 @@ export function NewHomepageView({
         </div>
       </section>
 
-      {/* ─── FAQs (Cashify-style accordion) ───────────────────────── */}
+      {/* ─── FAQs ───────────────────────────────────────────────────── */}
       <section className="bg-gray-50 py-10 md:py-14">
         <div className="container mx-auto max-w-3xl px-4">
           <h2 className="mb-8 text-center text-2xl font-bold text-gray-900 sm:text-3xl">

@@ -86,7 +86,7 @@ export default async function ServiceBrandPage({ params }: PageProps) {
 
   const seriesList = await getSeriesForBrand(brand.id);
 
-  // Cashify-scraped brands (Motorola, Nokia, Infinix, LG, ...) carry a single
+  // Some brands (Motorola, Nokia, Infinix, LG, ...) carry a single
   // "All Models" series, so the series-selection page is a pointless one-card
   // hop. Send those brand pages straight to the single series' model grid
   // (e.g. /brands/lg → /brands/lg/all-models) instead of rendering it inline,

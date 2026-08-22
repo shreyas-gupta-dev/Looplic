@@ -31,7 +31,7 @@ type SellEvaluationFlowProps = {
 };
 
 // A wizard step is either a group of yes/no questions answered on one screen
-// (Cashify's "Tell us more about your device?") or a single question screen.
+// ("Tell us more about your device?") or a single question screen.
 type WizardStep =
   | { kind: "group"; questions: BuybackQuestionRow[] }
   | { kind: "question"; question: BuybackQuestionRow };
@@ -40,7 +40,7 @@ function formatInr(value: number) {
   return `₹${value.toLocaleString("en-IN")}`;
 }
 
-// Map a defect label to a lucide icon for the Cashify-style tile grids.
+// Map a defect label to a lucide icon for the tile grids.
 function defectIcon(label: string) {
   const l = label.toLowerCase();
   if (/camera/.test(l)) return Camera;

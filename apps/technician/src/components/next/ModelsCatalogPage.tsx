@@ -18,7 +18,7 @@ type ModelsCatalogPageProps = {
   modelPathPrefix: string;
   serviceLabel: string;
   homeHref?: string;
-  // When a brand has a single series (e.g. the "All Models" Cashify brands), the
+  // When a brand has a single series (e.g. the "All Models" brands), the
   // brand page renders this model grid directly without a series-selection step.
   // In that case there is no meaningful series to show, so hide the series crumb
   // and drop the series name from headings/placeholders.
