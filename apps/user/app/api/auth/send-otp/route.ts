@@ -55,7 +55,8 @@ export async function POST(request: Request) {
       const { error } = await admin.auth.signInWithOtp({
         email: normalizedIdentifier,
         options: {
-          shouldCreateUser: false, // Don't auto-create — we handle signup separately
+          shouldCreateUser: false,
+          channel: "email",
         },
       });
 
@@ -68,6 +69,7 @@ export async function POST(request: Request) {
           email: normalizedIdentifier,
           options: {
             shouldCreateUser: true,
+            channel: "email",
           },
         });
         if (retryError) {

@@ -4,36 +4,35 @@ import { useEffect, useState } from "react";
 
 /**
  * SplashScreen — shows a 3D-animated Looplic infinity logo on initial site load.
- * Plays for ~2 seconds then fades out, revealing the website underneath.
- * Only shows once per session (sessionStorage flag).
+ * Plays for ~1.5 seconds then fades out over 0.5s, revealing the website underneath.
+ * Only shows once per session (sessionStorage flag) — subsequent navigations skip it entirely.
  */
 export function SplashScreen() {
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return !sessionStorage.getItem("looplic-splash-shown");
+  });
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
-    // Only show once per browser session
-    if (typeof window !== "undefined" && sessionStorage.getItem("looplic-splash-shown")) {
-      setVisible(false);
-      return;
-    }
+    if (!visible) return;
 
-    // Quick flash — just enough for brand recognition, then get out of the way
+    // Show the animation for 1.5s, then start fading out
     const fadeTimer = setTimeout(() => {
       setFadeOut(true);
-    }, 100);
+    }, 1500);
 
-    // Remove from DOM after fade animation completes (150ms)
+    // Remove from DOM after fade-out animation completes (500ms transition)
     const removeTimer = setTimeout(() => {
       setVisible(false);
       sessionStorage.setItem("looplic-splash-shown", "1");
-    }, 250);
+    }, 2000);
 
     return () => {
       clearTimeout(fadeTimer);
       clearTimeout(removeTimer);
     };
-  }, []);
+  }, [visible]);
 
   if (!visible) return null;
 
