@@ -4,18 +4,18 @@
 
 // Our Services grid
 export const ourServices = [
-  { id: "sell-phone", label: "Sell Phone", href: "/sell", image: "https://s3ng.cashify.in/builder/cd13764b153e46e19f9c6551ee52b5e6.webp?w=300" },
-  { id: "buy-phone", label: "Buy Phone", href: "/buy", image: "https://s3ng.cashify.in/builder/caa3a1efa51541a5aa37fd292790ea81.webp?w=300" },
-  { id: "buy-laptop", label: "Buy Laptop", href: "/buy?category=laptop", image: "https://s3ng.cashify.in/builder/3e1f26febd3f4056a7ac5104a122aa94.webp?w=300" },
-  { id: "repair-phone", label: "Repair Phone", href: "/service/mobile-repair", image: "https://s3ng.cashify.in/builder/b35c134330e5422699aed92d1254789d.webp?w=300" },
-  { id: "repair-laptop", label: "Repair Laptop", href: "/service/laptop-repair", image: "https://s3ng.cashify.in/builder/16f1d0a9fb4448f8a971e259dc612f54.webp?w=300" },
-  { id: "cctv", label: "CCTV Install", href: "/service/cctv", image: "https://s3ng.cashify.in/builder/16ee94e787b24915847842a6fee6b26a.webp?w=300" },
-  { id: "it-support", label: "IT Support", href: "/service/it-support", image: "https://s3ng.cashify.in/builder/0c3495851c3a4cce993176d995c53ab4.webp?w=300" },
-  { id: "desktop", label: "Desktop Build", href: "/service/desktop-assembly", image: "https://s3ng.cashify.in/builder/4060695bca3447c2b7296aa5ba9ce827.webp?w=300" },
-  { id: "screen-guard", label: "Screen Guard", href: "/service/mobile-repair", image: "https://s3ng.cashify.in/builder/75750a866d214239bf52a47ee57e6674.webp?w=300" },
-  { id: "store-locator", label: "Our Stores", href: "/store-locator", image: "https://s3ng.cashify.in/builder/522d89598f594f0ca6f9d22e40517db6.webp?w=300" },
-  { id: "accessories", label: "Accessories", href: "/buy?category=accessories", image: "https://s3ng.cashify.in/builder/f1f0df2917bd410b8da95675c63be2d1.webp?w=300" },
-  { id: "wifi", label: "WiFi Setup", href: "/service/it-support", image: "https://s3ng.cashify.in/builder/ed7d743ec18f40f6b0cbb58bc6783d5b.webp?w=300" },
+  { id: "repair-phone", label: "Repair Phones", href: "/service/mobile-repair", image: "https://images.unsplash.com/photo-1621330396173-e41b1cafd17f?w=300&q=80&fit=crop" },
+  { id: "repair-laptop", label: "Repair Laptop", href: "/service/laptop-repair", image: "https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?w=300&q=80&fit=crop" },
+  { id: "data-recovery", label: "Hard Drive Data Recovery", href: "/service/it-support", image: "https://images.unsplash.com/photo-1597852074816-d933c7d2b988?w=300&q=80&fit=crop" },
+  { id: "apple-watch-repair", label: "Apple Watch Repair", href: "/service/mobile-repair", image: "https://images.unsplash.com/photo-1434493789847-2f02dc6ca35d?w=300&q=80&fit=crop" },
+  { id: "airpods-repair", label: "AirPods Repair", href: "/service/mobile-repair", image: "https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=300&q=80&fit=crop" },
+  { id: "desktop", label: "Desktop Assembly", href: "/service/desktop-assembly", image: "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=300&q=80&fit=crop" },
+  { id: "it-support", label: "IT Support", href: "/service/it-support", image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=300&q=80&fit=crop" },
+  { id: "cctv", label: "CCTV Installation", href: "/service/cctv", image: "https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=300&q=80&fit=crop" },
+  { id: "sell-phone", label: "Sell Phone", href: "/sell", image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&q=80&fit=crop" },
+  { id: "sell-laptop", label: "Sell Laptop", href: "/sell/laptop", image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=300&q=80&fit=crop" },
+  { id: "accessories", label: "Accessories", href: "/buy?category=accessories", image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&q=80&fit=crop" },
+  { id: "store-locator", label: "Our Store", href: "/store-locator", image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=300&q=80&fit=crop" },
 ];
 
 // Sell Your Old Device section
