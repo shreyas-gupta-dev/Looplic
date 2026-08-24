@@ -1,10 +1,12 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    "target": "ES2022",
     "lib": ["esnext"],
     "module": "esnext",
+    "moduleDetection": "force",
     "moduleResolution": "bundler",
     "esModuleInterop": true,
+    "incremental": true,
     "isolatedModules": true,
     "noEmit": true,
     "skipLibCheck": true,

@@ -3,17 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   transpilePackages: ["@looplic/db"],
   async headers() {
-    // Per-user / account-specific pages must never be cached by the CDN or
-    // browser — they render account-bound data (saved profile, address,
-    // booking details). Caching them risks one account seeing another's saved
-    // details (see booking stale-profile fix). Marketing/catalog pages carry no
-    // per-user data and are intentionally left edge-cacheable for Core Web
-    // Vitals; per-user UI on them (sign-in vs account) renders client-side.
     const noStore = {
       key: "Cache-Control",
       value: "no-store, no-cache, max-age=0, must-revalidate",
     };
-
     return [
       { source: "/account", headers: [noStore] },
       { source: "/thank-you", headers: [noStore] },
@@ -21,10 +14,6 @@ const nextConfig: NextConfig = {
       { source: "/book/:path*", headers: [noStore] },
       { source: "/service/:serviceType/book/:path*", headers: [noStore] },
       {
-        // Service workers must always be revalidated against the origin. If the
-        // worker script is cached by the CDN or browser, a phone stuck on an old
-        // (broken) worker never fetches the fixed one and stays broken. Force a
-        // revalidation on every request so worker updates always reach clients.
         source: "/:swfile(sw.js|technician-alert-sw.js)",
         headers: [
           {
@@ -38,10 +27,6 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
-        // Canonicalize the apex onto www with a 301. Inert until the apex domain
-        // is mapped to serve this app in Amplify (today CloudFront short-circuits
-        // apex requests with its own 302); once apex routes into the app, this
-        // enforces the permanent redirect at the app layer.
         source: "/:path*",
         has: [{ type: "host", value: "looplic.com" }],
         destination: "https://www.looplic.com/:path*",
@@ -67,8 +52,6 @@ const nextConfig: NextConfig = {
         destination: "/mi-screen-replacement",
         permanent: true,
       },
-      // Back-office moved to its own subdomains. Forward old looplic.com links
-      // (and any installed PWAs / bookmarks) to the dedicated apps.
       {
         source: "/admin/:path*",
         destination: "https://admin.looplic.com/admin/:path*",
@@ -95,7 +78,41 @@ const nextConfig: NextConfig = {
     VITE_GOOGLE_MAPS_API_KEY: process.env.VITE_GOOGLE_MAPS_API_KEY,
   },
   experimental: {
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-accordion', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tabs', '@radix-ui/react-toast', '@radix-ui/react-select', '@radix-ui/react-popover'],
+    optimizePackageImports: [
+      'lucide-react',
+      'framer-motion',
+      'date-fns',
+      '@tanstack/react-query',
+      '@radix-ui/react-accordion',
+      '@radix-ui/react-alert-dialog',
+      '@radix-ui/react-aspect-ratio',
+      '@radix-ui/react-avatar',
+      '@radix-ui/react-checkbox',
+      '@radix-ui/react-collapsible',
+      '@radix-ui/react-context-menu',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-hover-card',
+      '@radix-ui/react-label',
+      '@radix-ui/react-menubar',
+      '@radix-ui/react-navigation-menu',
+      '@radix-ui/react-popover',
+      '@radix-ui/react-progress',
+      '@radix-ui/react-radio-group',
+      '@radix-ui/react-scroll-area',
+      '@radix-ui/react-select',
+      '@radix-ui/react-separator',
+      '@radix-ui/react-slider',
+      '@radix-ui/react-slot',
+      '@radix-ui/react-switch',
+      '@radix-ui/react-tabs',
+      '@radix-ui/react-toast',
+      '@radix-ui/react-toggle',
+      '@radix-ui/react-toggle-group',
+      '@radix-ui/react-tooltip',
+    ],
+    webpackBuildWorker: true,
+    parallelServerCompiles: true,
   },
   eslint: {
     ignoreDuringBuilds: true,

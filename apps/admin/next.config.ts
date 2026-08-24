@@ -14,10 +14,6 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        // Service workers must always be revalidated against the origin. If the
-        // worker script is cached by the CDN or browser, a phone stuck on an old
-        // (broken) worker never fetches the fixed one and stays broken. Force a
-        // revalidation on every request so worker updates always reach clients.
         source: "/:swfile(sw.js|technician-alert-sw.js)",
         headers: [
           {
@@ -30,6 +26,44 @@ const nextConfig: NextConfig = {
   },
   env: {
     VITE_GOOGLE_MAPS_API_KEY: process.env.VITE_GOOGLE_MAPS_API_KEY,
+  },
+  experimental: {
+    optimizePackageImports: [
+      'lucide-react',
+      'framer-motion',
+      'date-fns',
+      'recharts',
+      '@tanstack/react-query',
+      '@radix-ui/react-accordion',
+      '@radix-ui/react-alert-dialog',
+      '@radix-ui/react-aspect-ratio',
+      '@radix-ui/react-avatar',
+      '@radix-ui/react-checkbox',
+      '@radix-ui/react-collapsible',
+      '@radix-ui/react-context-menu',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-hover-card',
+      '@radix-ui/react-label',
+      '@radix-ui/react-menubar',
+      '@radix-ui/react-navigation-menu',
+      '@radix-ui/react-popover',
+      '@radix-ui/react-progress',
+      '@radix-ui/react-radio-group',
+      '@radix-ui/react-scroll-area',
+      '@radix-ui/react-select',
+      '@radix-ui/react-separator',
+      '@radix-ui/react-slider',
+      '@radix-ui/react-slot',
+      '@radix-ui/react-switch',
+      '@radix-ui/react-tabs',
+      '@radix-ui/react-toast',
+      '@radix-ui/react-toggle',
+      '@radix-ui/react-toggle-group',
+      '@radix-ui/react-tooltip',
+    ],
+    webpackBuildWorker: true,
+    parallelServerCompiles: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
