@@ -8,6 +8,10 @@ export const whatsappUrl = `https://wa.me/91${whatsappPhone}`;
 export const companyAddress =
   "1st Floor, Shawkat Building, SJP Road, opp. Dasappa Hospital, near Town Hall, Dodpete, Nagarathpete, Bengaluru, Karnataka 560002";
 export const companyAddressMapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(companyAddress)}`;
+export const companyRegisteredAddress = "SJP Road, Bengaluru, Karnataka 560002";
+export const companyWebsite = "looplic.com";
+// Optional GSTIN — invoices render the GSTIN row only when this is configured.
+export const companyGstin = (process.env.NEXT_PUBLIC_COMPANY_GSTIN || "").trim();
 
 export const footerLinks = [
   { href: "/sell", label: "Sell Phone" },

@@ -155,6 +155,9 @@ export const serviceBills = pgTable("service_bills", {
   invoiceNumber: text("invoice_number").notNull().unique(),
   customerName: text("customer_name").notNull(),
   customerPhone: text("customer_phone"),
+  customerEmail: text("customer_email"),
+  customerAddress: text("customer_address"),
+  invoiceEmailedAt: timestamp("invoice_emailed_at", { withTimezone: true }),
   serviceType: text("service_type").notNull(),
   repairCategoryId: uuid("repair_category_id").references(() => repairCategories.id, { onDelete: "set null" }),
   repairSubcategoryId: uuid("repair_subcategory_id").references(() => repairSubcategories.id, { onDelete: "set null" }),
@@ -269,6 +272,8 @@ export const buybackBookings = pgTable("buyback_bookings", {
   timeSlot: text("time_slot"),
   status: text("status").notNull().default("pending"),
   userId: text("user_id"),
+  receiptNumber: text("receipt_number"),
+  receiptEmailedAt: timestamp("receipt_emailed_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

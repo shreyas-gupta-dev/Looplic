@@ -4,7 +4,7 @@ import { getVisitingChargePolicy } from "@/src/lib/visiting-charge";
 
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
 const DEFAULT_LEAD_TO_EMAIL = "touheed@looplic.com";
-const DEFAULT_FROM_EMAIL = "Looplic <touheed@looplic.com>";
+const DEFAULT_FROM_EMAIL = "Looplic <support@looplic.com>";
 const LOGO_URL = new URL("/looplic-email-logo-transparent.png", siteConfig.url).toString();
 const TERMS_URL = new URL("/terms-and-conditions#customer-terms", siteConfig.url).toString();
 const CUSTOMER_DIRECT_DEAL_WARNING =
@@ -24,6 +24,31 @@ type ResendEmailInput = {
     filename: string;
     content: string;
   }>;
+};
+
+export type EmailPdfAttachment = {
+  pdfBase64: string;
+  pdfFilename: string;
+};
+
+export type InvoiceEmailInput = {
+  to: string;
+  customerName: string;
+  invoiceNumber: string;
+  // "invoice" for service bills, "payment receipt" for buyback payouts.
+  documentLabel?: string;
+  bookingCode?: string | null;
+  serviceLabel: string;
+  description?: string | null;
+  amount: number;
+  discount: number;
+  tax: number;
+  totalAmount: number;
+  paymentStatus: string;
+  paymentMode?: string | null;
+  warrantyLabel?: string | null;
+  pdfBase64: string;
+  pdfFilename: string;
 };
 
 export type PickupAgreementEmailInput = {
@@ -403,7 +428,7 @@ export async function sendLeadEmail(payload: LeadPayload) {
   return sendResendEmail({ to, from, subject, text, html, replyTo, context: "lead-notification" });
 }
 
-export async function sendCustomerBookingConfirmation(payload: LeadPayload) {
+export async function sendCustomerBookingConfirmation(payload: LeadPayload, attachment?: EmailPdfAttachment) {
   const customerEmail = asText(payload.customer?.email);
 
   if (!customerEmail) {
@@ -417,9 +442,97 @@ export async function sendCustomerBookingConfirmation(payload: LeadPayload) {
     to: customerEmail,
     from,
     subject,
-    text,
+    text: attachment ? `${text}\n\nA PDF copy of this booking confirmation is attached for your records.` : text,
     html,
     replyTo: process.env.RESEND_REPLY_TO || DEFAULT_LEAD_TO_EMAIL,
     context: "booking-confirmation",
+    attachments: attachment ? [{ filename: attachment.pdfFilename, content: attachment.pdfBase64 }] : undefined,
+  });
+}
+
+export async function sendInvoiceEmail(input: InvoiceEmailInput) {
+  const from = process.env.RESEND_FROM_EMAIL || DEFAULT_FROM_EMAIL;
+  const documentLabel = input.documentLabel || "invoice";
+  const documentLabelTitle = documentLabel.replace(/\b\w/g, (letter) => letter.toUpperCase());
+  const subject = `Looplic ${documentLabel} ${input.invoiceNumber}${input.bookingCode ? ` - ${input.bookingCode}` : ""}`;
+  const formatInr = (value: number) => `Rs. ${Number(value || 0).toLocaleString("en-IN")}`;
+  const rows = [
+    [`${documentLabelTitle} number`, input.invoiceNumber],
+    ["Order code", input.bookingCode],
+    ["Service", input.serviceLabel],
+    ["Description", input.description],
+    ["Amount", formatInr(input.amount)],
+    ["Discount", input.discount ? `- ${formatInr(input.discount)}` : ""],
+    ["Tax", input.tax ? formatInr(input.tax) : ""],
+    ["Grand total", formatInr(input.totalAmount)],
+    ["Payment status", (input.paymentStatus || "").toUpperCase()],
+    ["Payment mode", input.paymentMode],
+    ["Warranty", input.warrantyLabel],
+  ].filter(([, value]) => asText(value).length > 0);
+  const text = [
+    `Hi ${input.customerName || "there"},`,
+    "",
+    `Thank you for choosing Looplic. Your ${documentLabel} ${input.invoiceNumber} is attached as a PDF for your records.`,
+    "",
+    ...rows.map(([label, value]) => `${label}: ${asText(value)}`),
+    "",
+    "If anything looks incorrect, just reply to this email and we will fix it.",
+    "",
+    "Best regards,",
+    "Looplic Team",
+  ].join("\n");
+  const htmlRows = rows
+    .map(
+      ([label, value]) => `
+        <tr>
+          <td style="padding:12px 14px;border-bottom:1px solid #e8edf3;color:#64748b;font-size:13px;width:38%;">${escapeHtml(asText(label))}</td>
+          <td style="padding:12px 14px;border-bottom:1px solid #e8edf3;color:#0f172a;font-size:14px;font-weight:700;line-height:1.5;">${escapeHtml(asText(value))}</td>
+        </tr>
+      `,
+    )
+    .join("");
+  const html = `
+    <div style="margin:0;padding:0;background:#f1f5f9;font-family:Arial,Helvetica,sans-serif;color:#0f172a;">
+      <div style="display:none;max-height:0;overflow:hidden;opacity:0;">Your Looplic ${escapeHtml(documentLabel)} ${escapeHtml(input.invoiceNumber)} is attached.</div>
+      <div style="max-width:720px;margin:0 auto;padding:28px 16px;">
+        <div style="overflow:hidden;border:1px solid #dbe8f1;border-radius:22px;background:#ffffff;box-shadow:0 18px 45px rgba(15,23,42,0.08);">
+          <div style="padding:22px 24px;background:#0096ff;color:#ffffff;">
+            <img src="${LOGO_URL}" width="160" alt="Looplic" style="display:block;width:160px;max-width:160px;height:auto;border:0;" />
+            <div style="margin-top:18px;font-size:12px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;">${escapeHtml(documentLabelTitle)}</div>
+            <h1 style="margin:8px 0 0;font-size:24px;line-height:1.25;">${escapeHtml(input.invoiceNumber)}</h1>
+          </div>
+          <div style="padding:24px;">
+            <p style="margin:0 0 14px;font-size:15px;line-height:1.7;color:#334155;">Hi <strong>${escapeHtml(input.customerName || "there")}</strong>,</p>
+            <p style="margin:0 0 18px;font-size:14px;line-height:1.7;color:#475569;">Thank you for choosing Looplic. Your ${escapeHtml(documentLabel)} is attached as a PDF, and the summary is below for quick reference.</p>
+            <div style="overflow:hidden;border:1px solid #e8edf3;border-radius:16px;background:#fbfdff;">
+              <div style="padding:14px 16px;background:#f8fbff;border-bottom:1px solid #e8edf3;font-size:12px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;">${escapeHtml(documentLabelTitle)} summary</div>
+              <table role="presentation" style="width:100%;border-collapse:collapse;">${htmlRows}</table>
+            </div>
+            <div style="margin-top:18px;border-radius:16px;background:#ecfdf5;border:1px solid #bbf7d0;padding:15px;">
+              <div style="font-size:14px;font-weight:800;color:#047857;">Grand total: ${escapeHtml(formatInr(input.totalAmount))}</div>
+              <p style="margin:7px 0 0;font-size:13px;line-height:1.7;color:#065f46;">Keep the attached PDF as your official ${escapeHtml(documentLabel)} from Looplic.</p>
+            </div>
+            <p style="margin:20px 0 0;font-size:14px;line-height:1.7;color:#475569;">If anything looks incorrect, just reply to this email and we will fix it.</p>
+            <p style="margin:18px 0 0;font-size:15px;font-weight:800;color:#0f172a;">Looplic Team</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  return sendResendEmail({
+    to: input.to,
+    from,
+    subject,
+    text,
+    html,
+    replyTo: process.env.RESEND_REPLY_TO || DEFAULT_LEAD_TO_EMAIL,
+    context: "invoice-email",
+    attachments: [
+      {
+        filename: input.pdfFilename,
+        content: input.pdfBase64,
+      },
+    ],
   });
 }
