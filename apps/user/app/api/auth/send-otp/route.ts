@@ -56,7 +56,6 @@ export async function POST(request: Request) {
         email: normalizedIdentifier,
         options: {
           shouldCreateUser: false,
-          channel: "email",
         },
       });
 
@@ -69,7 +68,6 @@ export async function POST(request: Request) {
           email: normalizedIdentifier,
           options: {
             shouldCreateUser: true,
-            channel: "email",
           },
         });
         if (retryError) {

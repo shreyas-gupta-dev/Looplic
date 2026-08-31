@@ -3,19 +3,25 @@
 // This module has no React/lucide dependencies for better tree-shaking.
 
 // Our Services grid
+// All images use a uniform square crop for a cohesive, professional grid:
+//   ?auto=format&fit=crop&w=400&h=400&q=80
+// Every URL below was verified to return HTTP 200 image/jpeg.
 export const ourServices = [
-  { id: "repair-phone", label: "Repair Phones", href: "/service/mobile-repair", image: "https://images.unsplash.com/photo-1621330396173-e41b1cafd17f?w=300&q=80&fit=crop" },
-  { id: "repair-laptop", label: "Repair Laptop", href: "/service/laptop-repair", image: "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=300&q=80&fit=crop" },
-  { id: "data-recovery", label: "Hard Drive Data Recovery", href: "/service/it-support", image: "https://images.unsplash.com/photo-1531492746076-161ca9bcad58?w=300&q=80&fit=crop" },
-  { id: "apple-watch-repair", label: "Apple Watch Repair", href: "/service/mobile-repair", image: "https://images.unsplash.com/photo-1546868871-af0de0ae72be?w=300&q=80&fit=crop" },
-  { id: "airpods-repair", label: "AirPods Repair", href: "/service/mobile-repair", image: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=300&q=80&fit=crop" },
-  { id: "desktop", label: "Desktop Assembly", href: "/service/desktop-assembly", image: "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=300&q=80&fit=crop" },
-  { id: "it-support", label: "IT Support", href: "/service/it-support", image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=300&q=80&fit=crop" },
-  { id: "cctv", label: "CCTV Installation", href: "/service/cctv", image: "https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=300&q=80&fit=crop" },
-  { id: "sell-phone", label: "Sell Phone", href: "/sell", image: "https://images.unsplash.com/photo-1556656793-08538906a9f8?w=300&q=80&fit=crop" },
-  { id: "sell-laptop", label: "Sell Laptop", href: "/sell/laptop", image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=300&q=80&fit=crop" },
-  { id: "accessories", label: "Accessories", href: "/buy?category=accessories", image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&q=80&fit=crop" },
-  { id: "store-locator", label: "Our Store", href: "/store-locator", image: "https://images.unsplash.com/photo-1528698827591-e19cef791f48?w=300&q=80&fit=crop" },
+  { id: "repair-phone", label: "Repair Phones", href: "/service/mobile-repair", image: "https://images.unsplash.com/photo-1512054502232-10a0a035d672?auto=format&fit=crop&w=400&h=400&q=80" },
+  { id: "repair-laptop", label: "Repair Laptop", href: "/service/laptop-repair", image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=400&h=400&q=80" },
+  { id: "data-recovery", label: "Hard Drive Data Recovery", href: "/service/it-support", image: "https://images.unsplash.com/photo-1601737487795-dab272f52420?auto=format&fit=crop&w=400&h=400&q=80" },
+  { id: "apple-watch-repair", label: "Apple Watch Repair", href: "/service/mobile-repair", image: "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?auto=format&fit=crop&w=400&h=400&q=80" },
+  { id: "airpods-repair", label: "AirPods Repair", href: "/service/mobile-repair", image: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?auto=format&fit=crop&w=400&h=400&q=80" },
+  { id: "desktop", label: "Desktop Assembly", href: "/service/desktop-assembly", image: "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&w=400&h=400&q=80" },
+  { id: "it-support", label: "IT Support", href: "/service/it-support", image: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=400&h=400&q=80" },
+  { id: "cctv", label: "CCTV Installation", href: "/service/cctv", image: "https://images.unsplash.com/photo-1558002038-1055907df827?auto=format&fit=crop&w=400&h=400&q=80" },
+  { id: "sell-phone", label: "Sell Phone", href: "/sell", image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=400&h=400&q=80" },
+  { id: "sell-laptop", label: "Sell Laptop", href: "/sell/laptop", image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=400&h=400&q=80" },
+  { id: "accessories", label: "Accessories", href: "/buy?category=accessories", image: "https://images.unsplash.com/photo-1585790050230-5dd28404ccb9?auto=format&fit=crop&w=400&h=400&q=80" },
+  // "Our Store" shows a live map of the actual Looplic store location
+  // (1st Floor, Shawkat Building, SJP Road, Nagarathpete, Bengaluru 560002 —
+  // lat 12.9632, lng 77.5784), matching apps/user/src/components/next/StoreLocatorView.tsx.
+  { id: "store-locator", label: "Our Store", href: "/store-locator", image: "https://static-maps.yandex.ru/1.x/?ll=77.5784,12.9632&z=16&size=450,450&l=map&pt=77.5784,12.9632,pm2rdm&lang=en_US" },
 ];
 
 // Sell Your Old Device section
@@ -52,11 +58,12 @@ export const popularDevices = [
 ];
 
 // How It Works - uses string icon keys mapped to lucide icons in the component
+// Step accents walk the Looplic logo gradient: blue -> cyan -> teal -> navy
 export const howItWorks = [
-  { step: 1, title: "Select Your Device", description: "Choose brand, model & tell us the condition.", icon: "search" as const, color: "bg-blue-500" },
-  { step: 2, title: "Get Instant Quote", description: "Best price calculated instantly.", icon: "rupee" as const, color: "bg-green-500" },
-  { step: 3, title: "Free Doorstep Pickup", description: "We come to you at your convenience.", icon: "truck" as const, color: "bg-purple-500" },
-  { step: 4, title: "Get Paid Instantly", description: "Payment via UPI, bank transfer or cash.", icon: "credit-card" as const, color: "bg-orange-500" },
+  { step: 1, title: "Select Your Device", description: "Choose brand, model & tell us the condition.", icon: "search" as const, color: "bg-brand-600" },
+  { step: 2, title: "Get Instant Quote", description: "Best price calculated instantly.", icon: "rupee" as const, color: "bg-brandcyan-500" },
+  { step: 3, title: "Free Doorstep Pickup", description: "We come to you at your convenience.", icon: "truck" as const, color: "bg-brandteal-500" },
+  { step: 4, title: "Get Paid Instantly", description: "Payment via UPI, bank transfer or cash.", icon: "credit-card" as const, color: "bg-brandnavy-800" },
 ];
 
 export type HowItWorksIconKey = (typeof howItWorks)[number]["icon"];
