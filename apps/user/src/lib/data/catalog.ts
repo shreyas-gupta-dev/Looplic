@@ -224,10 +224,10 @@ export const getBrandsForListing = unstable_cache(async (serviceType: CatalogSer
   tags: ["catalog", "catalog-brands"],
 });
 
-// Callers treat null as "brand does not exist" and respond with notFound(); on
-// ISR routes Next caches that 404 for the whole revalidate window. So null must
-// mean the DB answered and the slug truly isn't there — a DB failure throws
-// instead, which makes ISR keep serving the last good page.
+// Callers treat null as "brand does not exist" and respond with notFound().
+// A DB failure with no matching static fallback also returns null (logged) so
+// the page renders a clean 404 instead of a raw 500; ISR keeps serving the last
+// good page in the meantime.
 export async function getBrandBySlug(brandSlug: string, serviceType?: CatalogServiceType): Promise<CatalogBrand | null> {
   const resolvedServiceType = serviceType ?? "mobile";
   const normalizedBrandSlug = normalizeBrandSlug(brandSlug);
@@ -264,32 +264,49 @@ export async function getBrandBySlug(brandSlug: string, serviceType?: CatalogSer
   if (fallbackMatch) return fallbackMatch;
 
   if (dbFailed) {
-    throw new Error(`Catalog DB unavailable while resolving brand "${brandSlug}"`);
+    // The DB was unreachable and no static fallback matched. Returning null lets
+    // the caller render a clean notFound() (404) instead of surfacing a raw 500.
+    // eslint-disable-next-line no-console
+    console.error(`Catalog DB unavailable while resolving brand "${brandSlug}"`);
   }
   return null;
 }
 
-// Throws on DB failure (rather than returning []) so ISR pages keep serving
-// their last good HTML instead of caching an empty page or a 404.
+// Returns [] on DB failure (rather than throwing) so the brand page renders
+// gracefully and ISR can keep serving its last good HTML instead of a raw 500.
 export async function getSeriesForBrand(brandId: string): Promise<CatalogSeries[]> {
-  const dataClient = createPublicClient();
-  const result = await dataClient
-    .from("series")
-    .select("id, brand_id, name, slug, image_url")
-    .eq("brand_id", brandId)
-    .order("name");
+  try {
+    const dataClient = createPublicClient();
+    const result = await dataClient
+      .from("series")
+      .select("id, brand_id, name, slug, image_url")
+      .eq("brand_id", brandId)
+      .order("name");
 
-  if (result.error) {
-    throw new Error(`Catalog DB unavailable while loading series for brand ${brandId}: ${result.error.message}`);
+    if (result.error) {
+      // A DB error here must not crash the brand page with a raw 500. Log and
+      // degrade to an empty series list so the page still renders (and ISR can
+      // keep serving the last good snapshot). The catalog is re-queried on the
+      // next revalidation window.
+      // eslint-disable-next-line no-console
+      console.error(`Catalog DB error while loading series for brand ${brandId}: ${result.error.message}`);
+      return [];
+    }
+
+    return (result.data ?? []).map((series) => ({
+      ...series,
+      slug: series.slug || slugify(series.name) || series.id,
+    }));
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error(`Catalog DB unavailable while loading series for brand ${brandId}:`, error);
+    return [];
   }
-
-  return (result.data ?? []).map((series) => ({
-    ...series,
-    slug: series.slug || slugify(series.name) || series.id,
-  }));
 }
 
-// null means "series genuinely absent"; DB failures throw (see getBrandBySlug).
+// null means "series genuinely absent". On a DB failure we also return null so
+// the caller renders a clean notFound() (404) instead of a raw 500; the error
+// is logged for observability.
 export async function getSeriesBySlug(brandId: string, seriesSlug: string): Promise<CatalogSeries | null> {
   const dataClient = createPublicClient();
   const directMatch = await dataClient
@@ -313,32 +330,42 @@ export async function getSeriesBySlug(brandId: string, seriesSlug: string): Prom
   if (fallbackMatch) return fallbackMatch;
 
   if (directMatch.error) {
-    throw new Error(`Catalog DB unavailable while resolving series "${seriesSlug}": ${directMatch.error.message}`);
+    // eslint-disable-next-line no-console
+    console.error(`Catalog DB unavailable while resolving series "${seriesSlug}": ${directMatch.error.message}`);
   }
   return null;
 }
 
-// Throws on DB failure (rather than returning []) so ISR pages keep serving
-// their last good HTML instead of caching an empty page or a 404.
+// Returns [] on DB failure (rather than throwing) so the series page renders
+// gracefully and ISR can keep serving its last good HTML instead of a 500.
 export async function getModelsForSeries(seriesId: string): Promise<CatalogModel[]> {
-  const dataClient = createPublicClient();
-  const result = await dataClient
-    .from("models")
-    .select("id, series_id, name, slug, image_url")
-    .eq("series_id", seriesId)
-    .order("name");
+  try {
+    const dataClient = createPublicClient();
+    const result = await dataClient
+      .from("models")
+      .select("id, series_id, name, slug, image_url")
+      .eq("series_id", seriesId)
+      .order("name");
 
-  if (result.error) {
-    throw new Error(`Catalog DB unavailable while loading models for series ${seriesId}: ${result.error.message}`);
+    if (result.error) {
+      // eslint-disable-next-line no-console
+      console.error(`Catalog DB error while loading models for series ${seriesId}: ${result.error.message}`);
+      return [];
+    }
+
+    return (result.data ?? []).map((model) => ({
+      ...model,
+      slug: model.slug || slugify(model.name) || model.id,
+    }));
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error(`Catalog DB unavailable while loading models for series ${seriesId}:`, error);
+    return [];
   }
-
-  return (result.data ?? []).map((model) => ({
-    ...model,
-    slug: model.slug || slugify(model.name) || model.id,
-  }));
 }
 
-// null means "model genuinely absent"; DB failures throw (see getBrandBySlug).
+// null means "model genuinely absent". On a DB failure we also return null so
+// the caller renders a clean notFound() (404) instead of a raw 500.
 export async function getModelBySlug(seriesId: string, modelSlug: string): Promise<CatalogModel | null> {
   const dataClient = createPublicClient();
   const directMatch = await dataClient
@@ -366,7 +393,8 @@ export async function getModelBySlug(seriesId: string, modelSlug: string): Promi
   if (fallbackMatch) return fallbackMatch;
 
   if (directMatch.error) {
-    throw new Error(`Catalog DB unavailable while resolving model "${modelSlug}": ${directMatch.error.message}`);
+    // eslint-disable-next-line no-console
+    console.error(`Catalog DB unavailable while resolving model "${modelSlug}": ${directMatch.error.message}`);
   }
   return null;
 }
