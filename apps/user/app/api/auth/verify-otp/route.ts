@@ -32,11 +32,41 @@ export async function POST(request: Request) {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    const { data, error } = await supabase.auth.verifyOtp({
-      ...(isPhone ? { phone: normalizedIdentifier } : { email: normalizedIdentifier }),
-      token: token.trim(),
-      type: isPhone ? "sms" : "email",
-    });
+    // Verify the OTP. For phone it's always the "sms" type. For email the token
+    // type depends on how it was issued: an existing (confirmed) user receives a
+    // "email"/magiclink OTP, whereas a brand-new user created during the signup
+    // flow (signInWithOtp with shouldCreateUser=true, mailer_autoconfirm off)
+    // receives a "signup" confirmation OTP. We try "email" first and fall back to
+    // "signup" so both login and first-time signup verification succeed.
+    let data;
+    let error;
+    if (isPhone) {
+      ({ data, error } = await supabase.auth.verifyOtp({
+        phone: normalizedIdentifier,
+        token: token.trim(),
+        type: "sms",
+      }));
+    } else {
+      ({ data, error } = await supabase.auth.verifyOtp({
+        email: normalizedIdentifier,
+        token: token.trim(),
+        type: "email",
+      }));
+
+      if (error) {
+        const retry = await supabase.auth.verifyOtp({
+          email: normalizedIdentifier,
+          token: token.trim(),
+          type: "signup",
+        });
+        // Only adopt the retry result if it actually succeeded; otherwise keep
+        // the original error so the user sees the real "invalid/expired" message.
+        if (!retry.error) {
+          data = retry.data;
+          error = null;
+        }
+      }
+    }
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
