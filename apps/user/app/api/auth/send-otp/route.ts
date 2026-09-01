@@ -48,31 +48,23 @@ export async function POST(request: Request) {
         phone: normalizedIdentifier,
       });
       if (error) {
-        return NextResponse.json({ error: error.message }, { status: 400 });
+        return NextResponse.json({ error: friendlyOtpError(error.message) }, { status: 400 });
       }
     } else {
-      // Supabase handles email OTP delivery
+      // Send the email OTP in a SINGLE call. Using shouldCreateUser:true works for
+      // both signup (creates a passwordless user) and login (existing user just
+      // gets the code). The previous two back-to-back signInWithOtp calls tripped
+      // Supabase's per-identifier rate limiter ("you can only request this after
+      // N seconds"), which blocked legitimate sign-ins.
       const { error } = await admin.auth.signInWithOtp({
         email: normalizedIdentifier,
         options: {
-          shouldCreateUser: false,
+          shouldCreateUser: true,
         },
       });
 
-      // If user doesn't exist yet (signup flow), we still need to send OTP
-      // Supabase returns error for non-existent users when shouldCreateUser=false
       if (error) {
-        // Try again with shouldCreateUser: true — this creates a passwordless user
-        // that we'll convert to password user on actual signup
-        const { error: retryError } = await admin.auth.signInWithOtp({
-          email: normalizedIdentifier,
-          options: {
-            shouldCreateUser: true,
-          },
-        });
-        if (retryError) {
-          return NextResponse.json({ error: retryError.message }, { status: 400 });
-        }
+        return NextResponse.json({ error: friendlyOtpError(error.message) }, { status: 400 });
       }
     }
 
@@ -80,4 +72,14 @@ export async function POST(request: Request) {
   } catch (err: any) {
     return NextResponse.json({ error: err.message || "Failed to send OTP" }, { status: 500 });
   }
+}
+
+/**
+ * Translate Supabase's raw rate-limit message into a clearer, user-facing hint.
+ */
+function friendlyOtpError(message: string): string {
+  if (/only request this after|rate limit|too many/i.test(message)) {
+    return "Please wait a few seconds before requesting another code, then try again.";
+  }
+  return message;
 }
