@@ -155,6 +155,29 @@ function getStaticInspectMapUrl(position: { lat: number; lng: number }) {
   return `https://maps.googleapis.com/maps/api/staticmap?${params.toString()}`;
 }
 
+// Renders a repair-category thumbnail. If the image is missing (null) or fails
+// to load at runtime (e.g. a 404 from the assets bucket), it gracefully falls
+// back to a Wrench icon instead of showing a broken-image glyph. When the asset
+// is later restored at the same URL it will display again with no code change.
+function CategoryImage({ src, alt }: { src: string | null | undefined; alt: string }) {
+  const [failed, setFailed] = useState(false);
+  if (!src || failed) {
+    return (
+      <div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
+        <Wrench className="size-5 text-primary" />
+      </div>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className="size-10 rounded-xl object-contain"
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function UniversalBookingFlow({
@@ -862,9 +885,7 @@ export function UniversalBookingFlow({
                       onClick={() => { setSelectedCategoryId(cat.id); setSelectedSubcategory(null); goTo("repair-select"); }}
                       className="flex flex-col items-center gap-2 rounded-2xl border-2 border-border bg-card p-4 transition-all hover:border-primary/30 hover:shadow-card-brand"
                     >
-                      {cat.image_url
-                        ? <img src={cat.image_url} alt={cat.name} className="size-10 rounded-xl object-contain" />
-                        : <div className="flex size-10 items-center justify-center rounded-xl bg-secondary"><Wrench className="size-5 text-primary" /></div>}
+                      <CategoryImage src={cat.image_url} alt={cat.name} />
                       <span className="text-center text-xs font-bold text-foreground">{cat.name}</span>
                     </button>
                   ))}
@@ -937,9 +958,7 @@ export function UniversalBookingFlow({
                     onClick={() => { setSelectedSubcategory(sub); goTo(isLaptop ? "laptop-specs" : "details"); }}
                     className="flex w-full items-center gap-3 rounded-3xl border border-border/80 bg-card p-4 text-left transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-card-brand"
                   >
-                    {sub.image_url
-                      ? <img src={sub.image_url} alt={sub.name} className="size-10 rounded-xl object-contain" />
-                      : <div className="flex size-10 items-center justify-center rounded-xl bg-secondary"><Wrench className="size-5 text-muted-foreground" /></div>}
+                    <CategoryImage src={sub.image_url} alt={sub.name} />
                     <div className="flex-1">
                       <span className="block text-sm font-bold text-foreground">{sub.name}</span>
                       <RepairWarrantyTag subcategoryName={sub.name} className="mt-2" />
