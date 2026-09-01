@@ -154,17 +154,44 @@ export function AuthPageClient() {
       }
     }
 
-    // Send OTP
-    setOtpSending(true);
+    // Password-based auth — no OTP step. Email OTP delivery is unreliable
+    // (Supabase sends a magic link, not a 6-digit code), so both sign-in and
+    // account creation complete directly with the password the user set.
+    setSubmitting("otp");
     try {
-      await sendOtp(identifier);
-      toast.success(`OTP sent to your ${inputMethod === "email" ? "email" : "phone"}`);
-      setStep("otp");
-      setOtpResendCountdown(60);
+      if (mode === "signup") {
+        if (inputMethod === "email") {
+          const result = await signUpWithEmail(email, password, name, "");
+          if (result.isSignUpComplete) {
+            toast.success("Account created successfully!");
+            navigateAfterAuth(redirect);
+          }
+        } else {
+          const result = await signUpWithPhone(phone, password, name, "");
+          if (result.isSignUpComplete) {
+            toast.success("Account created successfully!");
+            navigateAfterAuth(redirect);
+          }
+        }
+      } else {
+        if (inputMethod === "email") {
+          const result = await signInWithEmail(email, password);
+          if (result.isSignedIn) {
+            toast.success("Welcome back!");
+            navigateAfterAuth(redirect);
+          }
+        } else {
+          const result = await signInWithPhone(phone, password);
+          if (result.isSignedIn) {
+            toast.success("Welcome back!");
+            navigateAfterAuth(redirect);
+          }
+        }
+      }
     } catch (err: any) {
-      toast.error(err.message || "Failed to send OTP");
+      toast.error(err.message || "Authentication failed");
     } finally {
-      setOtpSending(false);
+      setSubmitting(null);
     }
   }
 

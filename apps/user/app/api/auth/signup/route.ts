@@ -49,17 +49,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 });
     }
 
-    if (!verificationToken) {
-      return NextResponse.json({ error: "OTP verification is required before creating an account" }, { status: 400 });
-    }
-
     if (!hasServiceRole) {
       return NextResponse.json({ error: "Server configuration error: missing service role key" }, { status: 500 });
     }
 
-    // Validate the verification token
     const normalizedIdentifier = isPhone ? phone.trim() : email.trim().toLowerCase();
-    if (!validateVerificationToken(verificationToken, normalizedIdentifier)) {
+
+    // OTP verification is optional. Email delivery of the 6-digit code is not
+    // reliable (Supabase sends a magic link instead), so account creation is
+    // password-based: the admin API below creates an auto-confirmed user. If a
+    // valid verification token IS supplied we still honour it, but its absence
+    // no longer blocks signup.
+    if (verificationToken && !validateVerificationToken(verificationToken, normalizedIdentifier)) {
       return NextResponse.json({ error: "OTP verification expired or invalid. Please verify again." }, { status: 400 });
     }
 
