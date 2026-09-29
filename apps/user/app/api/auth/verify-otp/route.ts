@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { isPhoneIdentifier, normalizeIdentifier } from "@/src/lib/auth/admin-users";
 import { supabaseUrl } from "@/src/lib/auth/config";
+import { verifyEmailOtp } from "@/src/lib/auth/email-otp";
 import { hasVerificationSecret, mintVerificationToken } from "@/src/lib/auth/verification-token";
 import { guardRateLimit } from "@/src/lib/rate-limit";
 
@@ -11,7 +12,7 @@ const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 /**
  * POST /api/auth/verify-otp
  *
- * Verifies the OTP the customer entered and, on success, returns a short-lived
+ * Verifies the 6-digit OTP the customer entered and, on success, returns a short-lived
  * signed verification token proving they control that email/phone. That token is
  * what signup and confirm-user require.
  *
@@ -36,52 +37,31 @@ export async function POST(request: Request) {
     const isPhone = isPhoneIdentifier(identifier);
     const normalizedIdentifier = normalizeIdentifier(identifier);
 
-    // A fresh client, not the shared admin one: verifyOtp establishes a session
-    // and must not mutate the long-lived admin client's auth state.
-    const supabase = createClient(supabaseUrl, serviceRoleKey, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    });
-
-    let data;
-    let error;
-
     if (isPhone) {
-      ({ data, error } = await supabase.auth.verifyOtp({
+      // A fresh client, not the shared admin one: verifyOtp establishes a session
+      // and must not mutate the long-lived admin client's auth state.
+      const supabase = createClient(supabaseUrl, serviceRoleKey, {
+        auth: { autoRefreshToken: false, persistSession: false },
+      });
+
+      const { data, error } = await supabase.auth.verifyOtp({
         phone: normalizedIdentifier,
         token: token.trim(),
         type: "sms",
-      }));
-    } else {
-      // The email OTP type depends on how it was issued: a confirmed user gets an
-      // "email"/magiclink OTP, a brand-new user created during signup gets a
-      // "signup" confirmation OTP. Try "email" first, fall back to "signup", and
-      // keep the original error if the fallback also fails so the customer sees
-      // the real "invalid or expired" message.
-      ({ data, error } = await supabase.auth.verifyOtp({
-        email: normalizedIdentifier,
-        token: token.trim(),
-        type: "email",
-      }));
+      });
 
       if (error) {
-        const retry = await supabase.auth.verifyOtp({
-          email: normalizedIdentifier,
-          token: token.trim(),
-          type: "signup",
-        });
-        if (!retry.error) {
-          data = retry.data;
-          error = null;
-        }
+        return NextResponse.json({ error: error.message }, { status: 400 });
       }
-    }
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
-
-    if (!data?.session && !data?.user) {
-      return NextResponse.json({ error: "OTP verification failed" }, { status: 400 });
+      if (!data?.session && !data?.user) {
+        return NextResponse.json({ error: "OTP verification failed" }, { status: 400 });
+      }
+    } else {
+      const check = await verifyEmailOtp(normalizedIdentifier, token.trim());
+      if (!check.valid) {
+        return NextResponse.json({ error: check.error || "Invalid OTP code" }, { status: 400 });
+      }
     }
 
     return NextResponse.json({
@@ -93,3 +73,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+

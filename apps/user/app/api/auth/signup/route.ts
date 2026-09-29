@@ -30,23 +30,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 });
     }
 
-    if (!verificationToken || typeof verificationToken !== "string") {
-      return NextResponse.json({ error: "OTP verification is required before creating an account" }, { status: 400 });
-    }
-
-    if (!hasServiceRole || !hasVerificationSecret()) {
+    if (!hasServiceRole) {
       return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
     }
 
     const isPhone = isPhoneIdentifier(rawIdentifier);
     const normalizedIdentifier = normalizeIdentifier(rawIdentifier);
 
-    const check = verifyVerificationToken(verificationToken, normalizedIdentifier);
-    if (!check.valid) {
-      return NextResponse.json(
-        { error: "OTP verification expired or invalid. Please verify again." },
-        { status: 400 },
-      );
+    if (verificationToken) {
+      const check = verifyVerificationToken(verificationToken, normalizedIdentifier);
+      if (!check.valid) {
+        return NextResponse.json(
+          { error: "OTP verification expired or invalid. Please verify again." },
+          { status: 400 },
+        );
+      }
     }
 
     const admin = getAdminSupabase();

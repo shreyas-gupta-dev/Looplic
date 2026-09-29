@@ -154,7 +154,74 @@ export function AuthPageClient() {
       }
     }
 
-    // Send OTP
+    // Direct Sign In
+    if (mode === "login") {
+      setSubmitting("email");
+      try {
+        if (inputMethod === "email") {
+          const result = await signInWithEmail(email, password);
+          if (result.isSignedIn) {
+            toast.success("Welcome back!");
+            navigateAfterAuth(redirect);
+            return;
+          }
+        } else {
+          const result = await signInWithPhone(phone, password);
+          if (result.isSignedIn) {
+            toast.success("Welcome back!");
+            navigateAfterAuth(redirect);
+            return;
+          }
+        }
+      } catch (err: any) {
+        toast.error(err.message || "Failed to sign in. Please check your credentials.");
+      } finally {
+        setSubmitting(null);
+      }
+      return;
+    }
+
+    // Direct Sign Up
+    if (mode === "signup") {
+      setSubmitting("email");
+      try {
+        if (inputMethod === "email") {
+          const result = await signUpWithEmail(email, password, name);
+          if (result.isSignUpComplete) {
+            toast.success("Account created successfully!");
+            navigateAfterAuth(redirect);
+            return;
+          }
+        } else {
+          const result = await signUpWithPhone(phone, password, name);
+          if (result.isSignUpComplete) {
+            toast.success("Account created successfully!");
+            navigateAfterAuth(redirect);
+            return;
+          }
+        }
+      } catch (err: any) {
+        toast.error(err.message || "Failed to create account");
+      } finally {
+        setSubmitting(null);
+      }
+      return;
+    }
+  }
+
+  /**
+   * Optional OTP flow: send OTP to identifier
+   */
+  async function handleSendOtpFlow() {
+    if (inputMethod === "email" && !email.trim()) {
+      toast.error("Please enter your email address");
+      return;
+    }
+    if (inputMethod === "phone" && !phone.trim()) {
+      toast.error("Please enter your phone number");
+      return;
+    }
+
     setOtpSending(true);
     try {
       await sendOtp(identifier);
@@ -329,8 +396,8 @@ export function AuthPageClient() {
                 {step === "otp"
                   ? `Enter the 6-digit code sent to your ${inputMethod === "email" ? "email" : "phone"}`
                   : mode === "login"
-                    ? "Sign in with your credentials. OTP verification required."
-                    : "Set up your account. OTP verification required."}
+                    ? "Sign in with your credentials to access your account."
+                    : "Create your account to start booking repairs and tracking devices."}
               </p>
             </div>
 
@@ -473,14 +540,24 @@ export function AuthPageClient() {
 
                 {/* Password recovery. Email only — a reset link needs an inbox,
                     and phone accounts recover by signing in with an OTP. */}
-                {mode === "login" && inputMethod === "email" && (
-                  <div className="flex justify-end">
-                    <Link
-                      href={email.trim() ? `/auth/reset-password?email=${encodeURIComponent(email.trim())}` : "/auth/reset-password"}
-                      className="rounded text-xs font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                {mode === "login" && (
+                  <div className="flex items-center justify-between text-xs pt-1">
+                    <button
+                      type="button"
+                      onClick={handleSendOtpFlow}
+                      disabled={otpSending || submitting !== null}
+                      className="font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none"
                     >
-                      Forgot your password?
-                    </Link>
+                      {otpSending ? "Sending OTP..." : "Sign in with OTP instead"}
+                    </button>
+                    {inputMethod === "email" && (
+                      <Link
+                        href={email.trim() ? `/auth/reset-password?email=${encodeURIComponent(email.trim())}` : "/auth/reset-password"}
+                        className="font-semibold text-muted-foreground underline-offset-4 hover:underline focus-visible:outline-none"
+                      >
+                        Forgot password?
+                      </Link>
+                    )}
                   </div>
                 )}
 
@@ -489,8 +566,10 @@ export function AuthPageClient() {
                   disabled={submitting !== null || otpSending}
                   className="flex w-full items-center justify-center gap-2 rounded-2xl gradient-brand py-3.5 text-sm font-extrabold text-primary-foreground transition-transform active:scale-[0.98] disabled:opacity-60"
                 >
-                  {otpSending ? <Loader2 className="size-4 animate-spin" /> : null}
-                  {otpSending ? "Sending OTP..." : "Send OTP & Continue"}
+                  {submitting === "email" ? <Loader2 className="size-4 animate-spin" /> : null}
+                  {submitting === "email"
+                    ? (mode === "login" ? "Signing in..." : "Creating account...")
+                    : (mode === "login" ? "Sign In" : "Create Account")}
                 </button>
               </form>
             )}

@@ -537,6 +537,24 @@ export const buyOrders = pgTable("buy_orders", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const authEmailOtps = pgTable(
+  "auth_email_otps",
+  {
+    id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+    email: text("email").notNull(),
+    code: text("code").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    attempts: integer("attempts").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("idx_auth_email_otps_email").on(table.email),
+  ],
+);
+
+export type AuthEmailOtp = typeof authEmailOtps.$inferSelect;
+export type AuthEmailOtpInsert = typeof authEmailOtps.$inferInsert;
+
 export type Brand = typeof brands.$inferSelect;
 export type BrandInsert = typeof brands.$inferInsert;
 export type Series = typeof series.$inferSelect;

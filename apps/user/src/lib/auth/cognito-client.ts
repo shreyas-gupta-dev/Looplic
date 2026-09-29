@@ -88,7 +88,7 @@ export async function signInWithEmail(email: string, password: string, verificat
     const isUnconfirmed =
       error.message.includes("Email not confirmed") || error.message.includes("email_not_confirmed");
 
-    if (isUnconfirmed && verificationToken) {
+    if (isUnconfirmed) {
       const confirmResponse = await fetch("/api/auth/confirm-user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -103,12 +103,6 @@ export async function signInWithEmail(email: string, password: string, verificat
         if (retryError) throw new Error(retryError.message);
         return { isSignedIn: Boolean(retryData.session) };
       }
-    }
-
-    if (isUnconfirmed) {
-      throw new Error(
-        "Your email is not verified yet. Please complete OTP verification and try again.",
-      );
     }
 
     throw new Error(error.message);
@@ -179,7 +173,7 @@ export async function signUpWithEmail(
   email: string,
   password: string,
   name: string,
-  verificationToken: string,
+  verificationToken?: string,
 ) {
   const response = await fetch("/api/auth/signup", {
     method: "POST",
@@ -209,13 +203,13 @@ export async function signUpWithEmail(
 }
 
 /**
- * Sign up with phone + password. Requires prior OTP verification (verificationToken).
+ * Sign up with phone + password.
  */
 export async function signUpWithPhone(
   phone: string,
   password: string,
   name: string,
-  verificationToken: string,
+  verificationToken?: string,
 ) {
   const response = await fetch("/api/auth/signup", {
     method: "POST",

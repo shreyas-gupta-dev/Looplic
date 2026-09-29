@@ -423,3 +423,69 @@ export async function sendCustomerBookingConfirmation(payload: LeadPayload) {
     context: "booking-confirmation",
   });
 }
+
+export async function sendOtpEmail({ to, code }: { to: string; code: string }) {
+  const from = process.env.RESEND_FROM_EMAIL || DEFAULT_FROM_EMAIL;
+  const subject = `${code} is your Looplic verification code`;
+  const text = [
+    "Looplic Account Verification",
+    "",
+    `Your 6-digit verification code is: ${code}`,
+    "",
+    "This code will expire in 10 minutes.",
+    "If you didn't request this code, you can safely ignore this email.",
+    "",
+    "Best regards,",
+    "Looplic Team",
+  ].join("\n");
+
+  const html = `
+    <div style="margin:0;padding:0;background:#eef6fb;font-family:Arial,Helvetica,sans-serif;color:#0f172a;">
+      <div style="display:none;max-height:0;overflow:hidden;opacity:0;">Your Looplic verification code is ${code}</div>
+      <div style="max-width:540px;margin:0 auto;padding:32px 16px;">
+        <div style="overflow:hidden;border:1px solid #dbe8f1;border-radius:24px;background:#ffffff;box-shadow:0 18px 50px rgba(15,23,42,0.08);">
+          <div style="padding:24px 28px;background:#056EF6;border-bottom:1px solid #0559C4;">
+            <img src="${LOGO_URL}" width="150" alt="Looplic" style="display:block;width:150px;max-width:150px;height:auto;border:0;outline:none;text-decoration:none;" />
+          </div>
+          <div style="padding:32px 28px 24px;">
+            <div style="display:inline-block;margin-bottom:12px;border-radius:999px;background:#dff3ff;color:#0369a1;padding:6px 12px;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">
+              Verification Code
+            </div>
+            <h1 style="margin:0;font-size:24px;line-height:1.3;font-weight:800;color:#0f172a;">
+              Verify your Looplic account
+            </h1>
+            <p style="margin:12px 0 0;font-size:15px;line-height:1.6;color:#475569;">
+              Please use the 6-digit verification code below to complete your sign in:
+            </p>
+            <div style="margin:28px 0;text-align:center;">
+              <div style="display:inline-block;padding:16px 32px;background:#E6FFF7;border:2px solid #8DFFD9;border-radius:18px;font-size:36px;font-weight:800;letter-spacing:10px;color:#008F69;font-family:Consolas, 'Courier New', monospace;">
+                ${escapeHtml(code)}
+              </div>
+            </div>
+            <p style="margin:0;font-size:13px;line-height:1.6;color:#64748b;text-align:center;">
+              This code will expire in <strong>10 minutes</strong>. Never share this code with anyone.
+            </p>
+            <div style="margin-top:28px;padding-top:20px;border-top:1px solid #e8edf3;">
+              <p style="margin:0;font-size:13px;line-height:1.6;color:#64748b;">
+                If you did not request this verification code, you can safely ignore this email.
+              </p>
+            </div>
+          </div>
+          <div style="padding:16px 28px;background:#f8fafc;border-top:1px solid #e8edf3;font-size:12px;color:#94a3b8;">
+            Looplic &bull; Device Repair &amp; Buyback Platform &bull; support@looplic.com
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  return sendResendEmail({
+    to,
+    from,
+    subject,
+    text,
+    html,
+    context: "auth-otp",
+  });
+}
+

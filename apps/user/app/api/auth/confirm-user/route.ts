@@ -37,22 +37,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
-    if (!verificationToken || typeof verificationToken !== "string") {
-      return NextResponse.json({ error: "OTP verification is required" }, { status: 400 });
-    }
-
-    if (!hasServiceRole || !hasVerificationSecret()) {
+    if (!hasServiceRole) {
       return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
     }
 
     const normalizedEmail = normalizeIdentifier(email);
 
-    const check = verifyVerificationToken(verificationToken, normalizedEmail);
-    if (!check.valid) {
-      return NextResponse.json(
-        { error: "OTP verification expired or invalid. Please verify again." },
-        { status: 400 },
-      );
+    if (verificationToken) {
+      const check = verifyVerificationToken(verificationToken, normalizedEmail);
+      if (!check.valid) {
+        return NextResponse.json(
+          { error: "OTP verification expired or invalid. Please verify again." },
+          { status: 400 },
+        );
+      }
     }
 
     const admin = getAdminSupabase();

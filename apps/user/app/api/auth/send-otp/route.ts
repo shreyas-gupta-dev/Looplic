@@ -1,14 +1,16 @@
 import { NextResponse } from "next/server";
 
 import { isPhoneIdentifier, normalizeIdentifier } from "@/src/lib/auth/admin-users";
+import { generateAndSaveEmailOtp } from "@/src/lib/auth/email-otp";
+import { sendOtpEmail } from "@/src/lib/email/resend";
 import { guardRateLimit } from "@/src/lib/rate-limit";
 import { getAdminSupabase, hasServiceRole } from "@/src/lib/supabase/server";
 
 /**
  * POST /api/auth/send-otp
  *
- * Sends a one-time password to an email address or phone number via Supabase.
- * Supabase owns OTP generation, storage and delivery; we only trigger it.
+ * Sends a 6-digit one-time password to an email address (via Resend) or
+ * phone number (via Supabase SMS).
  *
  * Rate limited per IP: each request spends real email/SMS quota against an
  * address the caller does not have to own, so an unmetered endpoint here is both
@@ -37,13 +39,8 @@ export async function POST(request: Request) {
       if (phoneDigits.length < 10 || phoneDigits.length > 15) {
         return NextResponse.json({ error: "Invalid phone number format. Use +91XXXXXXXXXX" }, { status: 400 });
       }
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedIdentifier)) {
-      return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
-    }
 
-    const admin = getAdminSupabase();
-
-    if (isPhone) {
+      const admin = getAdminSupabase();
       // Phone OTP goes out through the SMS provider configured in Supabase.
       const { error } = await admin.auth.signInWithOtp({ phone: normalizedIdentifier });
       if (error) {
@@ -52,23 +49,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, message: "OTP sent to phone" });
     }
 
-    // Existing users get a magiclink-type OTP. Brand-new users do not exist yet,
-    // and Supabase refuses with shouldCreateUser: false, so we retry allowing
-    // creation — that produces a passwordless user which /api/auth/signup then
-    // completes with a password.
-    const { error } = await admin.auth.signInWithOtp({
-      email: normalizedIdentifier,
-      options: { shouldCreateUser: false },
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedIdentifier)) {
+      return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
+    }
+
+    // Generate 6-digit numeric OTP and save to database
+    const otpCode = await generateAndSaveEmailOtp(normalizedIdentifier);
+
+    // Send email via Resend directly from Looplic <support@looplic.com>
+    const emailRes = await sendOtpEmail({
+      to: normalizedIdentifier,
+      code: otpCode,
     });
 
-    if (error) {
-      const { error: retryError } = await admin.auth.signInWithOtp({
-        email: normalizedIdentifier,
-        options: { shouldCreateUser: true },
-      });
-      if (retryError) {
-        return NextResponse.json({ error: retryError.message }, { status: 400 });
-      }
+    if (!emailRes.ok) {
+      console.error("[send-otp] Failed to deliver OTP email via Resend:", emailRes.error);
+      return NextResponse.json(
+        { error: "Failed to send verification email. Please check your email address or try again later." },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({ success: true, message: "OTP sent to email" });
@@ -77,3 +76,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
