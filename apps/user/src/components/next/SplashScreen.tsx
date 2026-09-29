@@ -51,16 +51,16 @@ export function SplashScreen() {
           >
             <defs>
               <linearGradient id="splash-infinity-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#1a2744" />
-                <stop offset="35%" stopColor="#2563eb" />
-                <stop offset="65%" stopColor="#06b6d4" />
-                <stop offset="100%" stopColor="#10b981" />
+                <stop offset="0%" stopColor="#001020" />
+                <stop offset="35%" stopColor="#056EF6" />
+                <stop offset="65%" stopColor="#01B5B5" />
+                <stop offset="100%" stopColor="#00D69A" />
               </linearGradient>
               {/* Animated stroke gradient for the trace effect */}
               <linearGradient id="splash-trace-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#1e3a5f" />
-                <stop offset="50%" stopColor="#3b82f6" />
-                <stop offset="100%" stopColor="#2dd4bf" />
+                <stop offset="0%" stopColor="#012A52" />
+                <stop offset="50%" stopColor="#4593F9" />
+                <stop offset="100%" stopColor="#14E8AC" />
               </linearGradient>
             </defs>
             {/* Infinity path - thick stroke, rounded caps */}

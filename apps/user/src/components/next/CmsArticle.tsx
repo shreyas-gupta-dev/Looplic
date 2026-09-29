@@ -35,7 +35,7 @@ export function CmsArticle({ post }: { post: DbBlogPost }) {
       <CatalogNavbar />
       <main>
         <article>
-          <section className="border-b border-border bg-[radial-gradient(circle_at_top_left,_hsl(211_100%_50%_/_0.12),_transparent_28%),radial-gradient(circle_at_80%_12%,_hsl(165_100%_42%_/_0.12),_transparent_24%),linear-gradient(180deg,_rgba(255,255,255,0)_0%,_rgba(248,250,252,0.96)_100%)]">
+          <section className="border-b border-border bg-[radial-gradient(circle_at_top_left,_hsl(214_96%_49%_/_0.12),_transparent_28%),radial-gradient(circle_at_80%_12%,_hsl(163_100%_42%_/_0.12),_transparent_24%),linear-gradient(180deg,_rgba(255,255,255,0)_0%,_rgba(248,250,252,0.96)_100%)]">
             <div className="container max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
               <Link href="/blog" className="text-sm font-bold text-primary transition-opacity hover:opacity-80">
                 Blog
@@ -64,7 +64,6 @@ export function CmsArticle({ post }: { post: DbBlogPost }) {
           <section className="py-8 sm:py-12">
             <div className="container max-w-3xl px-4 sm:px-6">
               {post.cover_image_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={post.cover_image_url}
                   alt={post.cover_image_alt || post.title}

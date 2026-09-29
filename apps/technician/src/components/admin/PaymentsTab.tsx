@@ -335,7 +335,7 @@ export default function PaymentsTab({ role = "operation" }: PaymentsTabProps) {
                   <div className="mt-2 text-base font-black text-foreground">{bill.customer_name}</div>
                   <div className="text-sm text-muted-foreground">{formatBookingServiceType(bill.service_type)}{bill.description ? ` • ${bill.description}` : ""}</div>
                   {bill.warranty_label || formatWarrantyLabel(bill.warranty_duration_value, bill.warranty_duration_unit) ? (
-                    <div className="mt-2 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-black text-emerald-700">{bill.warranty_label || formatWarrantyLabel(bill.warranty_duration_value, bill.warranty_duration_unit)}</div>
+                    <div className="mt-2 inline-flex rounded-full border border-brand-200 bg-brand-50 px-2.5 py-1 text-[11px] font-black text-brand-700">{bill.warranty_label || formatWarrantyLabel(bill.warranty_duration_value, bill.warranty_duration_unit)}</div>
                   ) : null}
                   <div className="mt-1 text-xs text-muted-foreground">{new Date(bill.created_at).toLocaleString("en-IN")}</div>
                 </div>

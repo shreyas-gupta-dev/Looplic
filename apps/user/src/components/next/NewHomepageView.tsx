@@ -14,22 +14,27 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import dynamic from "next/dynamic";
 
 import { HomepageNavbar } from "@/src/components/next/HomepageNavbar";
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { buildWhatsappLink } from "@/src/lib/whatsapp-links";
 import type { CatalogBrand, SearchModel, SearchSeries } from "@/src/lib/data/catalog";
+import type { FeaturedProduct } from "@/src/lib/data/products";
 
 // Lazy-load heavy interactive components — not needed for first paint
 const HeroBannerCarousel = dynamic(
   () => import("@/src/components/next/HeroBannerCarousel").then((m) => m.HeroBannerCarousel),
-  { ssr: false, loading: () => <div className="h-[180px] sm:h-[200px] md:h-[220px] lg:h-[240px] bg-gradient-to-br from-emerald-600/20 to-teal-400/20 animate-pulse" /> },
+  { ssr: false, loading: () => <div className="h-[180px] sm:h-[200px] md:h-[220px] lg:h-[240px] bg-gradient-to-br from-brand-600/20 to-brandteal-400/20 animate-pulse" /> },
 );
 const DeviceSearchBox = dynamic(
   () => import("@/src/components/next/DeviceSearchBox").then((m) => m.DeviceSearchBox),
   { ssr: false, loading: () => <div className="h-12 rounded-xl bg-muted animate-pulse" /> },
+);
+const QuickBuybackCalculator = dynamic(
+  () => import("@/src/components/next/QuickBuybackCalculator").then((m) => m.QuickBuybackCalculator),
+  { ssr: false, loading: () => <div className="h-44 rounded-2xl bg-slate-900/40 animate-pulse" /> },
 );
 
 // ─── Data (imported from separate module for better tree-shaking) ────────────
@@ -43,6 +48,15 @@ import {
   trustStats,
 } from "./homepage-data";
 import type { HowItWorksIconKey } from "./homepage-data";
+
+// Image slots live in the registry, not in the data module — see
+// src/lib/images/registry.ts.
+import {
+  getSellCategoryImage,
+  getServiceImage,
+  productFallbackImage,
+  renderableImageUrl,
+} from "@/src/lib/images/registry";
 
 // Icon map for howItWorks steps (keeps lucide dependency in the component only)
 const howItWorksIconMap: Record<HowItWorksIconKey, typeof Search> = {
@@ -58,15 +72,33 @@ export function NewHomepageView({
   searchBrands,
   searchSeries,
   searchModels,
+  featuredProducts = [],
 }: {
   brands: CatalogBrand[];
   searchBrands: CatalogBrand[];
   searchSeries: SearchSeries[];
   searchModels: SearchModel[];
+  featuredProducts?: FeaturedProduct[];
 }) {
   const sellScrollRef = useRef<HTMLDivElement>(null);
   const buyScrollRef = useRef<HTMLDivElement>(null);
   const testimonialScrollRef = useRef<HTMLDivElement>(null);
+  const [activeBrandTab, setActiveBrandTab] = useState<string>("all");
+
+  const brandTabs = [
+    { id: "all", label: "All Phones" },
+    { id: "apple", label: "Apple" },
+    { id: "samsung", label: "Samsung" },
+    { id: "oneplus", label: "OnePlus" },
+    { id: "google", label: "Google Pixel" },
+    { id: "xiaomi", label: "Xiaomi" },
+  ];
+
+  const displayedRefurbished = useMemo(() => {
+    if (!featuredProducts || featuredProducts.length === 0) return [];
+    if (activeBrandTab === "all") return featuredProducts;
+    return featuredProducts.filter((p) => p.brand.toLowerCase().includes(activeBrandTab));
+  }, [featuredProducts, activeBrandTab]);
 
   const scrollContainer = (ref: React.RefObject<HTMLDivElement | null>, direction: "left" | "right") => {
     if (ref.current) {
@@ -114,6 +146,13 @@ export function NewHomepageView({
         </div>
       </section>
 
+      {/* ─── Instant Buyback Price Calculator (Cashify-style) ────────── */}
+      <section className="px-4 py-3 sm:py-5">
+        <div className="container mx-auto max-w-5xl">
+          <QuickBuybackCalculator brands={brands} models={searchModels} />
+        </div>
+      </section>
+
       {/* ─── Our Services Grid (Icon-based, always renders) ────────── */}
       <section className="py-10 md:py-14">
         <div className="container mx-auto max-w-6xl px-4">
@@ -122,27 +161,32 @@ export function NewHomepageView({
               Our Services
             </h2>
             <div className="grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6">
-              {ourServices.map((svc) => (
+              {ourServices.map((svc) => {
+                const image = getServiceImage(svc.id);
+                return (
                   <div key={svc.id}>
                     <Link
                       href={svc.href}
-                      className="group flex flex-col items-center gap-2 text-center"
+                      className="group flex flex-col items-center gap-2.5 text-center"
                     >
-                      <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-[#E8F8F0] transition-transform group-hover:scale-105">
-                        <Image
-                          src={svc.image}
-                          alt={svc.label}
-                          fill
-                          className="object-contain p-2"
-                          sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, 16vw"
-                        />
+                      <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-gray-100 bg-white p-3 shadow-sm transition-all duration-200 group-hover:-translate-y-1 group-hover:border-primary/40 group-hover:shadow-md">
+                        {image ? (
+                          <Image
+                            src={image.src}
+                            alt={image.alt}
+                            fill
+                            className="object-contain p-2 transition-transform duration-200 group-hover:scale-110"
+                            sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, 16vw"
+                          />
+                        ) : null}
                       </div>
-                      <span className="text-xs font-medium text-gray-700 sm:text-sm">
+                      <span className="text-xs font-semibold text-gray-800 transition-colors group-hover:text-primary sm:text-sm">
                         {svc.label}
                       </span>
                     </Link>
                   </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
@@ -152,9 +196,9 @@ export function NewHomepageView({
       <section className="py-10 md:py-14">
         <div className="container mx-auto max-w-6xl px-4">
           <div>
-            <div className="mb-4 flex items-center justify-between">
+            <div className="mb-6 flex items-center justify-between">
               <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">Sell Your Old Device Now</h2>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 md:hidden">
                 <button
                   onClick={() => scrollContainer(sellScrollRef, "left")}
                   className="flex size-8 items-center justify-center rounded-full border border-gray-300 text-gray-600 transition-colors hover:bg-gray-100"
@@ -174,92 +218,196 @@ export function NewHomepageView({
 
             <div
               ref={sellScrollRef}
-              className="flex gap-5 overflow-x-auto pb-4 scrollbar-hide"
+              className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide md:grid md:grid-cols-7 md:gap-4 md:overflow-visible md:pb-0"
               style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
-              {sellCategories.map((cat) => (
+              {sellCategories.map((cat) => {
+                const image = getSellCategoryImage(cat.id);
+                return (
                   <Link
                     key={cat.id}
                     href={cat.href}
-                    className="group flex w-[140px] shrink-0 flex-col items-center gap-2 sm:w-[160px]"
+                    className="group flex w-[130px] shrink-0 flex-col items-center gap-2.5 sm:w-[150px] md:w-full"
                   >
-                    <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-gradient-to-b from-[#E8F8F0] to-[#D1F2E4] transition-transform group-hover:scale-105">
-                      <Image
-                        src={cat.image}
-                        alt={cat.label}
-                        fill
-                        className="object-contain p-3"
-                        sizes="160px"
-                      />
+                    <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-gray-100 bg-white p-3 shadow-sm transition-all duration-200 group-hover:-translate-y-1 group-hover:border-primary/40 group-hover:shadow-md">
+                      {image ? (
+                        <Image
+                          src={image.src}
+                          alt={image.alt}
+                          fill
+                          className="object-contain p-2 transition-transform duration-200 group-hover:scale-110"
+                          sizes="(max-width: 768px) 150px, 14vw"
+                        />
+                      ) : null}
                     </div>
-                    <span className="text-center text-xs font-semibold text-gray-800 sm:text-sm">
+                    <span className="text-center text-xs font-semibold text-gray-800 transition-colors group-hover:text-primary sm:text-sm">
                       {cat.label}
                     </span>
                   </Link>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
       </section>
 
 
-      {/* ─── Buy Refurbished Devices (Brand-colored cards) ────────── */}
+      {/* ─── Buy Refurbished Devices (Interactive Brand Carousel) ── */}
       <section className="bg-gray-50 py-10 md:py-14">
         <div className="container mx-auto max-w-6xl px-4">
           <div>
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">Buy Refurbished Devices</h2>
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">Buy Refurbished Devices</h2>
+                <p className="mt-1 text-sm text-gray-500">Certified pre-owned phones with 32-point inspection & 6-month warranty</p>
+              </div>
               <Link href="/buy" className="flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
-                View All <ArrowRight className="size-4" />
+                View All {featuredProducts.length > 0 ? `(${featuredProducts.length}+)` : ""} <ArrowRight className="size-4" />
               </Link>
             </div>
 
+            {/* Brand Filter Tabs */}
+            <div className="mb-6 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+              {brandTabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveBrandTab(tab.id)}
+                  className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
+                    activeBrandTab === tab.id
+                      ? "bg-brand-600 text-white shadow-sm"
+                      : "bg-white text-gray-600 border border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
             <div className="relative">
+              {/* Scroll arrow Left */}
+              <button
+                onClick={() => scrollContainer(buyScrollRef, "left")}
+                className="absolute -left-3 top-1/2 z-10 hidden size-10 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white shadow-md transition-all hover:shadow-lg sm:flex"
+                aria-label="Scroll left"
+              >
+                <ArrowRight className="size-5 rotate-180 text-gray-600" />
+              </button>
+
               <div
                 ref={buyScrollRef}
                 className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide"
                 style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
               >
-                {refurbishedProducts.map((product) => {
-                  return (
-                    <div key={product.name} className="w-[200px] shrink-0 sm:w-[220px]">
-                      <Link
-                        href={product.href}
-                        className="group flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white transition-all hover:-translate-y-1 hover:shadow-lg"
-                      >
-                        {/* Looplic Assured badge */}
-                        <div className="relative px-3 pt-3">
-                          <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
-                            <Shield className="size-3" /> LOOPLIC ASSURED
-                          </span>
-                        </div>
-                        {/* Product image */}
-                        <div className="relative mx-auto h-40 w-full p-4">
-                          <Image
-                            src={product.image}
-                            alt={product.name}
-                            fill
-                            className="object-contain transition-transform group-hover:scale-110"
-                            sizes="240px"
-                          />
-                        </div>
-                        {/* Price & name */}
-                        <div className="border-t border-gray-100 px-4 py-3">
-                          <p className="text-xs font-bold text-green-600">{product.discount}</p>
-                          <h3 className="mt-1 line-clamp-2 text-sm font-semibold text-gray-900">
-                            {product.name} - Refurbished
-                          </h3>
-                        </div>
-                      </Link>
-                    </div>
-                  );
-                })}
+                {displayedRefurbished.length > 0 ? (
+                  displayedRefurbished.map((product) => {
+                    const discount = product.originalPrice > product.price
+                      ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+                      : 0;
+
+                    return (
+                      <div key={product.id} className="w-[220px] shrink-0 sm:w-[240px]">
+                        <Link
+                          href={`/buy/${product.slug}`}
+                          className="group flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white transition-all hover:-translate-y-1 hover:shadow-lg"
+                        >
+                          {/* Badges */}
+                          <div className="flex items-center justify-between p-3 pb-0">
+                            <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                              <Shield className="size-3 text-emerald-600" /> ASSURED
+                            </span>
+                            {discount > 0 && (
+                              <span className="rounded bg-brand-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                                {discount}% OFF
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Product Image */}
+                          <div className="relative mx-auto flex h-40 w-full items-center justify-center p-3">
+                            {product.coverImageUrl ? (
+                              <Image
+                                src={product.coverImageUrl}
+                                alt={product.name}
+                                width={140}
+                                height={140}
+                                unoptimized={true}
+                                className="size-32 object-contain transition-transform duration-200 group-hover:scale-105"
+                              />
+                            ) : (
+                              <div className="size-24 rounded-lg bg-gray-100 flex items-center justify-center text-xs text-gray-400">
+                                Phone
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Info */}
+                          <div className="mt-auto border-t border-gray-100 p-3.5">
+                            <h3 className="line-clamp-2 text-xs font-semibold text-gray-900 group-hover:text-brand-600">
+                              {product.name}
+                            </h3>
+                            <p className="mt-0.5 text-[11px] text-gray-500">
+                              {[product.storage, product.color].filter(Boolean).join(" • ")}
+                            </p>
+                            <div className="mt-2 flex items-baseline gap-2">
+                              <span className="text-base font-bold text-gray-900">
+                                ₹{product.price.toLocaleString("en-IN")}
+                              </span>
+                              {product.originalPrice > product.price && (
+                                <span className="text-xs text-gray-400 line-through">
+                                  ₹{product.originalPrice.toLocaleString("en-IN")}
+                                </span>
+                              )}
+                            </div>
+                            <div className="mt-2 flex items-center justify-between text-[10px] text-gray-500">
+                              <span className="capitalize font-medium text-emerald-600">{product.condition}</span>
+                              <span>{product.warrantyMonths}mo Warranty</span>
+                            </div>
+                          </div>
+                        </Link>
+                      </div>
+                    );
+                  })
+                ) : (
+                  refurbishedProducts.map((product) => {
+                    const image = productFallbackImage[product.deviceType];
+                    return (
+                      <div key={product.name} className="w-[200px] shrink-0 sm:w-[220px]">
+                        <Link
+                          href={product.href}
+                          className="group flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white transition-all hover:-translate-y-1 hover:shadow-lg"
+                        >
+                          <div className="relative px-3 pt-3">
+                            <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
+                              <Shield className="size-3" /> LOOPLIC ASSURED
+                            </span>
+                          </div>
+                          <div className="relative mx-auto h-40 w-full p-4">
+                            <Image
+                              src={image.src}
+                              alt={product.name}
+                              fill
+                              unoptimized={image.unoptimized}
+                              className="object-contain transition-transform group-hover:scale-110"
+                              sizes="240px"
+                            />
+                          </div>
+                          <div className="border-t border-gray-100 px-4 py-3">
+                            <p className="text-xs font-bold text-brand-600">{product.discount}</p>
+                            <h3 className="mt-1 line-clamp-2 text-sm font-semibold text-gray-900">
+                              {product.name} - Refurbished
+                            </h3>
+                          </div>
+                        </Link>
+                      </div>
+                    );
+                  })
+                )}
               </div>
 
-              {/* Scroll arrow */}
+              {/* Scroll arrow Right */}
               <button
                 onClick={() => scrollContainer(buyScrollRef, "right")}
-                className="absolute right-0 top-1/2 z-10 hidden size-10 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white shadow-md transition-all hover:shadow-lg sm:flex"
+                className="absolute -right-3 top-1/2 z-10 hidden size-10 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white shadow-md transition-all hover:shadow-lg sm:flex"
                 aria-label="Scroll right"
               >
                 <ArrowRight className="size-5 text-gray-600" />
@@ -279,16 +427,20 @@ export function NewHomepageView({
             </div>
 
             <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
-              {brands.slice(0, 12).map((brand) => (
+              {brands.slice(0, 12).map((brand) => {
+                // Only render logos from hosts we allow; the rest fall back to the
+                // initial rather than throwing on an unconfigured next/image host.
+                const logo = renderableImageUrl(brand.image_url);
+                return (
                 <div key={brand.id}>
                   <Link
                     href={`/sell/phone/${brand.slug}`}
                     className="group flex flex-col items-center justify-center gap-2.5 rounded-xl border border-gray-200 bg-white px-4 py-5 transition-all hover:-translate-y-0.5 hover:shadow-md hover:border-primary/40"
                   >
                     <div className="relative flex size-12 items-center justify-center overflow-hidden">
-                      {brand.image_url ? (
+                      {logo ? (
                         <Image
-                          src={brand.image_url}
+                          src={logo}
                           alt={brand.name}
                           width={48}
                           height={48}
@@ -306,7 +458,8 @@ export function NewHomepageView({
                     </span>
                   </Link>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
@@ -347,7 +500,7 @@ export function NewHomepageView({
       </section>
 
       {/* ─── Trust Stats Bar ──────────────────────────────────────── */}
-      <section className="border-y border-gray-100 bg-green-50/50 py-8">
+      <section className="border-y border-gray-100 bg-brand-50/50 py-8">
         <div className="container mx-auto max-w-5xl px-4">
           <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
             {trustStats.map((stat) => (
@@ -375,7 +528,9 @@ export function NewHomepageView({
             </div>
 
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-              {popularDevices.map((device) => (
+              {popularDevices.map((device) => {
+                const image = productFallbackImage[device.deviceType];
+                return (
                   <div key={device.name}>
                     <Link
                       href={device.href}
@@ -383,9 +538,10 @@ export function NewHomepageView({
                     >
                       <div className="relative mb-3 h-24 w-full">
                         <Image
-                          src={device.image}
+                          src={image.src}
                           alt={device.name}
                           fill
+                          unoptimized={image.unoptimized}
                           className="object-contain transition-transform group-hover:scale-110"
                           sizes="(max-width: 640px) 50vw, 25vw"
                         />
@@ -395,7 +551,8 @@ export function NewHomepageView({
                       <span className="mt-0.5 text-lg font-bold text-primary">{device.price}</span>
                     </Link>
                   </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="mt-6 text-center sm:hidden">
@@ -507,8 +664,8 @@ export function NewHomepageView({
           </h2>
           <div className="grid grid-cols-2 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             <div className="rounded-2xl border border-gray-200 bg-white p-6 text-center">
-              <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-xl bg-green-50">
-                <IndianRupee className="size-7 text-green-600" />
+              <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-xl bg-brand-50">
+                <IndianRupee className="size-7 text-brand-600" />
               </div>
               <h3 className="font-bold text-gray-900">Best Prices</h3>
               <p className="mt-2 text-sm text-gray-500">AI-powered pricing ensures you get the maximum value for your device</p>
@@ -542,8 +699,8 @@ export function NewHomepageView({
               <p className="mt-2 text-sm text-gray-500">100% certified data wipe. Your personal data is completely safe</p>
             </div>
             <div className="rounded-2xl border border-gray-200 bg-white p-6 text-center">
-              <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-xl bg-teal-50">
-                <FileText className="size-7 text-teal-600" />
+              <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-xl bg-brandteal-50">
+                <FileText className="size-7 text-brandteal-600" />
               </div>
               <h3 className="font-bold text-gray-900">Valid Purchase Invoice</h3>
               <p className="mt-2 text-sm text-gray-500">Get a genuine bill of sale for every transaction</p>

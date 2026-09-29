@@ -14,7 +14,7 @@ export function RepairSellToggle({ active }: { active: "repair" | "sell" }) {
         aria-current={active === "repair" ? "page" : undefined}
         className={`flex flex-1 items-center justify-center gap-2.5 rounded-full px-3 py-2 transition-all ${
           active === "repair"
-            ? "bg-gradient-to-r from-[#0096FF] to-[#00D28E] text-white shadow-sm"
+            ? "bg-gradient-to-r from-[#056EF6] to-[#00D69A] text-white shadow-sm"
             : "text-gray-800 hover:bg-gray-50"
         }`}
       >

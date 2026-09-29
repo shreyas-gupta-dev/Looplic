@@ -46,7 +46,7 @@ const inputClass =
   "w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary";
 const selectClass = inputClass + " appearance-none";
 const primaryBtn =
-  "inline-flex items-center gap-1.5 rounded-xl bg-[#48C479] px-4 py-2 text-xs font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50";
+  "inline-flex items-center gap-1.5 rounded-xl bg-[#056EF6] px-4 py-2 text-xs font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50";
 const ghostBtn =
   "inline-flex items-center gap-1.5 rounded-xl border border-border px-4 py-2 text-xs font-bold text-foreground hover:bg-secondary";
 const dangerBtn =
@@ -375,9 +375,9 @@ export default function ProductsTab() {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
-          <Package className="size-5 text-[#48C479]" />
+          <Package className="size-5 text-[#056EF6]" />
           <h2 className="text-lg font-bold text-foreground">Products</h2>
-          <span className="rounded-full bg-[#48C479]/10 px-2 py-0.5 text-xs font-bold text-[#48C479]">{filtered.length}</span>
+          <span className="rounded-full bg-[#056EF6]/10 px-2 py-0.5 text-xs font-bold text-[#056EF6]">{filtered.length}</span>
         </div>
         <button onClick={() => { setEditingProduct(null); setFormOpen(true); }} className={primaryBtn}>
           <Plus className="size-3.5" /> Add Product
@@ -414,7 +414,7 @@ export default function ProductsTab() {
       {/* Table */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="size-6 animate-spin text-[#48C479]" />
+          <Loader2 className="size-6 animate-spin text-[#056EF6]" />
         </div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -461,12 +461,12 @@ export default function ProductsTab() {
                   </td>
                   <td className="px-3 py-2 font-semibold text-foreground">₹{product.price.toLocaleString("en-IN")}</td>
                   <td className="px-3 py-2">
-                    <span className={product.stock > 0 ? "text-[#48C479] font-semibold" : "text-red-500 font-semibold"}>
+                    <span className={product.stock > 0 ? "text-[#056EF6] font-semibold" : "text-red-500 font-semibold"}>
                       {product.stock}
                     </span>
                   </td>
                   <td className="px-3 py-2">
-                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${product.active ? "bg-[#48C479]/10 text-[#48C479]" : "bg-red-500/10 text-red-500"}`}>
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${product.active ? "bg-[#056EF6]/10 text-[#056EF6]" : "bg-red-500/10 text-red-500"}`}>
                       {product.active ? "Active" : "Inactive"}
                     </span>
                   </td>

@@ -123,7 +123,7 @@ export function FaqPageView() {
               placeholder="Search for a question..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-lg border border-gray-200 bg-white py-3 pl-11 pr-4 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus:border-green-500 focus:ring-1 focus:ring-green-500"
+              className="w-full rounded-lg border border-gray-200 bg-white py-3 pl-11 pr-4 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
             />
           </div>
         </div>
@@ -140,7 +140,7 @@ export function FaqPageView() {
                 onClick={() => setActiveTab(cat.id)}
                 className={`px-4 py-3 text-sm font-medium transition-colors ${
                   activeTab === cat.id
-                    ? "border-b-2 border-green-600 text-green-600"
+                    ? "border-b-2 border-brand-600 text-brand-600"
                     : "text-gray-500 hover:text-gray-700"
                 }`}
               >
@@ -165,7 +165,7 @@ export function FaqPageView() {
               <p className="mt-1 text-xs text-gray-500">Try a different search term.</p>
               <button
                 onClick={() => setSearchQuery("")}
-                className="mt-4 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+                className="mt-4 rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
               >
                 Clear Search
               </button>
@@ -195,7 +195,7 @@ export function FaqPageView() {
               href="https://wa.me/919876543210"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-md bg-green-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-green-700"
+              className="inline-flex items-center gap-2 rounded-md bg-brand-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-brand-700"
             >
               Chat on WhatsApp
             </a>

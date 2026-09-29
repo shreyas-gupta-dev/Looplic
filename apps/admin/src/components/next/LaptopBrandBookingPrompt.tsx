@@ -246,7 +246,7 @@ export function LaptopBrandBookingPrompt({ brandName = "", initialOpen = false, 
 
         {bookedCode ? (
           <div className="p-5 text-center">
-            <CheckCircle2 className="mx-auto size-12 text-emerald-600" />
+            <CheckCircle2 className="mx-auto size-12 text-brandteal-500" />
             <h3 className="mt-3 text-xl font-black text-foreground">Booking received</h3>
             <p className="mt-2 text-sm font-semibold text-muted-foreground">
               {bookedCode ? `Order ${bookedCode} is now in admin orders.` : "Your order is now in admin orders."}
@@ -374,7 +374,7 @@ export function LaptopBrandBookingPrompt({ brandName = "", initialOpen = false, 
                   <span className="text-xs font-black uppercase tracking-[0.14em] text-muted-foreground">Preferred Time Slot</span>
                   <div className="space-y-2">
                     {TIME_SLOTS.map((slot) => (
-                      <button key={slot} type="button" onClick={() => setTimeSlot(slot)} className={`flex min-h-11 w-full items-center gap-2 rounded-xl border px-4 text-left text-sm font-black transition-all sm:min-h-14 sm:gap-3 sm:rounded-2xl sm:px-5 sm:text-base ${timeSlot === slot ? "border-[#0096FF] bg-blue-50 text-foreground shadow-sm" : "border-border bg-secondary/40 text-muted-foreground hover:border-[#0096FF]/40"}`}>
+                      <button key={slot} type="button" onClick={() => setTimeSlot(slot)} className={`flex min-h-11 w-full items-center gap-2 rounded-xl border px-4 text-left text-sm font-black transition-all sm:min-h-14 sm:gap-3 sm:rounded-2xl sm:px-5 sm:text-base ${timeSlot === slot ? "border-[#056EF6] bg-blue-50 text-foreground shadow-sm" : "border-border bg-secondary/40 text-muted-foreground hover:border-[#056EF6]/40"}`}>
                         <Clock3 className="size-4 flex-shrink-0 sm:size-5" />
                         {slot}
                       </button>
@@ -386,7 +386,7 @@ export function LaptopBrandBookingPrompt({ brandName = "", initialOpen = false, 
                   <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-[11px] font-bold leading-4 text-amber-900 sm:rounded-2xl sm:px-4 sm:py-3 sm:text-xs sm:leading-5">
                     Visiting charge: {formatVisitingCharge("laptop_repair")}. This visiting charge is waived once you claim the service from Looplic. If you do not claim the service, you have to pay the visiting charge.
                   </div>
-                  <button type="button" onClick={submitBooking} disabled={submitting} className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#0096FF] to-[#00D28E] px-4 text-sm font-black text-white disabled:opacity-60 sm:h-14 sm:rounded-2xl">
+                  <button type="button" onClick={submitBooking} disabled={submitting} className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#056EF6] to-[#00D69A] px-4 text-sm font-black text-white disabled:opacity-60 sm:h-14 sm:rounded-2xl">
                     {submitting ? <Loader2 className="size-4 animate-spin" /> : <Wrench className="size-4" />}
                     {submitting ? "Booking..." : "Confirm Booking"}
                   </button>

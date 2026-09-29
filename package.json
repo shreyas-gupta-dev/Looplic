@@ -18,6 +18,9 @@
     "build:admin": "npm run build -w @looplic/admin",
     "build:technician": "npm run build -w @looplic/technician",
     "build:operator": "npm run build -w @looplic/operator",
+    "typecheck": "npm run typecheck -w @looplic/user && npm run typecheck -w @looplic/admin && npm run typecheck -w @looplic/technician && npm run typecheck -w @looplic/operator",
+    "audit": "npm run audit -w @looplic/user",
+    "test:e2e": "npm run test:e2e -w @looplic/user",
     "db:push": "drizzle-kit push --config=packages/db/drizzle.config.ts"
   },
   "devDependencies": {

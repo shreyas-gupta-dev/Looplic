@@ -33,7 +33,7 @@ export default async function CctvBrandSelectionPage({ searchParams }: PageProps
       <main className="flex-1">
         <section className="border-b border-slate-200 bg-[#EEF4F8] px-4 py-10 sm:py-14">
           <div className="container mx-auto max-w-3xl">
-            <div className="mb-3 inline-flex rounded-full bg-white px-3 py-1 text-xs font-extrabold uppercase tracking-[0.18em] text-[#0096FF] shadow-sm">
+            <div className="mb-3 inline-flex rounded-full bg-white px-3 py-1 text-xs font-extrabold uppercase tracking-[0.18em] text-[#056EF6] shadow-sm">
               CCTV Booking
             </div>
             <h1 className="text-3xl font-semibold leading-tight tracking-tight text-[#111827] sm:text-5xl">
@@ -57,8 +57,8 @@ export default async function CctvBrandSelectionPage({ searchParams }: PageProps
                   className="group flex items-center justify-between rounded-[20px] border border-gray-200 bg-white p-4 shadow-[0_18px_50px_rgba(15,23,42,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_24px_70px_rgba(15,23,42,0.12)] sm:rounded-3xl sm:p-5"
                 >
                   <span className="flex items-center gap-3">
-                    <span className="flex size-11 items-center justify-center rounded-2xl bg-emerald-50">
-                      <Wrench className="size-5 text-emerald-500" />
+                    <span className="flex size-11 items-center justify-center rounded-2xl bg-brand-50">
+                      <Wrench className="size-5 text-brand-500" />
                     </span>
                     <span className="text-sm font-extrabold text-gray-900">{service.label}</span>
                   </span>
@@ -84,9 +84,9 @@ export default async function CctvBrandSelectionPage({ searchParams }: PageProps
                   <div className="relative z-10">
                     <div className="mb-5 flex items-start justify-between">
                       <div className="flex size-11 items-center justify-center rounded-2xl bg-sky-50">
-                        <Camera className="size-5 text-[#0096FF]" />
+                        <Camera className="size-5 text-[#056EF6]" />
                       </div>
-                      <Check className="size-4 text-gray-300 transition-colors group-hover:text-[#00A878]" />
+                      <Check className="size-4 text-gray-300 transition-colors group-hover:text-[#00B383]" />
                     </div>
                     <h2 className="text-sm font-extrabold leading-tight text-gray-900 sm:text-base">{brand}</h2>
                     <p className="mt-2 text-[11px] leading-5 text-gray-500 sm:text-xs">Continue to booking</p>

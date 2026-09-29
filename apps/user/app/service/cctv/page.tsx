@@ -63,7 +63,7 @@ export default function CctvServicePage() {
         afterContent={
           <section className="container mx-auto max-w-5xl px-4 pb-12">
             <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
-              <div className="text-xs font-bold uppercase tracking-[0.18em] text-[#0096FF]">Bangalore Areas</div>
+              <div className="text-xs font-bold uppercase tracking-[0.18em] text-[#056EF6]">Bangalore Areas</div>
               <h2 className="mt-2 text-2xl font-semibold text-[#111827]">CCTV installation areas in Bangalore</h2>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
                 Choose your Bangalore area to view a local CCTV installation page with area-specific planning details and a direct booking CTA.
@@ -73,7 +73,7 @@ export default function CctvServicePage() {
                   <Link
                     key={area.href}
                     href={area.href}
-                    className="rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 transition-colors hover:border-[#0096FF]/40 hover:text-[#0096FF]"
+                    className="rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 transition-colors hover:border-[#056EF6]/40 hover:text-[#056EF6]"
                   >
                     {area.label}
                   </Link>

@@ -28,10 +28,10 @@ export function StoreLocatorView() {
       <HomepageNavbar />
 
       {/* Hero Header */}
-      <section className="bg-gradient-to-br from-green-50 to-emerald-50 px-4 py-12 sm:py-16">
+      <section className="bg-gradient-to-br from-brand-50 to-brandteal-50 px-4 py-12 sm:py-16">
         <div className="mx-auto max-w-4xl text-center">
-          <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-2xl bg-green-100">
-            <MapPin className="size-8 text-green-600" />
+          <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-2xl bg-brand-100">
+            <MapPin className="size-8 text-brand-600" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">Visit Our Store</h1>
           <p className="mt-3 text-base text-gray-600">
@@ -49,8 +49,8 @@ export function StoreLocatorView() {
             {/* Store Name Card */}
             <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
               <div className="flex items-center gap-3">
-                <div className="flex size-12 items-center justify-center rounded-xl bg-green-100">
-                  <MapPin className="size-6 text-green-600" />
+                <div className="flex size-12 items-center justify-center rounded-xl bg-brand-100">
+                  <MapPin className="size-6 text-brand-600" />
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-gray-900">Looplic Store</h2>
@@ -73,7 +73,7 @@ export function StoreLocatorView() {
                 <ul className="mt-2 space-y-1">
                   {STORE.landmarks.map((landmark) => (
                     <li key={landmark} className="flex items-center gap-2 text-sm text-gray-600">
-                      <span className="size-1.5 rounded-full bg-green-500" />
+                      <span className="size-1.5 rounded-full bg-brand-500" />
                       {landmark}
                     </li>
                   ))}
@@ -90,9 +90,9 @@ export function StoreLocatorView() {
                 <h3 className="text-sm font-bold text-gray-900">Store Timings</h3>
               </div>
               <div className="mt-4 space-y-2">
-                <div className="flex items-center justify-between rounded-lg bg-green-50 px-4 py-2.5">
+                <div className="flex items-center justify-between rounded-lg bg-brand-50 px-4 py-2.5">
                   <span className="text-sm font-medium text-gray-700">{STORE.hours.weekdays}</span>
-                  <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-bold text-green-700">OPEN</span>
+                  <span className="rounded-full bg-brand-100 px-2 py-0.5 text-[10px] font-bold text-brand-700">OPEN</span>
                 </div>
                 <div className="flex items-center justify-between rounded-lg bg-red-50 px-4 py-2.5">
                   <span className="text-sm font-medium text-gray-700">{STORE.hours.sunday}</span>
@@ -112,7 +112,7 @@ export function StoreLocatorView() {
               <div className="mt-4">
                 <a
                   href={`tel:${STORE.phone.replace(/\s/g, "")}`}
-                  className="inline-flex items-center gap-3 rounded-xl bg-green-600 px-6 py-3.5 text-sm font-bold text-white transition-colors hover:bg-green-700"
+                  className="inline-flex items-center gap-3 rounded-xl bg-brand-600 px-6 py-3.5 text-sm font-bold text-white transition-colors hover:bg-brand-700"
                 >
                   <Phone className="size-4" />
                   Call Store: {STORE.phone}
@@ -128,7 +128,7 @@ export function StoreLocatorView() {
                 {STORE.services.map((service) => (
                   <span
                     key={service}
-                    className="rounded-lg border border-green-200 bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-700"
+                    className="rounded-lg border border-brand-200 bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700"
                   >
                     {service}
                   </span>
@@ -149,7 +149,7 @@ export function StoreLocatorView() {
               </a>
               <a
                 href={`tel:${STORE.phone.replace(/\s/g, "")}`}
-                className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border-2 border-green-600 px-5 py-3.5 text-sm font-bold text-green-600 transition-colors hover:bg-green-50"
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border-2 border-brand-600 px-5 py-3.5 text-sm font-bold text-brand-600 transition-colors hover:bg-brand-50"
               >
                 <Phone className="size-4" />
                 Call Now

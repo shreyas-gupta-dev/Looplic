@@ -195,14 +195,14 @@ export function CartPageView() {
                     <span className="font-semibold text-gray-900">{formatInr(subtotal)}</span>
                   </div>
                   {totalSavings > 0 && (
-                    <div className="flex justify-between text-green-600">
+                    <div className="flex justify-between text-brand-600">
                       <span>Total Savings</span>
                       <span className="font-semibold">-{formatInr(totalSavings)}</span>
                     </div>
                   )}
                   <div className="flex justify-between">
                     <span className="text-gray-500">Delivery</span>
-                    <span className="font-semibold text-green-600">FREE</span>
+                    <span className="font-semibold text-brandteal-600">FREE</span>
                   </div>
                   <div className="border-t border-gray-100 pt-3">
                     <div className="flex justify-between">
@@ -221,7 +221,7 @@ export function CartPageView() {
 
                 <div className="mt-4 space-y-2">
                   <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <Shield className="size-4 text-green-600" /> 6-month warranty on all devices
+                    <Shield className="size-4 text-brand-600" /> 6-month warranty on all devices
                   </div>
                   <div className="flex items-center gap-2 text-xs text-gray-500">
                     <Truck className="size-4 text-blue-600" /> Free delivery within 2-4 days

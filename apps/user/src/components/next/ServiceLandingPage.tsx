@@ -1,18 +1,24 @@
 "use client";
 
-import { ChevronDown, ChevronRight, Laptop, Smartphone, Shield, Clock, Wrench, Monitor, Battery, Zap, Cpu, Volume2, Camera } from "lucide-react";
+import { ChevronDown, ChevronRight, Laptop, Smartphone, Shield, Clock, Wrench } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { BrandLogo } from "@/src/components/next/BrandLogo";
 import { DeviceSearchBox } from "@/src/components/next/DeviceSearchBox";
-import type { CatalogBrand, SearchModel, SearchSeries } from "@/src/lib/data/catalog";
+import type { CatalogBrand, RepairCategory, SearchModel, SearchSeries } from "@/src/lib/data/catalog";
+import { repairCategoryHint, repairCategoryIcon, withRepairSelection } from "@/src/lib/repair-selection";
 
 type ServiceLandingPageProps = {
   serviceType: "mobile-repair" | "laptop-repair";
   brands: CatalogBrand[];
   searchSeries: SearchSeries[];
   searchModels: SearchModel[];
+  /**
+   * Real repair categories for this service type. Drives the "What needs fixing?"
+   * tiles, so they always match what the booking flow can actually offer.
+   */
+  repairCategories?: RepairCategory[];
   eyebrow?: string;
   heroTitle?: string;
   heroDescription?: string;
@@ -38,14 +44,8 @@ const serviceConfig = {
   },
 } as const;
 
-const repairTypes = [
-  { icon: Monitor, label: "Screen Repair", description: "Cracked or broken display" },
-  { icon: Battery, label: "Battery Replacement", description: "Weak or dead battery" },
-  { icon: Zap, label: "Charging Port", description: "Loose or faulty port" },
-  { icon: Cpu, label: "Motherboard", description: "Complex board-level repair" },
-  { icon: Volume2, label: "Speaker/Mic", description: "Audio issues fixed" },
-  { icon: Camera, label: "Camera Repair", description: "Front or rear camera" },
-];
+// How many repair tiles to show before "View all repairs".
+const VISIBLE_REPAIR_TILES = 6;
 
 const howItWorksSteps = [
   { step: "1", title: "Select Your Device", description: "Choose your brand & model from our catalog" },
@@ -65,6 +65,7 @@ export function ServiceLandingPage({
   brands,
   searchSeries,
   searchModels,
+  repairCategories = [],
   eyebrow,
   heroTitle,
   heroDescription,
@@ -72,6 +73,7 @@ export function ServiceLandingPage({
 }: ServiceLandingPageProps) {
   const config = serviceConfig[serviceType];
   const [showAll, setShowAll] = useState(false);
+  const [showAllRepairs, setShowAllRepairs] = useState(false);
   const [visibleCount, setVisibleCount] = useState(15);
 
   useEffect(() => {
@@ -97,13 +99,16 @@ export function ServiceLandingPage({
   const hasMore = moreBrandsData.length > visibleCount;
   const displayedBrands = showAll ? moreBrandsData : moreBrandsData.slice(0, hasMore ? visibleCount - 1 : visibleCount);
 
+  const visibleRepairs = showAllRepairs ? repairCategories : repairCategories.slice(0, VISIBLE_REPAIR_TILES);
+  const hasMoreRepairs = repairCategories.length > VISIBLE_REPAIR_TILES;
+
   return (
     <>
       {/* Hero Section */}
       <section className="bg-white py-12 md:py-16">
         <div className="mx-auto max-w-4xl px-4 text-center">
           {eyebrow && (
-            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-green-600">
+            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-brand-600">
               {eyebrow}
             </p>
           )}
@@ -127,31 +132,57 @@ export function ServiceLandingPage({
         </div>
       </section>
 
-      {/* Repair Types */}
-      <section className="border-t border-gray-100 bg-gray-50 py-12 md:py-16">
-        <div className="mx-auto max-w-6xl px-4">
-          <h2 className="text-center text-2xl font-bold text-gray-900">What needs fixing?</h2>
-          <p className="mt-2 text-center text-sm text-gray-500">Select the repair type for your device</p>
+      {/* Repair Types — real repair categories, each a link that carries the
+          selection into the booking flow. */}
+      {repairCategories.length > 0 && (
+        <section className="border-t border-gray-100 bg-gray-50 py-12 md:py-16">
+          <div className="mx-auto max-w-6xl px-4">
+            <h2 className="text-center text-2xl font-bold text-gray-900">What needs fixing?</h2>
+            <p className="mt-2 text-center text-sm text-gray-500">
+              Pick the issue and we will take you straight to your device
+            </p>
 
-          <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-            {repairTypes.map((repair) => {
-              const Icon = repair.icon;
-              return (
-                <div
-                  key={repair.label}
-                  className="flex flex-col items-center rounded-lg border border-gray-200 bg-white p-5 text-center transition-shadow hover:shadow-md"
-                >
-                  <div className="flex size-12 items-center justify-center rounded-full bg-green-50">
-                    <Icon className="size-6 text-green-600" />
-                  </div>
-                  <h3 className="mt-3 text-sm font-semibold text-gray-900">{repair.label}</h3>
-                  <p className="mt-1 text-xs text-gray-500">{repair.description}</p>
-                </div>
-              );
-            })}
+            <ul className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+              {visibleRepairs.map((category) => {
+                const Icon = repairCategoryIcon(category.name);
+                return (
+                  <li key={category.id}>
+                    <Link
+                      href={withRepairSelection(config.allHref, category.id)}
+                      aria-label={`${category.name} — choose your device`}
+                      className="flex h-full flex-col items-center rounded-lg border border-gray-200 bg-white p-5 text-center transition-shadow hover:border-brand-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
+                    >
+                      <div className="flex size-12 items-center justify-center rounded-full bg-brand-50">
+                        <Icon className="size-6 text-brand-600" aria-hidden="true" />
+                      </div>
+                      <h3 className="mt-3 text-sm font-semibold text-gray-900">{category.name}</h3>
+                      <p className="mt-1 text-xs text-gray-500">{repairCategoryHint(category.name)}</p>
+                    </Link>
+                  </li>
+                );
+              })}
+
+              {hasMoreRepairs && !showAllRepairs && (
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => setShowAllRepairs(true)}
+                    className="flex h-full w-full flex-col items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white p-5 text-center transition-colors hover:border-brand-400 hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
+                  >
+                    <div className="flex size-12 items-center justify-center rounded-full bg-gray-100">
+                      <ChevronDown className="size-6 text-gray-500" aria-hidden="true" />
+                    </div>
+                    <h3 className="mt-3 text-sm font-semibold text-gray-900">
+                      {repairCategories.length - VISIBLE_REPAIR_TILES} more
+                    </h3>
+                    <p className="mt-1 text-xs text-gray-500">Show all repair types</p>
+                  </button>
+                </li>
+              )}
+            </ul>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Brand Picker */}
       <section className="bg-white py-12 md:py-16">
@@ -161,7 +192,7 @@ export function ServiceLandingPage({
               <h2 className="text-2xl font-bold text-gray-900">{config.brandLabel}</h2>
               <p className="mt-1 text-sm text-gray-500">Tap a brand to explore models & repairs</p>
             </div>
-            <Link href={config.allHref} className="flex items-center gap-1 text-sm font-semibold text-green-600 hover:text-green-700">
+            <Link href={config.allHref} className="flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700">
               View All <ChevronRight className="size-4" />
             </Link>
           </div>
@@ -172,7 +203,7 @@ export function ServiceLandingPage({
                 <Link
                   key={brand.id}
                   href={`/service/${serviceType}/brands/${brand.slug}`}
-                  className="flex flex-col items-center gap-2 rounded-lg border border-gray-200 bg-white p-4 transition-all hover:border-green-300 hover:shadow-sm"
+                  className="flex flex-col items-center gap-2 rounded-lg border border-gray-200 bg-white p-4 transition-all hover:border-brand-300 hover:shadow-sm"
                 >
                   <BrandLogo
                     name={brand.name}
@@ -197,7 +228,7 @@ export function ServiceLandingPage({
                 <Link
                   key={brand.id}
                   href={`/service/${serviceType}/brands/${brand.slug}`}
-                  className="flex flex-col items-center gap-2 rounded-lg border border-gray-200 bg-white p-3 transition-all hover:border-green-300 hover:shadow-sm"
+                  className="flex flex-col items-center gap-2 rounded-lg border border-gray-200 bg-white p-3 transition-all hover:border-brand-300 hover:shadow-sm"
                 >
                   <BrandLogo
                     name={brand.name}
@@ -214,7 +245,7 @@ export function ServiceLandingPage({
               {hasMore && !showAll && (
                 <button
                   onClick={() => setShowAll(true)}
-                  className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-gray-300 bg-white p-3 transition-all hover:border-green-400 hover:bg-green-50"
+                  className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-gray-300 bg-white p-3 transition-all hover:border-brand-400 hover:bg-brand-50"
                 >
                   <div className="flex size-9 items-center justify-center rounded-lg bg-gray-100">
                     <ChevronDown className="size-5 text-gray-500" />
@@ -236,7 +267,7 @@ export function ServiceLandingPage({
           <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {howItWorksSteps.map((step) => (
               <div key={step.step} className="text-center">
-                <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-green-600 text-lg font-bold text-white">
+                <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-brand-600 text-lg font-bold text-white">
                   {step.step}
                 </div>
                 <h3 className="mt-4 text-sm font-bold text-gray-900">{step.title}</h3>
@@ -247,24 +278,25 @@ export function ServiceLandingPage({
         </div>
       </section>
 
-      {/* Trust Signals */}
+      {/* Trust Signals — informational only, so deliberately no hover affordance:
+          nothing here is clickable and it must not look like it is. */}
       <section className="bg-white py-12 md:py-16">
         <div className="mx-auto max-w-5xl px-4">
           <h2 className="text-center text-2xl font-bold text-gray-900">Why Choose Looplic?</h2>
-          <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-3">
+          <ul className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-3">
             {trustSignals.map((signal) => {
               const Icon = signal.icon;
               return (
-                <div key={signal.title} className="flex flex-col items-center rounded-lg border border-gray-200 bg-white p-6 text-center">
-                  <div className="flex size-14 items-center justify-center rounded-full bg-green-50">
-                    <Icon className="size-7 text-green-600" />
+                <li key={signal.title} className="flex flex-col items-center rounded-lg border border-gray-200 bg-white p-6 text-center">
+                  <div className="flex size-14 items-center justify-center rounded-full bg-brand-50">
+                    <Icon className="size-7 text-brand-600" aria-hidden="true" />
                   </div>
                   <h3 className="mt-4 text-base font-bold text-gray-900">{signal.title}</h3>
                   <p className="mt-1 text-sm text-gray-500">{signal.description}</p>
-                </div>
+                </li>
               );
             })}
-          </div>
+          </ul>
         </div>
       </section>
     </>

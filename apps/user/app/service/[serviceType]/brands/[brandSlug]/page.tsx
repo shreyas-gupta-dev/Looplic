@@ -11,6 +11,7 @@ import { SeriesCatalogPage } from "@/src/components/next/SeriesCatalogPage";
 import { getSeriesForBrand } from "@/src/lib/data/catalog";
 import { resolveBrandPageData } from "@/src/lib/data/catalog-page";
 import { buildPageMetadata } from "@/src/lib/metadata";
+import { readRepairSelection, withRepairSelection } from "@/src/lib/repair-selection";
 import { screenReplacementLandingByBrandSlug } from "@/src/lib/seo-service-pages";
 import { BreadcrumbJsonLd } from "@/src/components/seo/BreadcrumbJsonLd";
 
@@ -24,6 +25,7 @@ type PageProps = {
     serviceType: string;
     brandSlug: string;
   }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 const serviceMap = {
@@ -70,7 +72,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 }
 
-export default async function ServiceBrandPage({ params }: PageProps) {
+export default async function ServiceBrandPage({ params, searchParams }: PageProps) {
   const { serviceType, brandSlug } = await params;
   const config = serviceMap[serviceType as keyof typeof serviceMap];
 
@@ -78,6 +80,7 @@ export default async function ServiceBrandPage({ params }: PageProps) {
     notFound();
   }
 
+  const repairCategoryId = readRepairSelection(await searchParams);
   const { brand } = await resolveBrandPageData(brandSlug, config.listingType);
 
   if (!brand) {
@@ -92,7 +95,9 @@ export default async function ServiceBrandPage({ params }: PageProps) {
   // (e.g. /brands/lg → /brands/lg/all-models) instead of rendering it inline,
   // so the models always live under the canonical series URL.
   if (seriesList.length === 1) {
-    redirect(`/service/${serviceType}/brands/${brand.slug}/${seriesList[0].slug}`);
+    redirect(
+      withRepairSelection(`/service/${serviceType}/brands/${brand.slug}/${seriesList[0].slug}`, repairCategoryId),
+    );
   }
 
   const screenReplacementLanding = config.listingType === "mobile" ? screenReplacementLandingByBrandSlug.get(brand.slug) : undefined;
@@ -119,6 +124,7 @@ export default async function ServiceBrandPage({ params }: PageProps) {
           brandsPath={`/service/${serviceType}/brands`}
           seriesPathPrefix={`/service/${serviceType}/brands/${brand.slug}`}
           serviceLabel={config.label}
+          repairCategoryId={repairCategoryId}
         />
         <CrawlableInternalLinks
           title={`${brand.name} ${config.label} models`}
@@ -149,6 +155,7 @@ export default async function ServiceBrandPage({ params }: PageProps) {
         brandsPath={`/service/${serviceType}/brands`}
         seriesPathPrefix={`/service/${serviceType}/brands/${brand.slug}`}
         serviceLabel={config.label}
+        repairCategoryId={repairCategoryId}
       />
       {config.listingType === "laptop" ? <LaptopBrandBookingPrompt brandName={brand.name} /> : null}
       <CrawlableInternalLinks

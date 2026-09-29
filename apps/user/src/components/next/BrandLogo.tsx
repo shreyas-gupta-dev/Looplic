@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { renderableImageUrl } from "@/src/lib/images/registry";
+
 type BrandLogoProps = {
   name: string;
   imageUrl?: string | null;
@@ -20,7 +22,11 @@ export function BrandLogo({
   fallbackClassName,
 }: BrandLogoProps) {
   const [failed, setFailed] = useState(false);
-  const usableImageUrl = typeof imageUrl === "string" && imageUrl.trim() && !failed ? imageUrl.trim() : "";
+  // Catalog rows carry logos from mixed sources; only render the ones we host or
+  // allowlist (see isRenderableImageUrl). Everything else falls through to the
+  // branded letter tile, which is a better fallback than a third-party favicon.
+  const allowed = renderableImageUrl(imageUrl);
+  const usableImageUrl = allowed && !failed ? allowed : "";
 
   if (usableImageUrl) {
     return (

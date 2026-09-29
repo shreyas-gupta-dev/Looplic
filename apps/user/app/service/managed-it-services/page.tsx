@@ -45,7 +45,7 @@ export default function ManagedItServicesPage() {
         <section className="border-b border-slate-200 bg-[#EEF4F8] px-4 py-10 sm:py-14">
           <div className="container mx-auto grid max-w-5xl gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
             <div>
-              <div className="mb-3 inline-flex rounded-full bg-white px-3 py-1 text-xs font-extrabold uppercase tracking-[0.18em] text-[#0096FF] shadow-sm">
+              <div className="mb-3 inline-flex rounded-full bg-white px-3 py-1 text-xs font-extrabold uppercase tracking-[0.18em] text-[#056EF6] shadow-sm">
                 Managed IT Services
               </div>
               <h1 className="max-w-2xl text-3xl font-semibold leading-tight tracking-tight text-[#111827] sm:text-5xl">
@@ -55,7 +55,7 @@ export default function ManagedItServicesPage() {
                 Looplic MSP handles a company&apos;s daily IT needs: devices, networks, printers, CCTV, backups, cloud setup, support tickets, and AMC contracts.
               </p>
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                <Link href="/book/managed-it-services" className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#0096FF] to-[#00D28E] px-6 py-3 text-sm font-extrabold text-white shadow-sm shadow-blue-500/20">
+                <Link href="/book/managed-it-services" className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#056EF6] to-[#00D69A] px-6 py-3 text-sm font-extrabold text-white shadow-sm shadow-blue-500/20">
                   Book MSP Consultation <ArrowRight className="size-4" />
                 </Link>
                 <Link href="/book/it-support" className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-bold text-slate-700">
@@ -67,7 +67,7 @@ export default function ManagedItServicesPage() {
             <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_20px_70px_rgba(15,23,42,0.08)]">
               <div className="flex items-center gap-3">
                 <div className="flex size-12 items-center justify-center rounded-2xl bg-sky-50">
-                  <ServerCog className="size-6 text-[#0096FF]" />
+                  <ServerCog className="size-6 text-[#056EF6]" />
                 </div>
                 <div>
                   <div className="text-sm font-black text-slate-900">Recurring B2B Revenue Model</div>
@@ -88,8 +88,8 @@ export default function ManagedItServicesPage() {
         <section className="container mx-auto max-w-5xl px-4 py-10">
           <div className="mb-6">
             <div className="mb-2 flex items-center gap-2">
-              <div className="h-1 w-6 rounded-full bg-[#00B4D8]" />
-              <span className="text-xs font-bold uppercase tracking-widest text-[#0096FF]">Services include</span>
+              <div className="h-1 w-6 rounded-full bg-[#01B5B5]" />
+              <span className="text-xs font-bold uppercase tracking-widest text-[#056EF6]">Services include</span>
             </div>
             <h2 className="text-2xl font-semibold text-[#111827]">Everything an office needs to stay running</h2>
           </div>
@@ -100,7 +100,7 @@ export default function ManagedItServicesPage() {
               return (
                 <div key={item.title} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                   <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-sky-50">
-                    <Icon className="size-5 text-[#0096FF]" />
+                    <Icon className="size-5 text-[#056EF6]" />
                   </div>
                   <div className="text-sm font-bold text-slate-800">{item.title}</div>
                 </div>

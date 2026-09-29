@@ -5,7 +5,11 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
-    "./schema": "./schema.ts"
+    "./schema": "./schema.ts",
+    "./booking-status": "./booking-status.ts",
+    "./booking-status-events": "./booking-status-events.ts",
+    "./booking-status-notify": "./booking-status-notify.ts",
+    "./repair-stream": "./repair-stream.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.2",

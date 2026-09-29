@@ -8,7 +8,12 @@
     "build": "next build",
     "start": "next start",
     "build:dev": "next build",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test:unit": "playwright test --config=playwright.unit.config.ts",
+    "test:integration": "playwright test --config=playwright.integration.config.ts",
+    "test:e2e": "playwright test tests/e2e",
+    "audit": "playwright test tests/audit"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",
@@ -53,6 +58,7 @@
     "drizzle-orm": "^0.45.2",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.38.0",
+    "hls.js": "^1.6.15",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.462.0",
     "next": "^15.3.1",
@@ -70,6 +76,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
+    "@playwright/test": "^1.55.0",
     "@tailwindcss/typography": "^0.5.16",
     "@types/node": "^22.16.5",
     "@types/pg": "^8.20.0",

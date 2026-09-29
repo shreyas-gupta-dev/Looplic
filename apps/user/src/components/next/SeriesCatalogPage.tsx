@@ -7,6 +7,8 @@ import { useMemo, useState } from "react";
 import { BrandLogo } from "@/src/components/next/BrandLogo";
 import { CatalogPrefetchLink } from "@/src/components/next/CatalogPrefetchLink";
 import type { CatalogBrand, CatalogSeries } from "@/src/lib/data/catalog";
+import { renderableImageUrl } from "@/src/lib/images/registry";
+import { withRepairSelection } from "@/src/lib/repair-selection";
 
 // Series are stored with a trailing "Series" (e.g. "iPhone 11 Series") and often
 // repeat the brand ("Apple iPhone 11 Series"). On the brand page the brand is
@@ -14,7 +16,7 @@ import type { CatalogBrand, CatalogSeries } from "@/src/lib/data/catalog";
 // "Series" word for a cleaner, shorter label ("iPhone 11"). Fall back to the
 // original name if stripping leaves nothing.
 function formatSeriesLabel(name: string, brandName?: string) {
-  let label = name.replace(/\s*series\s*$/i, "").trim();
+  const label = name.replace(/\s*series\s*$/i, "").trim();
   return label || name;
 }
 
@@ -25,6 +27,8 @@ type SeriesCatalogPageProps = {
   seriesPathPrefix: string;
   serviceLabel: string;
   homeHref?: string;
+  /** Repair category chosen upstream, carried down to the booking flow. */
+  repairCategoryId?: string | null;
 };
 
 export function SeriesCatalogPage({
@@ -34,6 +38,7 @@ export function SeriesCatalogPage({
   seriesPathPrefix,
   serviceLabel,
   homeHref = "/",
+  repairCategoryId = null,
 }: SeriesCatalogPageProps) {
   const DeviceIcon = brand.service_type === "laptop" ? Laptop : Smartphone;
   const deviceLabel = brand.service_type === "laptop" ? "Laptop" : "Phone";
@@ -105,14 +110,19 @@ export function SeriesCatalogPage({
             {filteredSeries.map((series) => (
               <CatalogPrefetchLink
                 key={series.id}
-                href={`${seriesPathPrefix}/${series.slug}`}
+                href={withRepairSelection(`${seriesPathPrefix}/${series.slug}`, repairCategoryId)}
                 eagerPrefetch={!search}
                 className="group flex items-center rounded-2xl border border-border bg-card p-3 shadow-card-brand transition-all hover:border-primary/30 hover:shadow-elevated-brand active:scale-[0.98] sm:p-4"
               >
                 <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                   <div className="flex size-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-secondary sm:size-10">
-                    {(series.image_url || brand.image_url) ? (
-                      <img src={series.image_url || brand.image_url!} alt={series.name} className="size-full object-contain p-1" loading="lazy" />
+                    {renderableImageUrl(series.image_url ?? brand.image_url) ? (
+                      <img
+                        src={renderableImageUrl(series.image_url ?? brand.image_url)!}
+                        alt={series.name}
+                        className="size-full object-contain p-1"
+                        loading="lazy"
+                      />
                     ) : (
                       <DeviceIcon className="size-4 text-primary sm:size-5" />
                     )}

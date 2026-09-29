@@ -23,17 +23,17 @@ export function CctvAreaLandingPage({ content }: { content: CctvAreaPageContent 
         <section className="border-b border-slate-200 bg-[#EEF4F8] px-4 py-10 sm:py-14">
           <div className="container mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1fr_0.82fr] lg:items-center">
             <div>
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-extrabold uppercase tracking-[0.18em] text-[#0096FF] shadow-sm">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-extrabold uppercase tracking-[0.18em] text-[#056EF6] shadow-sm">
                 <MapPin className="size-3.5" />
                 {content.area.name} Bangalore
               </div>
               <h1 className="max-w-3xl text-3xl font-semibold leading-tight tracking-tight text-[#111827] sm:text-5xl">{content.title}</h1>
               <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">{content.description}</p>
               <div className="mt-6 flex flex-wrap gap-3">
-                <Link href={content.bookingHref} className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#0096FF] to-[#00D28E] px-6 py-3 text-sm font-extrabold text-white shadow-sm shadow-blue-500/20">
+                <Link href={content.bookingHref} className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#056EF6] to-[#00D69A] px-6 py-3 text-sm font-extrabold text-white shadow-sm shadow-blue-500/20">
                   Book CCTV Installation <ArrowRight className="size-4" />
                 </Link>
-                <Link href="/service/cctv" className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-bold text-slate-700 transition-colors hover:border-[#0096FF]/40 hover:text-[#0096FF]">
+                <Link href="/service/cctv" className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-bold text-slate-700 transition-colors hover:border-[#056EF6]/40 hover:text-[#056EF6]">
                   CCTV overview
                 </Link>
               </div>
@@ -44,7 +44,7 @@ export function CctvAreaLandingPage({ content }: { content: CctvAreaPageContent 
               <div className="mt-4 grid gap-3">
                 {content.highlights.map((item) => (
                   <div key={item} className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3">
-                    <CheckCircle2 className="size-4 shrink-0 text-[#00A878]" />
+                    <CheckCircle2 className="size-4 shrink-0 text-[#00B383]" />
                     <span className="text-sm font-bold text-slate-700">{item}</span>
                   </div>
                 ))}
@@ -62,7 +62,7 @@ export function CctvAreaLandingPage({ content }: { content: CctvAreaPageContent 
               return (
                 <article key={card.title} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                   <div className="flex size-11 items-center justify-center rounded-2xl bg-sky-50">
-                    <Icon className="size-5 text-[#0096FF]" />
+                    <Icon className="size-5 text-[#056EF6]" />
                   </div>
                   <h2 className="mt-4 text-sm font-semibold text-slate-900">{card.title}</h2>
                 </article>
@@ -74,7 +74,7 @@ export function CctvAreaLandingPage({ content }: { content: CctvAreaPageContent 
         <section className="container mx-auto max-w-6xl px-4 pb-10">
           <div className="grid gap-5 lg:grid-cols-[0.82fr_1.18fr]">
             <aside className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <div className="text-xs font-bold uppercase tracking-[0.18em] text-[#0096FF]">Local planning</div>
+              <div className="text-xs font-bold uppercase tracking-[0.18em] text-[#056EF6]">Local planning</div>
               <h2 className="mt-2 text-2xl font-semibold text-[#111827]">What we check in {content.area.name}</h2>
               <p className="mt-3 text-sm leading-7 text-slate-600">{content.intro}</p>
               <p className="mt-3 text-sm leading-7 text-slate-600">{content.planning}</p>
@@ -96,7 +96,7 @@ export function CctvAreaLandingPage({ content }: { content: CctvAreaPageContent 
 
         <section className="container mx-auto max-w-6xl px-4 pb-12">
           <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="text-xs font-bold uppercase tracking-[0.18em] text-[#0096FF]">Questions</div>
+            <div className="text-xs font-bold uppercase tracking-[0.18em] text-[#056EF6]">Questions</div>
             <h2 className="mt-2 text-2xl font-semibold text-[#111827]">CCTV installation FAQs for {content.area.name}</h2>
             <div className="mt-5 grid gap-3 md:grid-cols-3">
               {content.faqs.map((faq) => (
@@ -107,7 +107,7 @@ export function CctvAreaLandingPage({ content }: { content: CctvAreaPageContent 
               ))}
             </div>
             <div className="mt-6">
-              <Link href={content.bookingHref} className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#0096FF] to-[#00D28E] px-6 py-3 text-sm font-extrabold text-white shadow-sm shadow-blue-500/20">
+              <Link href={content.bookingHref} className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#056EF6] to-[#00D69A] px-6 py-3 text-sm font-extrabold text-white shadow-sm shadow-blue-500/20">
                 Start Booking <ArrowRight className="size-4" />
               </Link>
             </div>

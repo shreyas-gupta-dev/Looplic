@@ -1,85 +1,73 @@
 import { NextResponse } from "next/server";
+
+import { findAuthUserByEmail, isPhoneIdentifier, normalizeIdentifier } from "@/src/lib/auth/admin-users";
+import { hasVerificationSecret, verifyVerificationToken } from "@/src/lib/auth/verification-token";
+import { guardRateLimit } from "@/src/lib/rate-limit";
 import { getAdminSupabase, hasServiceRole } from "@/src/lib/supabase/server";
-import crypto from "crypto";
-
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-
-/**
- * Validate the verification token generated after OTP verification.
- * Token is valid for 10 minutes.
- */
-function validateVerificationToken(verificationToken: string, expectedIdentifier: string): boolean {
-  try {
-    const decoded = JSON.parse(Buffer.from(verificationToken, "base64url").toString("utf8"));
-    const { identifier, timestamp, hmac } = decoded;
-
-    // Check identifier matches
-    if (identifier !== expectedIdentifier) return false;
-
-    // Check token is not older than 10 minutes
-    const age = Date.now() - timestamp;
-    if (age > 10 * 60 * 1000) return false;
-
-    // Verify HMAC
-    const payload = `${identifier}:${timestamp}`;
-    const expectedHmac = crypto.createHmac("sha256", serviceRoleKey).update(payload).digest("hex");
-    return crypto.timingSafeEqual(Buffer.from(hmac, "hex"), Buffer.from(expectedHmac, "hex"));
-  } catch {
-    return false;
-  }
-}
 
 /**
  * POST /api/auth/signup
- * Creates a user via the admin API (service role) which bypasses email
- * confirmation. Requires a valid OTP verification token.
+ *
+ * Creates (or completes) a user via the admin API, which bypasses the email
+ * confirmation round-trip. Requires a valid OTP verification token, so the
+ * caller must already have proved control of the email/phone.
  */
 export async function POST(request: Request) {
+  // Account creation is expensive and abusable; cap it well below the OTP limit.
+  const limited = await guardRateLimit(request, "auth:signup", 5, 15 * 60);
+  if (limited) return limited;
+
   try {
     const { email, phone, password, name, verificationToken } = await request.json();
 
-    const identifier = email || phone;
-    const isPhone = Boolean(phone);
+    const rawIdentifier = typeof phone === "string" && phone.trim() ? phone : email;
 
-    if (!identifier) {
+    if (!rawIdentifier || typeof rawIdentifier !== "string") {
       return NextResponse.json({ error: "Email or phone number is required" }, { status: 400 });
     }
 
-    if (!password || password.length < 6) {
+    if (typeof password !== "string" || password.trim().length < 6) {
       return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 });
     }
 
-    if (!verificationToken) {
+    if (!verificationToken || typeof verificationToken !== "string") {
       return NextResponse.json({ error: "OTP verification is required before creating an account" }, { status: 400 });
     }
 
-    if (!hasServiceRole) {
-      return NextResponse.json({ error: "Server configuration error: missing service role key" }, { status: 500 });
+    if (!hasServiceRole || !hasVerificationSecret()) {
+      return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
     }
 
-    // Validate the verification token
-    const normalizedIdentifier = isPhone ? phone.trim() : email.trim().toLowerCase();
-    if (!validateVerificationToken(verificationToken, normalizedIdentifier)) {
-      return NextResponse.json({ error: "OTP verification expired or invalid. Please verify again." }, { status: 400 });
+    const isPhone = isPhoneIdentifier(rawIdentifier);
+    const normalizedIdentifier = normalizeIdentifier(rawIdentifier);
+
+    const check = verifyVerificationToken(verificationToken, normalizedIdentifier);
+    if (!check.valid) {
+      return NextResponse.json(
+        { error: "OTP verification expired or invalid. Please verify again." },
+        { status: 400 },
+      );
     }
 
     const admin = getAdminSupabase();
+    const trimmedPassword = password.trim();
+    const fullName = typeof name === "string" ? name : "";
 
-    // Check if a passwordless user was created during OTP flow (email case)
-    // If so, update them with a password instead of creating a new user
+    // The OTP step creates a passwordless user for new email signups
+    // (signInWithOtp with shouldCreateUser: true). That user must be completed
+    // with a password rather than created again, otherwise createUser fails with
+    // "already been registered" and the customer is locked out of an account
+    // they can never sign into. This lookup MUST be paginated — the previous
+    // unpaginated listUsers() only saw the first 50 users, which is exactly how
+    // that lockout happened in production.
     if (!isPhone) {
-      const { data: listData } = await admin.auth.admin.listUsers();
-      const users = listData?.users ?? [];
-      const existingUser = users.find(
-        (u: any) => u.email?.toLowerCase() === normalizedIdentifier
-      );
+      const existingUser = await findAuthUserByEmail(admin, normalizedIdentifier);
 
       if (existingUser) {
-        // User already exists (created by signInWithOtp) — update with password and metadata
         const { data, error } = await admin.auth.admin.updateUserById(existingUser.id, {
-          password: password.trim(),
+          password: trimmedPassword,
           email_confirm: true,
-          user_metadata: { full_name: name || "" },
+          user_metadata: { full_name: fullName },
         });
 
         if (error) {
@@ -90,12 +78,11 @@ export async function POST(request: Request) {
       }
     }
 
-    // Create user with admin API — this auto-confirms
-    const createPayload: any = {
-      password: password.trim(),
+    const createPayload: Record<string, unknown> = {
+      password: trimmedPassword,
       email_confirm: true,
       phone_confirm: true,
-      user_metadata: { full_name: name || "" },
+      user_metadata: { full_name: fullName },
     };
 
     if (isPhone) {
@@ -104,17 +91,21 @@ export async function POST(request: Request) {
       createPayload.email = normalizedIdentifier;
     }
 
-    const { data, error } = await admin.auth.admin.createUser(createPayload);
+    const { data, error } = await admin.auth.admin.createUser(createPayload as never);
 
     if (error) {
       if (error.message.includes("already been registered") || error.message.includes("already exists")) {
-        return NextResponse.json({ error: "An account with this email/phone already exists. Please sign in instead." }, { status: 409 });
+        return NextResponse.json(
+          { error: "An account with this email/phone already exists. Please sign in instead." },
+          { status: 409 },
+        );
       }
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
     return NextResponse.json({ success: true, userId: data.user.id });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || "Signup failed" }, { status: 500 });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Signup failed";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

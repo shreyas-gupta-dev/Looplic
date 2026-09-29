@@ -29,7 +29,7 @@ export default async function ThankYouPage({
         <ThankYouTracker />
       </Suspense>
       <section className="w-full max-w-md rounded-[28px] border border-border bg-card p-7 text-center shadow-card-brand">
-        <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 ring-1 ring-emerald-100">
+        <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-brand-50 text-brand-600 ring-1 ring-brand-100">
           <CheckCircle2 className="size-8" />
         </div>
         <h1 className="mt-5 text-2xl font-black tracking-tight text-foreground">

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/src/lib/db";
 import * as schema from "@/src/lib/db/schema";
+import { changeBookingStatus } from "@looplic/db/booking-status-events";
 import { and, asc, desc, eq, inArray, ne } from "drizzle-orm";
 import { getServerSession } from "@/src/lib/auth/cognito-server";
 
@@ -21,6 +22,7 @@ const TABLE_MAP: Record<string, any> = {
   customer_profiles: schema.customerProfiles,
   service_bills: schema.serviceBills,
   booking_inspections: schema.bookingInspections,
+  booking_status_events: schema.bookingStatusEvents,
   technician_applications: schema.technicianApplications,
   buyback_model_prices: schema.buybackModelPrices,
   buyback_model_variants: schema.buybackModelVariants,
@@ -39,6 +41,21 @@ const PUBLIC_READ_TABLES = new Set([
 ]);
 
 const PUBLIC_INSERT_TABLES = new Set(["bookings", "technician_applications"]);
+
+/**
+ * `app_settings` keys a non-staff caller may read.
+ *
+ * `app_settings` is in PUBLIC_READ_TABLES because the storefront needs the
+ * price-visibility switch before anyone signs in — but reads of public tables skip
+ * the session check entirely, so every row in this key/value bag was readable by
+ * anyone who could POST to this route.
+ *
+ * `repair_stream_centres` holds service-centre camera playlist URLs, which may
+ * carry credentials. The repair-stream endpoints deliberately never disclose them;
+ * this proxy did. Closed by default now: an allowlist, so a settings key added
+ * later stays private unless someone deliberately publishes it.
+ */
+const PUBLIC_APP_SETTING_KEYS = new Set(["repair_subcategory_prices"]);
 
 // Deleting records is an admin-only action. Operators (and the operation desk)
 // share the "operation" role and get full create/edit access but must never
@@ -73,6 +90,21 @@ function snakeToCamel(s: string) {
 
 function camelToSnake(s: string) {
   return s.replace(/([A-Z])/g, "_$1").toLowerCase();
+}
+
+/**
+ * Pulls the single booking id out of the client-supplied filters.
+ *
+ * A status change must name exactly one booking: applying one to a filtered set
+ * would produce history that cannot be attributed, and is never something a
+ * dashboard legitimately does.
+ */
+function findBookingIdFilter(filters: Array<[string, string, any]> | undefined): string | null {
+  const matches = (filters || []).filter(([type, col]) => type === "eq" && (col === "id" || col === "booking_id"));
+  if (matches.length !== 1) return null;
+
+  const value = matches[0][2];
+  return typeof value === "string" && value.trim() ? value.trim() : null;
 }
 
 function applyFilters(query: any, tbl: any, filters: Array<[string, string, any]>, inFilters: Array<[string, any[]]>) {
@@ -164,6 +196,19 @@ export async function POST(req: NextRequest) {
       if (effectiveLimit) query = query.limit(effectiveLimit);
       const rows: any[] = await query;
       const mapped = rows.map(mapRowOut);
+
+      // Drop private settings unless the caller is staff. Filtering the result
+      // rather than the query means it holds however the caller shaped their
+      // filters, including no filter at all.
+      if (table === "app_settings") {
+        const session = await getServerSession();
+        const isStaffReader = Boolean(session.user && (await userIsStaff(session.user.id)));
+        if (!isStaffReader) {
+          const visible = mapped.filter((row) => PUBLIC_APP_SETTING_KEYS.has(row.key));
+          return NextResponse.json({ data: single ? (visible[0] ?? null) : visible });
+        }
+      }
+
       return NextResponse.json({ data: single ? (mapped[0] ?? null) : mapped });
     }
 
@@ -175,7 +220,9 @@ export async function POST(req: NextRequest) {
       }
 
       const rows = Array.isArray(payload) ? payload.map((row: any) => mapRowIn(row, tbl)) : [mapRowIn(payload, tbl)];
-      const inserted = await db.insert(tbl).values(rows).returning();
+      // `tbl` is resolved from TABLE_MAP at runtime, so Drizzle cannot infer the row
+      // type here and types the result as a union including QueryResult<never>.
+      const inserted = (await db.insert(tbl).values(rows).returning()) as Record<string, unknown>[];
       return NextResponse.json({ data: inserted.map(mapRowOut) });
     }
 
@@ -184,6 +231,39 @@ export async function POST(req: NextRequest) {
     }
 
     if (op === "update") {
+      // Booking status changes go through the shared helper so that every change
+      // is validated against the canonical transition rules and appends a
+      // booking_status_events row. Doing it here rather than in the dashboard
+      // components means one implementation for all four apps, and a client
+      // cannot skip the history by issuing a raw update.
+      if (table === "bookings" && payload && typeof payload === "object" && "status" in payload) {
+        const bookingId = findBookingIdFilter(filters);
+        if (!bookingId) {
+          return NextResponse.json(
+            { error: { message: "A booking status change must target a single booking by id." } },
+            { status: 400 },
+          );
+        }
+
+        const { status, note, ...otherFields } = payload as Record<string, unknown>;
+        const result = await changeBookingStatus(db as any, {
+          bookingId,
+          status: String(status),
+          note: typeof note === "string" ? note : null,
+          actorId: session.user.id,
+          otherFields: mapRowIn(otherFields, tbl),
+        });
+
+        if (!result.ok) {
+          return NextResponse.json(
+                      { error: { message: result.message ?? "That status change is not allowed." } },
+                      { status: result.status ?? 500 },
+                    );
+        }
+
+        return NextResponse.json({ data: [mapRowOut(result.booking)] });
+      }
+
       let query = db.update(tbl).set(mapRowIn(payload, tbl)) as any;
       query = applyFilters(query, tbl, filters, inFilters);
       const updated = await query.returning();

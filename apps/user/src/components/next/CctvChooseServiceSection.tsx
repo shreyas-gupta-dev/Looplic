@@ -10,8 +10,8 @@ const cctvServiceChoices = [
     badge: "INSTALL",
     href: buildCctvBookingEntryHref("new_installation"),
     icon: Camera,
-    iconColor: "text-emerald-500",
-    iconBg: "bg-emerald-50",
+    iconColor: "text-brand-500",
+    iconBg: "bg-brand-50",
   },
   {
     title: "CCTV Repair & Service",
@@ -65,8 +65,8 @@ export function CctvChooseServiceSection({ className = "container mx-auto max-w-
     <section className={className}>
       <div className="mb-6">
         <div className="mb-2 flex items-center gap-2">
-          <div className="h-1 w-6 rounded-full bg-[#00B4D8]" />
-          <span className="text-xs font-bold uppercase tracking-widest text-[#00B4D8]">Choose Service</span>
+          <div className="h-1 w-6 rounded-full bg-[#01B5B5]" />
+          <span className="text-xs font-bold uppercase tracking-widest text-[#01B5B5]">Choose Service</span>
         </div>
         <h2 className="text-2xl font-semibold text-[#111827]">What CCTV service do you need?</h2>
       </div>

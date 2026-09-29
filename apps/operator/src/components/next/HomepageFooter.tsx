@@ -12,7 +12,7 @@ export function HomepageFooter() {
       <div className="container max-w-6xl px-4 sm:px-6">
         <div className="flex flex-col gap-8">
           <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-            <div className="overflow-hidden rounded-[28px] border border-border bg-[radial-gradient(circle_at_top_left,_hsl(211_100%_50%_/_0.14),_transparent_35%),linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(241,245,249,0.92))] p-6 shadow-card-brand">
+            <div className="overflow-hidden rounded-[28px] border border-border bg-[radial-gradient(circle_at_top_left,_hsl(214_96%_49%_/_0.14),_transparent_35%),linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(241,245,249,0.92))] p-6 shadow-card-brand">
               <img src={logo.src} alt="Looplic" className="mb-4 h-8" />
               <h3 className="max-w-md text-2xl font-semibold leading-tight text-foreground">
                 Fast mobile repair, cleaner booking flow, and real support when customers need it.
@@ -67,7 +67,7 @@ export function HomepageFooter() {
                   <a href={`mailto:${supportEmail}`} className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-secondary p-3 text-sm font-semibold text-foreground md:justify-start">
                     <Mail className="size-4" /> {supportEmail}
                   </a>
-                  <a href={whatsappUrl} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 p-3 text-sm font-semibold text-emerald-700 md:justify-start">
+                  <a href={whatsappUrl} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-2xl border border-brand-200 bg-brand-50 p-3 text-sm font-semibold text-brand-700 md:justify-start">
                     <Image src="/whatsapp.svg" alt="" width={16} height={16} className="size-4" aria-hidden="true" /> WhatsApp support
                   </a>
                 </div>
@@ -80,7 +80,7 @@ export function HomepageFooter() {
               href={whatsappUrl}
               target="_blank"
               rel="noreferrer"
-              className="flex size-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 transition-all hover:bg-emerald-100"
+              className="flex size-9 items-center justify-center rounded-xl bg-brand-50 text-brand-700 transition-all hover:bg-brand-100"
               aria-label="WhatsApp support"
             >
               <Image src="/whatsapp.svg" alt="" width={16} height={16} className="size-4" aria-hidden="true" />

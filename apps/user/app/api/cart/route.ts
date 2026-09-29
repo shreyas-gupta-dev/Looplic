@@ -11,9 +11,13 @@ async function getUser() {
 }
 
 // GET - fetch cart items for the logged-in user
+//
+// An anonymous visitor has an empty cart, not an error. Returning 401 here made
+// the cart and checkout pages log a failed request on every visit before sign-in,
+// which is noise that hides real failures. Mutations below still require auth.
 export async function GET() {
   const user = await getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!user) return NextResponse.json({ items: [], authenticated: false });
 
   try {
     const items = await db
@@ -37,7 +41,7 @@ export async function GET() {
       .innerJoin(products, eq(cartItems.productId, products.id))
       .where(eq(cartItems.userId, user.id));
 
-    return NextResponse.json({ items });
+    return NextResponse.json({ items, authenticated: true });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

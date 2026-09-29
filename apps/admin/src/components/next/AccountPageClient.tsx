@@ -53,22 +53,22 @@ type AccountBill = {
 };
 
 type AccountBooking = {
-  booking_code: string | null;
+  booking_code?: string | null;
   id: string;
   service_type: string;
-  cctv_service: string | null;
-  cctv_brand: string | null;
-  guard_type: string | null;
+  cctv_service?: string | null;
+  cctv_brand?: string | null;
+  guard_type?: string | null;
   status: string;
   created_at: string;
-  location: string | null;
-  scheduled_date: string | null;
-  time_slot: string | null;
-  model_id: string | null;
-  repair_category_id: string | null;
-  repair_subcategory_id: string | null;
-  notes: string | null;
-  pincode: string | null;
+  location?: string | null;
+  scheduled_date?: string | null;
+  time_slot?: string | null;
+  model_id?: string | null;
+  repair_category_id?: string | null;
+  repair_subcategory_id?: string | null;
+  notes?: string | null;
+  pincode?: string | null;
   model_name: string;
   brand_name: string;
   repair_category_name: string;
@@ -89,7 +89,7 @@ const statusColors: Record<string, string> = {
   pending: "border-amber-200 bg-amber-50 text-amber-800",
   confirmed: "border-sky-200 bg-sky-50 text-sky-800",
   in_progress: "border-violet-200 bg-violet-50 text-violet-800",
-  completed: "border-emerald-200 bg-emerald-50 text-emerald-800",
+  completed: "border-brandteal-200 bg-brandteal-50 text-brandteal-800",
   cancelled: "border-rose-200 bg-rose-50 text-rose-800",
 };
 
@@ -102,8 +102,9 @@ type ProfileFormState = {
 };
 
 function createProfileForm(profile: CustomerProfile | null, user: AppUser | null): ProfileFormState {
+  const p = profile as any;
   return {
-    fullName: profile?.full_name || user?.user_metadata?.full_name || "",
+    fullName: profile?.fullName || p?.full_name || user?.user_metadata?.full_name || "",
     phone: profile?.phone || "",
     address: profile?.address || "",
     city: profile?.city || "",
@@ -475,14 +476,14 @@ export function AccountPageClient() {
     const nextProfile: CustomerProfile = {
       address: trimmed.address || null,
       city: trimmed.city || null,
-      created_at: profile?.created_at || new Date().toISOString(),
-      full_name: trimmed.fullName,
-      inspect_latitude: profile?.inspect_latitude ?? null,
-      inspect_longitude: profile?.inspect_longitude ?? null,
+      createdAt: profile?.createdAt || new Date(),
+      fullName: trimmed.fullName,
+      inspectLatitude: profile?.inspectLatitude != null ? String(profile.inspectLatitude) : null,
+      inspectLongitude: profile?.inspectLongitude != null ? String(profile.inspectLongitude) : null,
       phone: trimmed.phone || null,
       pincode: trimmed.pincode || null,
-      updated_at: new Date().toISOString(),
-      user_id: user.id,
+      updatedAt: new Date(),
+      userId: user.id,
     };
 
     setProfile(nextProfile);
@@ -529,7 +530,7 @@ export function AccountPageClient() {
     downloadInvoicePdf({
       id: bill.id,
       invoice_number: bill.invoice_number,
-      customer_name: bill.customer_name || profile?.full_name || booking.brand_name || "Customer",
+      customer_name: bill.customer_name || profile?.fullName || (profile as any)?.full_name || booking.brand_name || "Customer",
       customer_phone: bill.customer_phone || profile?.phone || null,
       service_type: bill.service_type || booking.service_type,
       description: bill.description || getBookingDescriptor(booking),
@@ -555,11 +556,11 @@ export function AccountPageClient() {
     );
   }
 
-  const customerName = profile?.full_name || user.user_metadata?.full_name || "My Account";
+  const customerName = profile?.fullName || (profile as any)?.full_name || user.user_metadata?.full_name || "My Account";
   const statusCounts = new Map(statusTabs.map((tab) => [tab.id, tab.id === "all" ? bookings.length : bookings.filter((booking) => booking.status === tab.id).length]));
 
   return (
-    <main className="flex-1 bg-[radial-gradient(circle_at_top,_hsl(211_100%_50%_/_0.14),_transparent_30%),radial-gradient(circle_at_80%_8%,_hsl(165_100%_42%_/_0.14),_transparent_26%),linear-gradient(180deg,_rgba(255,255,255,0)_0%,_rgba(248,250,252,0.92)_100%)]">
+    <main className="flex-1 bg-[radial-gradient(circle_at_top,_hsl(214_96%_49%_/_0.14),_transparent_30%),radial-gradient(circle_at_80%_8%,_hsl(163_100%_42%_/_0.14),_transparent_26%),linear-gradient(180deg,_rgba(255,255,255,0)_0%,_rgba(248,250,252,0.92)_100%)]">
       <div className="container max-w-6xl p-3 sm:p-6 lg:py-8">
         <section className="overflow-hidden rounded-2xl border border-primary/15 bg-card shadow-elevated-brand sm:rounded-[26px]">
           <div className="border-b border-white/15 gradient-brand px-4 py-3.5 text-white sm:px-6 sm:py-5">
@@ -691,7 +692,7 @@ export function AccountPageClient() {
                               variant="outline"
                               size="sm"
                               onClick={() => handleDownloadInvoice(booking)}
-                              className="h-11 w-full rounded-xl border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 sm:w-auto"
+                              className="h-11 w-full rounded-xl border-brand-200 bg-brand-50 text-brand-700 hover:bg-brand-100 hover:text-brand-800 sm:w-auto"
                               aria-label={`Download invoice for ${booking.booking_code || booking.id}`}
                             >
                               <Download className="size-4" />
@@ -785,7 +786,7 @@ export function AccountPageClient() {
                   </div>
                 </div>
                 {profileError ? <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{profileError}</p> : null}
-                {profileSuccess ? <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{profileSuccess}</p> : null}
+                {profileSuccess ? <p className="rounded-xl border border-brandteal-200 bg-brandteal-50 px-3 py-2 text-sm text-brandteal-700">{profileSuccess}</p> : null}
 
                 {editingProfile ? (
                   <div className="flex flex-col gap-3 sm:flex-row">

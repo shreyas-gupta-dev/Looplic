@@ -7,12 +7,19 @@ import { useMemo, useState } from "react";
 import { BrandLogo } from "@/src/components/next/BrandLogo";
 import { CatalogPrefetchLink } from "@/src/components/next/CatalogPrefetchLink";
 import type { CatalogBrand } from "@/src/lib/data/catalog";
+import { withRepairSelection } from "@/src/lib/repair-selection";
 
 type BrandsCatalogPageProps = {
   brands: CatalogBrand[];
   serviceLabel: string;
   servicePathPrefix: string;
   homeHref?: string;
+  /**
+   * Repair category id chosen on the service landing page, carried through so the
+   * booking flow can preselect it. Empty when the visitor started from the brand
+   * list instead of a repair tile.
+   */
+  repairCategoryId?: string | null;
 };
 
 export function BrandsCatalogPage({
@@ -20,6 +27,7 @@ export function BrandsCatalogPage({
   serviceLabel,
   servicePathPrefix,
   homeHref = "/",
+  repairCategoryId = null,
 }: BrandsCatalogPageProps) {
   const [search, setSearch] = useState("");
 
@@ -71,7 +79,7 @@ export function BrandsCatalogPage({
             {filteredBrands.map((brand) => (
               <CatalogPrefetchLink
                 key={brand.id}
-                href={`${servicePathPrefix}/${brand.slug}`}
+                href={withRepairSelection(`${servicePathPrefix}/${brand.slug}`, repairCategoryId)}
                 eagerPrefetch={!search}
                 className="flex cursor-pointer flex-col items-center gap-2 rounded-2xl border border-border bg-card px-2 py-4 shadow-card-brand transition-all hover:border-primary/30 hover:shadow-elevated-brand active:scale-95"
               >

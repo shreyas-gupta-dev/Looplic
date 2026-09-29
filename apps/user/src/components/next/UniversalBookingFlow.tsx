@@ -15,6 +15,7 @@ import {
   isValidPincode, parseBookingLocation, type BookingInsert,
 } from "@/src/lib/bookings";
 import { buildThankYouHref, trackGoogleAdsConversion } from "@/src/lib/gtag";
+import { renderableImageUrl } from "@/src/lib/images/registry";
 import { downloadBookingConfirmationPdf } from "@/src/lib/invoice-pdf";
 import { buildCustomerProfileInsert } from "@/src/lib/profile";
 import { formatVisitingCharge, getVisitingChargePolicy } from "@/src/lib/visiting-charge";
@@ -155,6 +156,33 @@ function getStaticInspectMapUrl(position: { lat: number; lng: number }) {
   return `https://maps.googleapis.com/maps/api/staticmap?${params.toString()}`;
 }
 
+// Renders a repair-category thumbnail. If the image is missing (null) or fails
+// to load at runtime (e.g. a 404 from the assets bucket), it gracefully falls
+// back to a Wrench icon instead of showing a broken-image glyph. When the asset
+// is later restored at the same URL it will display again with no code change.
+function CategoryImage({ src, alt }: { src: string | null | undefined; alt: string }) {
+  const [failed, setFailed] = useState(false);
+  // Catalog rows carry logos from mixed sources. onError alone is not enough: a
+  // competitor CDN or favicon-proxy URL that happens to load fine would still be
+  // rendered. Only allowlisted hosts get through (see isRenderableImageUrl).
+  const allowed = renderableImageUrl(src);
+  if (!allowed || failed) {
+    return (
+      <div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
+        <Wrench className="size-5 text-primary" />
+      </div>
+    );
+  }
+  return (
+    <img
+      src={allowed}
+      alt={alt}
+      className="size-10 rounded-xl object-contain"
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function UniversalBookingFlow({
@@ -261,8 +289,21 @@ export function UniversalBookingFlow({
 
   // ─ Step ─
   // The step the flow naturally starts on, before any URL state is applied.
+  //
+  // A device flow that already knows the repair category starts on the service
+  // list for that category, not on the category chooser. This is what makes the
+  // "What needs fixing?" tiles mean anything: the tile carries `?category=<id>`
+  // all the way down the catalog, and `selectedCategoryId` above is seeded from
+  // it — but the flow used to open on "Choose Repair Category" regardless, so the
+  // customer was asked to pick the very thing they had just picked, and the tile
+  // looked broken even though the plumbing behind it worked.
+  //
+  // Going back from repair-select still reaches the chooser (see stepBack), so
+  // changing your mind costs one tap rather than being impossible.
   function flowEntryStep(): FlowStep {
-    if (isDeviceFlow) return "service-select";
+    if (isDeviceFlow) {
+      return isRepair && selectedCategoryId ? "repair-select" : "service-select";
+    }
     if (isCctv) return selectedCctvService && selectedCctvBrand ? "cctv-config" : "cctv-select";
     return "notes";
   }
@@ -862,9 +903,7 @@ export function UniversalBookingFlow({
                       onClick={() => { setSelectedCategoryId(cat.id); setSelectedSubcategory(null); goTo("repair-select"); }}
                       className="flex flex-col items-center gap-2 rounded-2xl border-2 border-border bg-card p-4 transition-all hover:border-primary/30 hover:shadow-card-brand"
                     >
-                      {cat.image_url
-                        ? <img src={cat.image_url} alt={cat.name} className="size-10 rounded-xl object-contain" />
-                        : <div className="flex size-10 items-center justify-center rounded-xl bg-secondary"><Wrench className="size-5 text-primary" /></div>}
+                      <CategoryImage src={cat.image_url} alt={cat.name} />
                       <span className="text-center text-xs font-bold text-foreground">{cat.name}</span>
                     </button>
                   ))}
@@ -888,8 +927,8 @@ export function UniversalBookingFlow({
                         onClick={() => { setSelectedGuard(guard); goTo("details"); }}
                         className="flex w-full items-center gap-3 rounded-2xl border-2 border-border bg-card p-4 text-left transition-all hover:border-primary/30 hover:shadow-card-brand"
                       >
-                        {guard.image_url
-                          ? <img src={guard.image_url} alt={label} className="size-11 rounded-2xl border border-border/70 bg-background object-contain p-1.5" />
+                        {renderableImageUrl(guard.image_url)
+                          ? <img src={renderableImageUrl(guard.image_url)!} alt={label} className="size-11 rounded-2xl border border-border/70 bg-background object-contain p-1.5" />
                           : <div className="flex size-11 items-center justify-center rounded-2xl border border-border/70 bg-secondary text-sm font-bold text-primary">{SCREEN_GUARD_BADGES[label] || "Shield"}</div>}
                         <div className="flex-1"><span className="text-sm font-bold text-foreground">{label}</span></div>
                         <span className="text-lg font-extrabold gradient-brand-text">Rs. {guard.price}</span>
@@ -937,9 +976,7 @@ export function UniversalBookingFlow({
                     onClick={() => { setSelectedSubcategory(sub); goTo(isLaptop ? "laptop-specs" : "details"); }}
                     className="flex w-full items-center gap-3 rounded-3xl border border-border/80 bg-card p-4 text-left transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-card-brand"
                   >
-                    {sub.image_url
-                      ? <img src={sub.image_url} alt={sub.name} className="size-10 rounded-xl object-contain" />
-                      : <div className="flex size-10 items-center justify-center rounded-xl bg-secondary"><Wrench className="size-5 text-muted-foreground" /></div>}
+                    <CategoryImage src={sub.image_url} alt={sub.name} />
                     <div className="flex-1">
                       <span className="block text-sm font-bold text-foreground">{sub.name}</span>
                       <RepairWarrantyTag subcategoryName={sub.name} className="mt-2" />
@@ -1194,19 +1231,19 @@ export function UniversalBookingFlow({
               </div>
 
               {/* Map pin */}
-              <div className="rounded-3xl border border-emerald-200 bg-emerald-50/30 p-4 shadow-sm">
+              <div className="rounded-3xl border border-brand-200 bg-brand-50/30 p-4 shadow-sm">
                 <div className="mb-3 flex items-start justify-between gap-3">
                   <h3 className="text-base font-semibold text-foreground">Inspect Location</h3>
-                  <div className="flex size-11 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+                  <div className="flex size-11 items-center justify-center rounded-full bg-brand-100 text-brand-600">
                     <MapPinned className="size-5" />
                   </div>
                 </div>
                 <button type="button" onClick={fetchCurrentLocation} disabled={locating}
-                  className="mb-3 flex w-full items-center justify-center gap-2 rounded-3xl border border-dashed border-emerald-300 bg-emerald-50 px-4 py-2.5 text-sm font-black text-foreground transition-colors hover:border-emerald-400 hover:bg-emerald-100/70 disabled:opacity-60">
-                  {locating ? <Loader2 className="size-4 animate-spin text-emerald-600" /> : <Navigation className="size-4 text-emerald-600" />}
+                  className="mb-3 flex w-full items-center justify-center gap-2 rounded-3xl border border-dashed border-brand-300 bg-brand-50 px-4 py-2.5 text-sm font-black text-foreground transition-colors hover:border-brand-400 hover:bg-brand-100/70 disabled:opacity-60">
+                  {locating ? <Loader2 className="size-4 animate-spin text-brand-600" /> : <Navigation className="size-4 text-brand-600" />}
                   {locating ? "Fetching current location" : "Fetch Current Location"}
                 </button>
-                <div className={`relative h-40 overflow-hidden rounded-3xl border border-border/70 bg-slate-100 shadow-inner ${pinEditable ? "ring-2 ring-emerald-300" : ""}`}>
+                <div className={`relative h-40 overflow-hidden rounded-3xl border border-border/70 bg-slate-100 shadow-inner ${pinEditable ? "ring-2 ring-brand-300" : ""}`}>
                   {!mapReady ? (
                     staticInspectMapUrl
                       ? <img src={staticInspectMapUrl} alt="Map preview" className="absolute inset-0 z-0 size-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
@@ -1221,18 +1258,18 @@ export function UniversalBookingFlow({
                   <div ref={mapElementRef} className={`size-full ${mapReady ? "relative z-10" : "pointer-events-none absolute inset-0 z-0"}`} />
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-16 bg-gradient-to-t from-background/35 to-transparent" />
                   <div className="pointer-events-none absolute left-1/2 top-1/2 z-30 flex -translate-x-1/2 -translate-y-full flex-col items-center">
-                    <div className={`flex size-9 items-center justify-center rounded-full border-4 border-white shadow-xl transition-colors ${pinEditable ? "bg-emerald-600 text-white" : "bg-slate-900 text-white"}`}>
+                    <div className={`flex size-9 items-center justify-center rounded-full border-4 border-white shadow-xl transition-colors ${pinEditable ? "bg-brand-600 text-white" : "bg-slate-900 text-white"}`}>
                       <MapPin className="size-5" />
                     </div>
                     <div className="h-3 w-0.5 bg-slate-900/70" />
                   </div>
                   {pinEditable && (
-                    <div className="pointer-events-none absolute bottom-3 left-3 z-30 rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-black text-emerald-700 shadow-lg">
+                    <div className="pointer-events-none absolute bottom-3 left-3 z-30 rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-black text-brand-700 shadow-lg">
                       Move map to place pin
                     </div>
                   )}
                   <button type="button" onClick={() => setPinEditable((v) => !v)}
-                    className={`absolute right-3 top-3 z-40 flex size-10 items-center justify-center rounded-full bg-card shadow-lg transition-colors ${pinEditable ? "text-primary ring-2 ring-primary/20" : "text-emerald-600 hover:text-primary"}`}
+                    className={`absolute right-3 top-3 z-40 flex size-10 items-center justify-center rounded-full bg-card shadow-lg transition-colors ${pinEditable ? "text-primary ring-2 ring-primary/20" : "text-brand-600 hover:text-primary"}`}
                     title={pinEditable ? "Lock pin" : "Edit pin"}>
                     <Pencil className="size-5" />
                   </button>

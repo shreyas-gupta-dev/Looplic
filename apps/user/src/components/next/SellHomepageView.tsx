@@ -356,8 +356,8 @@ export function SellHomepageView({
 
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
             <div className="flex flex-col items-center rounded-xl border border-gray-200 bg-white p-5 text-center">
-              <div className="mb-3 flex size-10 items-center justify-center rounded-full bg-green-50">
-                <IndianRupee className="size-5 text-green-600" />
+              <div className="mb-3 flex size-10 items-center justify-center rounded-full bg-brand-50">
+                <IndianRupee className="size-5 text-brand-600" />
               </div>
               <h3 className="mb-1 text-sm font-semibold text-gray-900">Best Price</h3>
               <p className="text-xs text-gray-500">Guaranteed best market value for your device</p>

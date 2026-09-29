@@ -2381,7 +2381,7 @@ export const RepairPricingMatrixTab = ({ serviceType }: { serviceType: CatalogSe
               disabled={settingLoading || settingSaving}
               className={`inline-flex items-center justify-center rounded-xl px-4 py-2 text-xs font-black transition-colors disabled:opacity-60 ${
                 priceDisplayEnabled
-                  ? "bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/15"
+                  ? "bg-brand-500/10 text-brand-700 hover:bg-brand-500/15"
                   : "bg-destructive/10 text-destructive hover:bg-destructive/15"
               }`}
             >

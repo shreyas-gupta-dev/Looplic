@@ -32,11 +32,11 @@ export function BuybackStatusTimeline({ status }: { status: string }) {
         return (
           <li key={step} className="relative flex gap-3 pb-5 last:pb-0">
             {!isLast ? (
-              <span className={`absolute left-[11px] top-6 h-[calc(100%-1.25rem)] w-0.5 ${currentIndex > index ? "bg-emerald-400" : "bg-gray-200"}`} />
+              <span className={`absolute left-[11px] top-6 h-[calc(100%-1.25rem)] w-0.5 ${currentIndex > index ? "bg-brand-400" : "bg-gray-200"}`} />
             ) : null}
             <span
               className={`z-10 flex size-6 shrink-0 items-center justify-center rounded-full border-2 ${
-                reached ? "border-emerald-400 bg-emerald-400" : "border-gray-300 bg-white"
+                reached ? "border-brand-400 bg-brand-400" : "border-gray-300 bg-white"
               }`}
             >
               {reached ? <Check className="size-3.5 text-white" /> : null}

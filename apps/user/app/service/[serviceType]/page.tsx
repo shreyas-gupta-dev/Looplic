@@ -5,7 +5,7 @@ import { CatalogNavbar } from "@/src/components/next/CatalogNavbar";
 import { CrawlableInternalLinks } from "@/src/components/next/CrawlableInternalLinks";
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { ServiceLandingPage } from "@/src/components/next/ServiceLandingPage";
-import { getBrandsForListing, getCatalogSearchIndex } from "@/src/lib/data/catalog";
+import { getBrandsForListing, getCatalogSearchIndex, getRepairCategories } from "@/src/lib/data/catalog";
 import { buildPageMetadata } from "@/src/lib/metadata";
 import { seoServicePages } from "@/src/lib/seo-service-pages";
 
@@ -62,7 +62,11 @@ export default async function ServicePage({ params }: PageProps) {
     notFound();
   }
 
-  const [brands, searchIndex] = await Promise.all([getBrandsForListing(config.listingType), getCatalogSearchIndex(config.listingType)]);
+  const [brands, searchIndex, repairCategories] = await Promise.all([
+    getBrandsForListing(config.listingType),
+    getCatalogSearchIndex(config.listingType),
+    getRepairCategories(config.listingType),
+  ]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -72,6 +76,7 @@ export default async function ServicePage({ params }: PageProps) {
         brands={brands}
         searchSeries={searchIndex.series}
         searchModels={searchIndex.models}
+        repairCategories={repairCategories}
         heroTitle={
           serviceType === "mobile-repair"
             ? "Mobile Phone Repair at Your Doorstep"

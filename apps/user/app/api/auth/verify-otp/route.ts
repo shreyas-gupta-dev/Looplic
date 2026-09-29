@@ -1,45 +1,50 @@
-import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { NextResponse } from "next/server";
+
+import { isPhoneIdentifier, normalizeIdentifier } from "@/src/lib/auth/admin-users";
 import { supabaseUrl } from "@/src/lib/auth/config";
-import crypto from "crypto";
+import { hasVerificationSecret, mintVerificationToken } from "@/src/lib/auth/verification-token";
+import { guardRateLimit } from "@/src/lib/rate-limit";
 
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
 /**
  * POST /api/auth/verify-otp
- * Verifies the OTP code entered by the user.
- * Returns a short-lived verification token that proves the user owns the email/phone.
- * This token is required for signup and sign-in completion.
+ *
+ * Verifies the OTP the customer entered and, on success, returns a short-lived
+ * signed verification token proving they control that email/phone. That token is
+ * what signup and confirm-user require.
+ *
+ * Rate limited per IP so the 6-digit code cannot be brute forced: 10 attempts per
+ * 10 minutes is ~10 of 1,000,000 combinations.
  */
 export async function POST(request: Request) {
+  const limited = await guardRateLimit(request, "auth:verify-otp", 10, 10 * 60);
+  if (limited) return limited;
+
   try {
     const { identifier, token } = await request.json();
 
-    if (!identifier || !token) {
+    if (!identifier || typeof identifier !== "string" || !token || typeof token !== "string") {
       return NextResponse.json({ error: "Identifier and OTP token are required" }, { status: 400 });
     }
 
-    if (!serviceRoleKey) {
+    if (!serviceRoleKey || !hasVerificationSecret()) {
       return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
     }
 
-    const isPhone = identifier.startsWith("+");
-    const normalizedIdentifier = isPhone ? identifier.trim() : identifier.trim().toLowerCase();
+    const isPhone = isPhoneIdentifier(identifier);
+    const normalizedIdentifier = normalizeIdentifier(identifier);
 
-    // Use a fresh Supabase client (not the admin one) to verify OTP
-    // because verifyOtp needs to create a session for the user
+    // A fresh client, not the shared admin one: verifyOtp establishes a session
+    // and must not mutate the long-lived admin client's auth state.
     const supabase = createClient(supabaseUrl, serviceRoleKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    // Verify the OTP. For phone it's always the "sms" type. For email the token
-    // type depends on how it was issued: an existing (confirmed) user receives a
-    // "email"/magiclink OTP, whereas a brand-new user created during the signup
-    // flow (signInWithOtp with shouldCreateUser=true, mailer_autoconfirm off)
-    // receives a "signup" confirmation OTP. We try "email" first and fall back to
-    // "signup" so both login and first-time signup verification succeed.
     let data;
     let error;
+
     if (isPhone) {
       ({ data, error } = await supabase.auth.verifyOtp({
         phone: normalizedIdentifier,
@@ -47,6 +52,11 @@ export async function POST(request: Request) {
         type: "sms",
       }));
     } else {
+      // The email OTP type depends on how it was issued: a confirmed user gets an
+      // "email"/magiclink OTP, a brand-new user created during signup gets a
+      // "signup" confirmation OTP. Try "email" first, fall back to "signup", and
+      // keep the original error if the fallback also fails so the customer sees
+      // the real "invalid or expired" message.
       ({ data, error } = await supabase.auth.verifyOtp({
         email: normalizedIdentifier,
         token: token.trim(),
@@ -59,8 +69,6 @@ export async function POST(request: Request) {
           token: token.trim(),
           type: "signup",
         });
-        // Only adopt the retry result if it actually succeeded; otherwise keep
-        // the original error so the user sees the real "invalid/expired" message.
         if (!retry.error) {
           data = retry.data;
           error = null;
@@ -72,23 +80,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    if (!data.session && !data.user) {
+    if (!data?.session && !data?.user) {
       return NextResponse.json({ error: "OTP verification failed" }, { status: 400 });
     }
 
-    // Generate a short-lived verification token (HMAC-signed)
-    // This proves the user verified their email/phone and is valid for 10 minutes
-    const timestamp = Date.now();
-    const payload = `${normalizedIdentifier}:${timestamp}`;
-    const secret = serviceRoleKey; // Using service role key as HMAC secret
-    const hmac = crypto.createHmac("sha256", secret).update(payload).digest("hex");
-    const verificationToken = Buffer.from(JSON.stringify({ identifier: normalizedIdentifier, timestamp, hmac })).toString("base64url");
-
     return NextResponse.json({
       success: true,
-      verificationToken,
+      verificationToken: mintVerificationToken(normalizedIdentifier),
     });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || "OTP verification failed" }, { status: 500 });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "OTP verification failed";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

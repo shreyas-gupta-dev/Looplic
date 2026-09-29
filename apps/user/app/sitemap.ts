@@ -63,17 +63,24 @@ function buildSellEntries(category: "phone" | "laptop" | "tablet" | "smartwatch"
   ];
 }
 
+import { db } from "@/src/lib/db";
+import { products } from "@/src/lib/db/schema";
+import { eq } from "drizzle-orm";
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [mobileIndex, laptopIndex, tabletIndex, smartwatchIndex, audioIndex] = await Promise.all([
+  const [mobileIndex, laptopIndex, tabletIndex, smartwatchIndex, audioIndex, productRows] = await Promise.all([
     getCatalogSearchIndex("mobile"),
     getCatalogSearchIndex("laptop"),
     getCatalogSearchIndex("tablet"),
     getCatalogSearchIndex("smartwatch"),
     getCatalogSearchIndex("audio"),
+    db.select({ slug: products.slug, updatedAt: products.updatedAt }).from(products).where(eq(products.active, true)).catch(() => []),
   ]);
 
   const entries = [
     createEntry("/", 1, "daily"),
+    createEntry("/buy", 0.9, "daily"),
+    ...productRows.map((p) => createEntry(`/buy/${p.slug}`, 0.8, "daily", p.updatedAt ? new Date(p.updatedAt) : undefined)),
     createEntry("/bangalore", 0.8, "daily"),
     ...bangaloreAreas.map((area) => createEntry(buildBangaloreAreaRoute(area.slug), 0.7, "weekly")),
     ...bangaloreAreas.flatMap((area) => [
@@ -81,10 +88,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       createEntry(buildBangaloreAreaServiceRoute(area.slug, "laptop-repair"), 0.7, "weekly"),
       createEntry(buildBangaloreAreaServiceRoute(area.slug, "cctv"), 0.7, "weekly"),
     ]),
-    createEntry("/about-us", 0.4, "monthly"),
+    createEntry("/about-us", 0.5, "monthly"),
+    createEntry("/careers", 0.5, "monthly"),
+    createEntry("/faq", 0.6, "weekly"),
     createEntry("/contact-us", 0.5, "monthly"),
-    createEntry("/privacy-policy", 0.2, "yearly"),
-    createEntry("/terms-and-conditions", 0.2, "yearly"),
+    createEntry("/partners", 0.5, "monthly"),
+    createEntry("/store-locator", 0.6, "monthly"),
+    createEntry("/privacy-policy", 0.3, "yearly"),
+    createEntry("/terms-and-conditions", 0.3, "yearly"),
+    createEntry("/refund-policy", 0.4, "yearly"),
     createEntry("/blog", 0.6, "weekly"),
     ...blogPosts.map((post) => createEntry(`/blog/${post.slug}`, 0.6, "monthly", new Date(post.updatedAt))),
     // /service-pages and /brand-pages are noindex,follow URL-index pages — they

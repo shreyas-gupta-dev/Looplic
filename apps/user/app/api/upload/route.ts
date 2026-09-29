@@ -13,7 +13,10 @@ const s3 = new S3Client({
   },
 });
 
-export function publicUrlFor(key: string) {
+// Not exported: Next.js only allows route handlers and a fixed set of config
+// exports from a route file, and exporting this made the generated route types
+// fail to compile.
+function publicUrlFor(key: string) {
   return `https://${BUCKET}.s3.${REGION}.amazonaws.com/${key}`;
 }
 

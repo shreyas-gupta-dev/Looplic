@@ -26,7 +26,16 @@ function isLooplicHost(host: string) {
 
 function isLocalHost(host: string) {
   const hostname = host.split(":")[0];
-  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]";
+  return (
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname === "[::1]" ||
+    hostname === "0.0.0.0" ||
+    hostname.startsWith("192.168.") ||
+    hostname.startsWith("10.") ||
+    hostname.startsWith("172.") ||
+    hostname.endsWith(".local")
+  );
 }
 
 function isAllowedHost(host: string) {
@@ -38,26 +47,27 @@ export function middleware(request: NextRequest) {
   const host = request.headers.get("host")?.toLowerCase();
   const forwardedProto = request.headers.get("x-forwarded-proto");
   const code = nextUrl.searchParams.get("code");
+  const isProd = process.env.NODE_ENV === "production";
 
-  // Only looplic.com may serve the site. Any other host (the *.amplifyapp.com
-  // default domain, Amplify preview URLs, raw CloudFront, etc.) redirects to the
-  // canonical domain so it is never "the website" on its own.
-  if (host && !isAllowedHost(host)) {
-    const canonicalUrl = nextUrl.clone();
-    canonicalUrl.protocol = "https:";
-    canonicalUrl.host = CANONICAL_HOST;
-    canonicalUrl.port = "";
+  // In production, enforce canonical domain. In development, allow local navigation without redirecting to looplic.com
+  if (isProd) {
+    if (host && !isAllowedHost(host)) {
+      const canonicalUrl = nextUrl.clone();
+      canonicalUrl.protocol = "https:";
+      canonicalUrl.host = CANONICAL_HOST;
+      canonicalUrl.port = "";
 
-    return NextResponse.redirect(canonicalUrl, 308);
-  }
+      return NextResponse.redirect(canonicalUrl, 308);
+    }
 
-  if (host === APEX_HOST || (host === CANONICAL_HOST && forwardedProto === "http")) {
-    const canonicalUrl = nextUrl.clone();
-    canonicalUrl.protocol = "https:";
-    canonicalUrl.host = CANONICAL_HOST;
-    canonicalUrl.port = "";
+    if (host === APEX_HOST || (host === CANONICAL_HOST && forwardedProto === "http")) {
+      const canonicalUrl = nextUrl.clone();
+      canonicalUrl.protocol = "https:";
+      canonicalUrl.host = CANONICAL_HOST;
+      canonicalUrl.port = "";
 
-    return NextResponse.redirect(canonicalUrl, 308);
+      return NextResponse.redirect(canonicalUrl, 308);
+    }
   }
 
   if (nextUrl.pathname === "/" && code) {

@@ -1080,19 +1080,19 @@ export function UniversalBookingFlow({
               </div>
 
               {/* Map pin */}
-              <div className="rounded-3xl border border-emerald-200 bg-emerald-50/30 p-4 shadow-sm">
+              <div className="rounded-3xl border border-brand-200 bg-brand-50/30 p-4 shadow-sm">
                 <div className="mb-3 flex items-start justify-between gap-3">
                   <h3 className="text-base font-semibold text-foreground">Inspect Location</h3>
-                  <div className="flex size-11 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+                  <div className="flex size-11 items-center justify-center rounded-full bg-brand-100 text-brand-600">
                     <MapPinned className="size-5" />
                   </div>
                 </div>
                 <button type="button" onClick={fetchCurrentLocation} disabled={locating}
-                  className="mb-3 flex w-full items-center justify-center gap-2 rounded-3xl border border-dashed border-emerald-300 bg-emerald-50 px-4 py-2.5 text-sm font-black text-foreground transition-colors hover:border-emerald-400 hover:bg-emerald-100/70 disabled:opacity-60">
-                  {locating ? <Loader2 className="size-4 animate-spin text-emerald-600" /> : <Navigation className="size-4 text-emerald-600" />}
+                  className="mb-3 flex w-full items-center justify-center gap-2 rounded-3xl border border-dashed border-brand-300 bg-brand-50 px-4 py-2.5 text-sm font-black text-foreground transition-colors hover:border-brand-400 hover:bg-brand-100/70 disabled:opacity-60">
+                  {locating ? <Loader2 className="size-4 animate-spin text-brand-600" /> : <Navigation className="size-4 text-brand-600" />}
                   {locating ? "Fetching current location" : "Fetch Current Location"}
                 </button>
-                <div className={`relative h-40 overflow-hidden rounded-3xl border border-border/70 bg-slate-100 shadow-inner ${pinEditable ? "ring-2 ring-emerald-300" : ""}`}>
+                <div className={`relative h-40 overflow-hidden rounded-3xl border border-border/70 bg-slate-100 shadow-inner ${pinEditable ? "ring-2 ring-brand-300" : ""}`}>
                   {!mapReady ? (
                     staticInspectMapUrl
                       ? <img src={staticInspectMapUrl} alt="Map preview" className="absolute inset-0 z-0 size-full object-cover" loading="lazy" referrerPolicy="no-referrer" />
@@ -1107,18 +1107,18 @@ export function UniversalBookingFlow({
                   <div ref={mapElementRef} className={`size-full ${mapReady ? "relative z-10" : "pointer-events-none absolute inset-0 z-0"}`} />
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-16 bg-gradient-to-t from-background/35 to-transparent" />
                   <div className="pointer-events-none absolute left-1/2 top-1/2 z-30 flex -translate-x-1/2 -translate-y-full flex-col items-center">
-                    <div className={`flex size-9 items-center justify-center rounded-full border-4 border-white shadow-xl transition-colors ${pinEditable ? "bg-emerald-600 text-white" : "bg-slate-900 text-white"}`}>
+                    <div className={`flex size-9 items-center justify-center rounded-full border-4 border-white shadow-xl transition-colors ${pinEditable ? "bg-brand-600 text-white" : "bg-slate-900 text-white"}`}>
                       <MapPin className="size-5" />
                     </div>
                     <div className="h-3 w-0.5 bg-slate-900/70" />
                   </div>
                   {pinEditable && (
-                    <div className="pointer-events-none absolute bottom-3 left-3 z-30 rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-black text-emerald-700 shadow-lg">
+                    <div className="pointer-events-none absolute bottom-3 left-3 z-30 rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-black text-brand-700 shadow-lg">
                       Move map to place pin
                     </div>
                   )}
                   <button type="button" onClick={() => setPinEditable((v) => !v)}
-                    className={`absolute right-3 top-3 z-40 flex size-10 items-center justify-center rounded-full bg-card shadow-lg transition-colors ${pinEditable ? "text-primary ring-2 ring-primary/20" : "text-emerald-600 hover:text-primary"}`}
+                    className={`absolute right-3 top-3 z-40 flex size-10 items-center justify-center rounded-full bg-card shadow-lg transition-colors ${pinEditable ? "text-primary ring-2 ring-primary/20" : "text-brand-600 hover:text-primary"}`}
                     title={pinEditable ? "Lock pin" : "Edit pin"}>
                     <Pencil className="size-5" />
                   </button>

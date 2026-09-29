@@ -8,6 +8,8 @@ import { useMemo, useState } from "react";
 import { BrandLogo } from "@/src/components/next/BrandLogo";
 import { CatalogPrefetchLink } from "@/src/components/next/CatalogPrefetchLink";
 import type { CatalogBrand, CatalogModel, CatalogSeries } from "@/src/lib/data/catalog";
+import { renderableImageUrl } from "@/src/lib/images/registry";
+import { withRepairSelection } from "@/src/lib/repair-selection";
 
 type ModelsCatalogPageProps = {
   brand: CatalogBrand;
@@ -23,6 +25,8 @@ type ModelsCatalogPageProps = {
   // In that case there is no meaningful series to show, so hide the series crumb
   // and drop the series name from headings/placeholders.
   collapsedSeries?: boolean;
+  /** Repair category chosen upstream, carried into the booking flow. */
+  repairCategoryId?: string | null;
 };
 
 export function ModelsCatalogPage({
@@ -35,6 +39,7 @@ export function ModelsCatalogPage({
   serviceLabel,
   homeHref = "/",
   collapsedSeries = false,
+  repairCategoryId = null,
 }: ModelsCatalogPageProps) {
   const DeviceIcon = brand.service_type === "laptop" ? Laptop : Smartphone;
   const [search, setSearch] = useState("");
@@ -111,10 +116,13 @@ export function ModelsCatalogPage({
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
-            {filteredModels.map((model, index) => (
+            {filteredModels.map((model, index) => {
+              const modelImage = renderableImageUrl(model.image_url);
+              const brandImage = renderableImageUrl(brand.image_url);
+              return (
               <CatalogPrefetchLink
                 key={model.id}
-                href={`${modelPathPrefix}/${model.slug}`}
+                href={withRepairSelection(`${modelPathPrefix}/${model.slug}`, repairCategoryId)}
                 eagerPrefetch={!search && index < 8}
                 onClick={() => setLoadingHref(`${modelPathPrefix}/${model.slug}`)}
                 className="group flex flex-col items-center gap-2 rounded-2xl border border-border bg-card px-3 py-4 shadow-card-brand transition-all hover:border-primary/30 hover:shadow-elevated-brand active:scale-95"
@@ -122,16 +130,16 @@ export function ModelsCatalogPage({
                 <div className="flex size-20 items-center justify-center rounded-2xl bg-secondary/40 p-2.5">
                   {loadingHref === `${modelPathPrefix}/${model.slug}` ? (
                     <Loader2 className="size-6 animate-spin text-primary" />
-                  ) : model.image_url ? (
+                  ) : modelImage ? (
                     <Image
-                      src={model.image_url}
+                      src={modelImage}
                       alt={model.name}
                       width={72}
                       height={72}
                       className="h-full w-full object-contain"
                     />
-                  ) : brand.image_url ? (
-                    <img src={brand.image_url} alt={brand.name} className="h-full w-full object-contain p-1" loading="lazy" />
+                  ) : brandImage ? (
+                    <img src={brandImage} alt={brand.name} className="h-full w-full object-contain p-1" loading="lazy" />
                   ) : (
                     <DeviceIcon className="size-7 text-primary" />
                   )}
@@ -142,7 +150,8 @@ export function ModelsCatalogPage({
                   </span>
                 </div>
               </CatalogPrefetchLink>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

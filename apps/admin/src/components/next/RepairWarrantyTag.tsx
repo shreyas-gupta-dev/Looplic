@@ -8,7 +8,7 @@ type RepairWarrantyTagProps = {
 };
 
 const toneClass: Record<RepairWarranty["tone"], string> = {
-  premium: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  premium: "border-brandteal-200 bg-brandteal-50 text-brandteal-700",
   standard: "border-sky-200 bg-sky-50 text-sky-700",
   service: "border-amber-200 bg-amber-50 text-amber-700",
 };

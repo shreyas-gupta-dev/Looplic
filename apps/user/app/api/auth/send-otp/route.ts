@@ -1,15 +1,23 @@
 import { NextResponse } from "next/server";
+
+import { isPhoneIdentifier, normalizeIdentifier } from "@/src/lib/auth/admin-users";
+import { guardRateLimit } from "@/src/lib/rate-limit";
 import { getAdminSupabase, hasServiceRole } from "@/src/lib/supabase/server";
 
 /**
  * POST /api/auth/send-otp
- * Sends an OTP to the given email or phone number.
- * For email: uses Supabase's built-in email OTP.
- * For phone: uses Supabase's built-in phone OTP (requires Twilio setup in Supabase dashboard).
  *
- * We generate and store a 6-digit OTP server-side, then send it via Supabase.
+ * Sends a one-time password to an email address or phone number via Supabase.
+ * Supabase owns OTP generation, storage and delivery; we only trigger it.
+ *
+ * Rate limited per IP: each request spends real email/SMS quota against an
+ * address the caller does not have to own, so an unmetered endpoint here is both
+ * a cost and an abuse problem.
  */
 export async function POST(request: Request) {
+  const limited = await guardRateLimit(request, "auth:send-otp", 5, 10 * 60);
+  if (limited) return limited;
+
   try {
     const { identifier } = await request.json();
 
@@ -21,63 +29,51 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
     }
 
-    const isPhone = identifier.startsWith("+");
-    const normalizedIdentifier = isPhone ? identifier.trim() : identifier.trim().toLowerCase();
+    const isPhone = isPhoneIdentifier(identifier);
+    const normalizedIdentifier = normalizeIdentifier(identifier);
 
-    // Validate format
     if (isPhone) {
-      // Basic phone validation: must be +<country code><number>, at least 10 digits
       const phoneDigits = normalizedIdentifier.replace(/[^0-9]/g, "");
       if (phoneDigits.length < 10 || phoneDigits.length > 15) {
         return NextResponse.json({ error: "Invalid phone number format. Use +91XXXXXXXXXX" }, { status: 400 });
       }
-    } else {
-      // Basic email validation
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedIdentifier)) {
-        return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
-      }
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedIdentifier)) {
+      return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
     }
 
     const admin = getAdminSupabase();
 
-    // Supabase handles OTP generation, storage, and delivery internally.
-
     if (isPhone) {
-      // Supabase handles phone OTP via configured SMS provider (Twilio)
-      const { error } = await admin.auth.signInWithOtp({
-        phone: normalizedIdentifier,
-      });
+      // Phone OTP goes out through the SMS provider configured in Supabase.
+      const { error } = await admin.auth.signInWithOtp({ phone: normalizedIdentifier });
       if (error) {
         return NextResponse.json({ error: error.message }, { status: 400 });
       }
-    } else {
-      // Supabase handles email OTP delivery
-      const { error } = await admin.auth.signInWithOtp({
-        email: normalizedIdentifier,
-        options: {
-          shouldCreateUser: false,
-        },
-      });
+      return NextResponse.json({ success: true, message: "OTP sent to phone" });
+    }
 
-      // If user doesn't exist yet (signup flow), we still need to send OTP
-      // Supabase returns error for non-existent users when shouldCreateUser=false
-      if (error) {
-        // Try again with shouldCreateUser: true — this creates a passwordless user
-        // that we'll convert to password user on actual signup
-        const { error: retryError } = await admin.auth.signInWithOtp({
-          email: normalizedIdentifier,
-          options: {
-            shouldCreateUser: true,
-          },
-        });
-        if (retryError) {
-          return NextResponse.json({ error: retryError.message }, { status: 400 });
-        }
+    // Existing users get a magiclink-type OTP. Brand-new users do not exist yet,
+    // and Supabase refuses with shouldCreateUser: false, so we retry allowing
+    // creation — that produces a passwordless user which /api/auth/signup then
+    // completes with a password.
+    const { error } = await admin.auth.signInWithOtp({
+      email: normalizedIdentifier,
+      options: { shouldCreateUser: false },
+    });
+
+    if (error) {
+      const { error: retryError } = await admin.auth.signInWithOtp({
+        email: normalizedIdentifier,
+        options: { shouldCreateUser: true },
+      });
+      if (retryError) {
+        return NextResponse.json({ error: retryError.message }, { status: 400 });
       }
     }
 
-    return NextResponse.json({ success: true, message: `OTP sent to ${isPhone ? "phone" : "email"}` });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || "Failed to send OTP" }, { status: 500 });
+    return NextResponse.json({ success: true, message: "OTP sent to email" });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to send OTP";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

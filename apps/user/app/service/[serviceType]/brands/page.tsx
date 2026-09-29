@@ -8,6 +8,7 @@ import { CrawlableInternalLinks } from "@/src/components/next/CrawlableInternalL
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { getBrandsForListing } from "@/src/lib/data/catalog";
 import { buildPageMetadata } from "@/src/lib/metadata";
+import { readRepairSelection } from "@/src/lib/repair-selection";
 
 export const revalidate = 300;
 
@@ -15,6 +16,7 @@ type PageProps = {
   params: Promise<{
     serviceType: string;
   }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 const serviceMap = {
@@ -53,7 +55,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 }
 
-export default async function ServiceBrandsPage({ params }: PageProps) {
+export default async function ServiceBrandsPage({ params, searchParams }: PageProps) {
   const { serviceType } = await params;
   const config = serviceMap[serviceType as keyof typeof serviceMap];
 
@@ -61,6 +63,7 @@ export default async function ServiceBrandsPage({ params }: PageProps) {
     notFound();
   }
 
+  const repairCategoryId = readRepairSelection(await searchParams);
   const brands = await getBrandsForListing(config.listingType);
 
   return (
@@ -71,6 +74,7 @@ export default async function ServiceBrandsPage({ params }: PageProps) {
         brands={brands}
         serviceLabel={config.label}
         servicePathPrefix={`/service/${serviceType}/brands`}
+        repairCategoryId={repairCategoryId}
       />
       <CrawlableInternalLinks
         title={`${config.label} brand links`}

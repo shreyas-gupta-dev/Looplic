@@ -539,7 +539,11 @@ export const getRepairSubcategories = unstable_cache(async (categoryIds: string[
         return data.map((subcategory) => ({ ...subcategory, price_visible: pricesVisible }));
       }
 
-      const modelPriceMap = new Map(modelPrices.map((price) => [price.repair_subcategory_id, price]));
+      // Explicit generics: rows arrive loosely typed from the data client, and without
+      // them Map.get() returns `unknown` and every field access below fails to compile.
+      const modelPriceMap = new Map<string, { id: string; price: number | string }>(
+            modelPrices.map((price: any) => [price.repair_subcategory_id, price]),
+          );
 
       return data.map((subcategory) => {
         const modelPrice = modelPriceMap.get(subcategory.id);
@@ -615,7 +619,7 @@ export const getCatalogSearchIndex = unstable_cache(async (serviceType: CatalogS
       }
 
       const seriesIds = series.map((seriesItem) => seriesItem.id);
-      const seriesMap = new Map(series.map((seriesItem) => [seriesItem.id, seriesItem]));
+      const seriesMap = new Map<string, SearchSeries>(series.map((seriesItem) => [seriesItem.id, seriesItem]));
 
       const modelsWithSlug = await dataClient
         .from("models")

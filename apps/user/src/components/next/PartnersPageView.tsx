@@ -77,17 +77,17 @@ export function PartnersPageView() {
   }
 
   const inputClassName =
-    "w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-[14px] font-medium text-gray-900 outline-none transition-all placeholder:text-gray-400 focus:border-[#48C479] focus:ring-2 focus:ring-[#48C479]/20";
+    "w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-[14px] font-medium text-gray-900 outline-none transition-all placeholder:text-gray-400 focus:border-[#056EF6] focus:ring-2 focus:ring-[#056EF6]/20";
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       <HomepageNavbar />
 
       {/* Hero */}
-      <section className="bg-gradient-to-b from-green-50 to-white px-4 py-12 text-center">
+      <section className="bg-gradient-to-b from-brand-50 to-white px-4 py-12 text-center">
         <div className="container mx-auto max-w-2xl">
-          <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-[#48C479]/10">
-            <HandshakeIcon className="size-7 text-[#48C479]" />
+          <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-[#056EF6]/10">
+            <HandshakeIcon className="size-7 text-[#056EF6]" />
           </div>
           <h1 className="text-[28px] font-bold text-gray-900 sm:text-[36px]">Partner with Looplic</h1>
           <p className="mt-2 text-[15px] text-gray-500">
@@ -108,8 +108,8 @@ export function PartnersPageView() {
             const Icon = benefit.icon;
             return (
               <div key={benefit.title} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                <div className="mb-3 flex size-11 items-center justify-center rounded-xl bg-green-50">
-                  <Icon className="size-5 text-[#48C479]" />
+                <div className="mb-3 flex size-11 items-center justify-center rounded-xl bg-brand-50">
+                  <Icon className="size-5 text-[#056EF6]" />
                 </div>
                 <h3 className="text-[14px] font-bold text-gray-900">{benefit.title}</h3>
                 <p className="mt-1.5 text-[12px] leading-relaxed text-gray-500">{benefit.description}</p>
@@ -126,9 +126,9 @@ export function PartnersPageView() {
           <p className="mt-2 text-center text-[14px] text-gray-500">Fill in your details and our partnerships team will contact you within 48 hours.</p>
 
           {status === "done" ? (
-            <div className="mt-8 rounded-2xl border border-green-100 bg-green-50/60 p-8 text-center">
+            <div className="mt-8 rounded-2xl border border-brand-100 bg-brand-50/60 p-8 text-center">
               <div className="mx-auto mb-3 flex size-14 items-center justify-center rounded-full bg-white shadow-sm">
-                <Check className="size-7 text-[#48C479]" />
+                <Check className="size-7 text-[#056EF6]" />
               </div>
               <h3 className="text-[16px] font-bold text-gray-900">Application Submitted!</h3>
               <p className="mx-auto mt-2 max-w-sm text-[13px] leading-relaxed text-gray-600">
@@ -208,7 +208,7 @@ export function PartnersPageView() {
               <button
                 type="submit"
                 disabled={status === "submitting"}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#48C479] px-6 py-3.5 text-[14px] font-bold text-white transition-all hover:bg-[#3daa68] disabled:opacity-60"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#056EF6] px-6 py-3.5 text-[14px] font-bold text-white transition-all hover:bg-[#0559C4] disabled:opacity-60"
               >
                 {status === "submitting" ? (
                   <>

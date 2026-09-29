@@ -55,7 +55,7 @@ const OS_SEGMENTS: Array<{ value: BuybackOsSegment; label: string }> = [
 const segmentChipClass = (segment: string) =>
   segment === "apple"
     ? "rounded-full bg-sky-500/10 px-2 py-0.5 text-[10px] font-semibold text-sky-600"
-    : "rounded-full bg-lime-500/10 px-2 py-0.5 text-[10px] font-semibold text-lime-600";
+    : "rounded-full bg-brandteal-500/10 px-2 py-0.5 text-[10px] font-semibold text-brandteal-600";
 
 const inputClass =
   "w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-primary";
@@ -87,7 +87,7 @@ const Modal = ({ open, onClose, title, children }: { open: boolean; onClose: () 
 
 const effectChipClass = (t: BuybackEffectType) =>
   t.startsWith("add")
-    ? "rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-bold text-emerald-600"
+    ? "rounded-full bg-brand-500/10 px-2.5 py-1 text-xs font-bold text-brand-600"
     : "rounded-full bg-red-500/10 px-2.5 py-1 text-xs font-bold text-red-500";
 
 // ─── Option editor modal (Add/Edit option) ───────────────────────────────────
@@ -322,7 +322,7 @@ function VariantsEditor({
               {busyId === variant.id ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
             </button>
             <button
-              className={"rounded-full px-2.5 py-1 text-[10px] font-bold " + (variant.active ? "bg-emerald-500/10 text-emerald-600" : "bg-secondary text-muted-foreground")}
+              className={"rounded-full px-2.5 py-1 text-[10px] font-bold " + (variant.active ? "bg-brandteal-500/10 text-brandteal-600" : "bg-secondary text-muted-foreground")}
               onClick={() => toggleVariantActive(variant)}
             >
               {variant.active ? "Active" : "Inactive"}
@@ -521,7 +521,7 @@ function BuybackPricesSection({ serviceType, canDelete }: { serviceType: Service
                 </button>
                 {price && (
                   <button
-                    className={"rounded-full px-3 py-1.5 text-[11px] font-bold " + (price.active ? "bg-emerald-500/10 text-emerald-600" : "bg-secondary text-muted-foreground")}
+                    className={"rounded-full px-3 py-1.5 text-[11px] font-bold " + (price.active ? "bg-brandteal-500/10 text-brandteal-600" : "bg-secondary text-muted-foreground")}
                     onClick={() => toggleActive(m.id)}
                     title="Toggle whether this model is offered for buyback"
                   >
@@ -924,7 +924,7 @@ function QuotePreviewSection({
                         }
                       >
                         <span>{o.label}</span>
-                        <span className={"ml-2 " + (o.effect_type.startsWith("add") ? "text-emerald-600" : "text-red-500")}>
+                        <span className={"ml-2 " + (o.effect_type.startsWith("add") ? "text-brandteal-600" : "text-red-500")}>
                           {formatEffect(o.effect_type, o.amount)}
                         </span>
                       </button>
@@ -948,7 +948,7 @@ function QuotePreviewSection({
               {quote!.lines.map((l) => (
                 <div key={l.optionId} className="flex items-center justify-between gap-2 text-xs">
                   <span className="truncate text-muted-foreground">{l.optionLabel}</span>
-                  <span className={"font-semibold " + (l.impact >= 0 ? "text-emerald-600" : "text-red-500")}>
+                  <span className={"font-semibold " + (l.impact >= 0 ? "text-brandteal-600" : "text-red-500")}>
                     {l.impact >= 0 ? "+" : "−"}₹{Math.abs(l.impact).toLocaleString("en-IN")}
                   </span>
                 </div>
@@ -1057,7 +1057,7 @@ const STATUS_STYLES: Record<string, string> = {
   quote_requested: "bg-sky-500/10 text-sky-600",
   confirmed: "bg-blue-500/10 text-blue-600",
   picked_up: "bg-violet-500/10 text-violet-600",
-  paid: "bg-emerald-500/10 text-emerald-600",
+  paid: "bg-brandteal-500/10 text-brandteal-600",
   cancelled: "bg-red-500/10 text-red-500",
 };
 

@@ -29,8 +29,35 @@ export const metadata: Metadata = buildPageMetadata({
   ],
 });
 
+import { getFeaturedProducts } from "@/src/lib/data/products";
+
 export default async function HomePage() {
-  const [brands, searchIndex] = await Promise.all([getBrandsForListing("mobile"), getCatalogSearchIndex("mobile")]);
+  const [brands, searchIndex, featuredProducts] = await Promise.all([
+    getBrandsForListing("mobile"),
+    getCatalogSearchIndex("mobile"),
+    getFeaturedProducts(),
+  ]);
+
+  // Curate top series and models per brand to avoid sending hundreds of rows down the wire
+  const brandSeriesCount = new Map<string, number>();
+  const curatedSeries = searchIndex.series.filter((s) => {
+    const current = brandSeriesCount.get(s.brand_slug) || 0;
+    if (current < 15) {
+      brandSeriesCount.set(s.brand_slug, current + 1);
+      return true;
+    }
+    return false;
+  });
+
+  const brandModelCount = new Map<string, number>();
+  const curatedModels = searchIndex.models.filter((m) => {
+    const current = brandModelCount.get(m.brand_slug) || 0;
+    if (current < 15) {
+      brandModelCount.set(m.brand_slug, current + 1);
+      return true;
+    }
+    return false;
+  });
 
   return (
     <>
@@ -56,7 +83,13 @@ export default async function HomePage() {
           }),
         }}
       />
-      <NewHomepageView brands={brands} searchBrands={searchIndex.brands} searchSeries={searchIndex.series} searchModels={searchIndex.models} />
+      <NewHomepageView
+        brands={brands}
+        searchBrands={searchIndex.brands}
+        searchSeries={curatedSeries}
+        searchModels={curatedModels}
+        featuredProducts={featuredProducts}
+      />
     </>
   );
 }

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400" role="img" aria-hidden="true">
+  <defs>
+    <linearGradient id="backdrop" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#56C68A" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#29A37B" stop-opacity="0.07"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#56C68A"/>
+      <stop offset="100%" stop-color="#29A37B"/>
+    </linearGradient>
+    <linearGradient id="tint" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#56C68A" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#29A37B" stop-opacity="0.10"/>
+    </linearGradient>
+  </defs>
+  <rect x="44" y="44" width="312" height="312" rx="94" fill="url(#backdrop)"/>
+  <g fill="none" stroke="#1F2A33" stroke-width="13" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="120" y="154" width="98" height="98" rx="22"/>
+    <line x1="148" y1="154" x2="148" y2="122"/>
+    <line x1="192" y1="154" x2="192" y2="122"/>
+    <path d="M218 202h30a34 34 0 0 1 0 68h-6" stroke="url(#accent)"/>
+    <rect x="222" y="282" width="58" height="30" rx="12" stroke="url(#accent)"/>
+  </g>
+</svg>

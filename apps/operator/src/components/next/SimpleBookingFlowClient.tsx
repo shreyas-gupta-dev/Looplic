@@ -344,7 +344,7 @@ export function SimpleBookingFlowClient({ serviceSlug }: { serviceSlug: string }
           </p>
           <Link
             href={buildCctvBrandSelectionHref(selectedCctvService)}
-            className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#0096FF] to-[#00D28E] px-6 py-3 text-sm font-bold text-white"
+            className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#056EF6] to-[#00D69A] px-6 py-3 text-sm font-bold text-white"
           >
             Choose Brand
           </Link>
@@ -366,7 +366,7 @@ export function SimpleBookingFlowClient({ serviceSlug }: { serviceSlug: string }
           </p>
           <Link
             href={`/auth?redirect=${encodeURIComponent(bookingPath)}`}
-            className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#0096FF] to-[#00D28E] px-6 py-3 text-sm font-bold text-white"
+            className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#056EF6] to-[#00D69A] px-6 py-3 text-sm font-bold text-white"
           >
             <LogIn className="size-4" /> Login or Create Account
           </Link>
@@ -379,7 +379,7 @@ export function SimpleBookingFlowClient({ serviceSlug }: { serviceSlug: string }
     return (
       <main className="flex flex-1 items-center justify-center p-6">
         <div className="w-full max-w-sm text-center">
-          <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-gradient-to-r from-[#0096FF] to-[#00D28E]">
+          <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-gradient-to-r from-[#056EF6] to-[#00D69A]">
             <Check className="size-8 text-white" />
           </div>
           <h2 className="mb-2 text-xl font-semibold text-foreground">Booking Confirmed!</h2>
@@ -387,7 +387,7 @@ export function SimpleBookingFlowClient({ serviceSlug }: { serviceSlug: string }
           <p className="mb-1 text-sm text-muted-foreground"><strong>{serviceLabel}</strong></p>
           <p className="mb-1 text-xs text-muted-foreground">{scheduledDate} | {timeSlot}</p>
           <p className="mb-6 text-xs text-muted-foreground">We&apos;ll contact you at <strong>{phone}</strong> to confirm your slot.</p>
-          <Link href="/" className="inline-block rounded-2xl bg-gradient-to-r from-[#0096FF] to-[#00D28E] px-6 py-3 text-sm font-bold text-white">Back to Home</Link>
+          <Link href="/" className="inline-block rounded-2xl bg-gradient-to-r from-[#056EF6] to-[#00D69A] px-6 py-3 text-sm font-bold text-white">Back to Home</Link>
         </div>
       </main>
     );
@@ -396,19 +396,19 @@ export function SimpleBookingFlowClient({ serviceSlug }: { serviceSlug: string }
   return (
     <main className="container max-w-lg mx-auto py-10 px-4">
       {/* Service info strip */}
-      <div className="mb-6 rounded-2xl bg-gradient-to-r from-[#0096FF]/10 to-[#00D28E]/10 border border-[#0096FF]/20 p-4">
+      <div className="mb-6 rounded-2xl bg-gradient-to-r from-[#056EF6]/10 to-[#00D69A]/10 border border-[#056EF6]/20 p-4">
         <div className="text-sm font-bold text-foreground">{serviceLabel}</div>
         <div className="mt-1 text-xs text-muted-foreground">{serviceDescription}</div>
       </div>
 
       {/* Step indicator */}
       <div className="mb-6 flex items-center gap-3">
-        <div className={`flex size-7 items-center justify-center rounded-full text-xs font-bold ${step === "details" ? "bg-gradient-to-r from-[#0096FF] to-[#00D28E] text-white" : "bg-emerald-100 text-emerald-700"}`}>
+        <div className={`flex size-7 items-center justify-center rounded-full text-xs font-bold ${step === "details" ? "bg-gradient-to-r from-[#056EF6] to-[#00D69A] text-white" : "bg-brand-100 text-brand-700"}`}>
           {step === "schedule" ? <Check className="size-3.5" /> : "1"}
         </div>
         <div className="text-xs font-semibold text-muted-foreground">Your Details</div>
         <div className="h-px flex-1 bg-border" />
-        <div className={`flex size-7 items-center justify-center rounded-full text-xs font-bold ${step === "schedule" ? "bg-gradient-to-r from-[#0096FF] to-[#00D28E] text-white" : "bg-secondary text-muted-foreground"}`}>2</div>
+        <div className={`flex size-7 items-center justify-center rounded-full text-xs font-bold ${step === "schedule" ? "bg-gradient-to-r from-[#056EF6] to-[#00D69A] text-white" : "bg-secondary text-muted-foreground"}`}>2</div>
         <div className="text-xs font-semibold text-muted-foreground">Schedule</div>
       </div>
 
@@ -456,7 +456,7 @@ export function SimpleBookingFlowClient({ serviceSlug }: { serviceSlug: string }
               <textarea placeholder="Notes / requirements (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} maxLength={300} className="w-full rounded-xl border border-border bg-background py-3 px-4 text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
             </div>
           </div>
-          <button type="button" onClick={handleSaveDetails} className="mt-4 w-full rounded-2xl bg-gradient-to-r from-[#0096FF] to-[#00D28E] py-3 text-sm font-bold text-white disabled:opacity-60">
+          <button type="button" onClick={handleSaveDetails} className="mt-4 w-full rounded-2xl bg-gradient-to-r from-[#056EF6] to-[#00D69A] py-3 text-sm font-bold text-white disabled:opacity-60">
             Save & Continue
           </button>
         </section>
@@ -490,7 +490,7 @@ export function SimpleBookingFlowClient({ serviceSlug }: { serviceSlug: string }
               </label>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {TIME_SLOTS.map((slot) => (
-                  <button key={slot} type="button" onClick={() => setTimeSlot(slot)} className={`flex items-center gap-2 rounded-2xl border px-4 py-3 text-left text-sm font-bold transition-all ${timeSlot === slot ? "border-[#0096FF] bg-blue-50 text-foreground" : "border-border bg-background text-muted-foreground hover:border-[#0096FF]/40"}`}>
+                  <button key={slot} type="button" onClick={() => setTimeSlot(slot)} className={`flex items-center gap-2 rounded-2xl border px-4 py-3 text-left text-sm font-bold transition-all ${timeSlot === slot ? "border-[#056EF6] bg-blue-50 text-foreground" : "border-border bg-background text-muted-foreground hover:border-[#056EF6]/40"}`}>
                     <Clock3 className="size-4" />{slot}
                   </button>
                 ))}
@@ -501,7 +501,7 @@ export function SimpleBookingFlowClient({ serviceSlug }: { serviceSlug: string }
                 Visiting charge: {formatVisitingCharge(serviceType)}. This visiting charge is waived once you claim the service from Looplic. If you do not claim the service, you have to pay the visiting charge.
               </div>
             ) : null}
-            <button type="button" onClick={handleBook} disabled={submitting || !scheduledDate || !timeSlot} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#0096FF] to-[#00D28E] py-3.5 text-sm font-extrabold text-white transition-transform active:scale-[0.98] disabled:opacity-60">
+            <button type="button" onClick={handleBook} disabled={submitting || !scheduledDate || !timeSlot} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#056EF6] to-[#00D69A] py-3.5 text-sm font-extrabold text-white transition-transform active:scale-[0.98] disabled:opacity-60">
               {submitting ? <Loader2 className="size-4 animate-spin" /> : null}
               {submitting ? "Booking..." : "Confirm Booking"}
             </button>

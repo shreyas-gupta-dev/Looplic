@@ -17,7 +17,7 @@ export function InfoPageLayout({ eyebrow, title, description, children }: InfoPa
     <div className="min-h-screen bg-background">
       <CatalogNavbar />
       <main>
-        <section className="border-b border-border bg-[radial-gradient(circle_at_top_left,_hsl(211_100%_50%_/_0.12),_transparent_28%),radial-gradient(circle_at_80%_12%,_hsl(165_100%_42%_/_0.12),_transparent_24%),linear-gradient(180deg,_rgba(255,255,255,0)_0%,_rgba(248,250,252,0.96)_100%)]">
+        <section className="border-b border-border bg-[radial-gradient(circle_at_top_left,_hsl(214_96%_49%_/_0.12),_transparent_28%),radial-gradient(circle_at_80%_12%,_hsl(163_100%_42%_/_0.12),_transparent_24%),linear-gradient(180deg,_rgba(255,255,255,0)_0%,_rgba(248,250,252,0.96)_100%)]">
           <div className="container max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
             <div className="inline-flex rounded-full border border-primary/15 bg-primary/[0.06] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
               {eyebrow}

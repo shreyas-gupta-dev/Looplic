@@ -54,23 +54,23 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/admin/:path*",
-        destination: "https://admin.looplic.com/admin/:path*",
-        permanent: true,
+        destination: process.env.NODE_ENV === "production" ? "https://admin.looplic.com/admin/:path*" : "http://localhost:3001/admin/:path*",
+        permanent: false,
       },
       {
         source: "/operator/:path*",
-        destination: "https://admin.looplic.com/operator/:path*",
-        permanent: true,
+        destination: process.env.NODE_ENV === "production" ? "https://admin.looplic.com/operator/:path*" : "http://localhost:3003/operator/:path*",
+        permanent: false,
       },
       {
         source: "/operation/:path*",
-        destination: "https://admin.looplic.com/operation/:path*",
-        permanent: true,
+        destination: process.env.NODE_ENV === "production" ? "https://admin.looplic.com/operation/:path*" : "http://localhost:3003/operation/:path*",
+        permanent: false,
       },
       {
         source: "/technician/:path*",
-        destination: "https://tech.looplic.com/technician/:path*",
-        permanent: true,
+        destination: process.env.NODE_ENV === "production" ? "https://tech.looplic.com/technician/:path*" : "http://localhost:3002/technician/:path*",
+        permanent: false,
       },
     ];
   },
@@ -121,11 +121,18 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
+    minimumCacheTTL: 86400,
+    formats: ["image/webp"],
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "**",
-      },
+      { protocol: "https", hostname: "looplic-assets.s3.ap-south-1.amazonaws.com" },
+      { protocol: "https", hostname: "looplic-assets.s3.amazonaws.com" },
+      { protocol: "https", hostname: "res.cloudinary.com" },
+      { protocol: "https", hostname: "*.supabase.co" },
+      { protocol: "https", hostname: "s3ng.cashify.in" },
+      { protocol: "https", hostname: "*.cashify.in" },
+      { protocol: "https", hostname: "upload.wikimedia.org" },
+      { protocol: "https", hostname: "www.google.com" },
+      { protocol: "https", hostname: "images.unsplash.com" },
     ],
   },
 };

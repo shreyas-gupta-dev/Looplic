@@ -59,3 +59,38 @@ export async function enforceRateLimit(request: Request, scope: string, limit: n
     return { allowed: true, limit, remaining: limit, resetAt: null };
   }
 }
+
+/**
+ * Route-handler convenience wrapper: returns a ready-to-send 429 when the
+ * caller is over budget, or null when the request may proceed.
+ *
+ * Use this on every endpoint that sends a message, mints a credential or
+ * mutates auth state. Without it, /api/auth/send-otp lets an anonymous caller
+ * spend unlimited email/SMS quota against arbitrary addresses.
+ */
+export async function guardRateLimit(
+  request: Request,
+  scope: string,
+  limit: number,
+  windowSeconds: number,
+): Promise<Response | null> {
+  const result = await enforceRateLimit(request, scope, limit, windowSeconds);
+  if (result.allowed) return null;
+
+  const retryAfterSeconds = result.resetAt
+    ? Math.max(1, Math.ceil((result.resetAt - Date.now()) / 1000))
+    : windowSeconds;
+
+  return new Response(
+    JSON.stringify({ error: "Too many attempts. Please wait a moment and try again." }),
+    {
+      status: 429,
+      headers: {
+        "Content-Type": "application/json",
+        "Retry-After": String(retryAfterSeconds),
+        "X-RateLimit-Limit": String(result.limit),
+        "X-RateLimit-Remaining": String(result.remaining),
+      },
+    },
+  );
+}

@@ -10,6 +10,7 @@ import { BreadcrumbJsonLd } from "@/src/components/seo/BreadcrumbJsonLd";
 import { getModelsForSeries } from "@/src/lib/data/catalog";
 import { resolveSeriesPageData } from "@/src/lib/data/catalog-page";
 import { buildPageMetadata } from "@/src/lib/metadata";
+import { readRepairSelection } from "@/src/lib/repair-selection";
 
 // Pre-render at build time + ISR instead of force-dynamic, so series/model lists
 // are baked from the database at build and never render empty when the runtime
@@ -22,6 +23,7 @@ type PageProps = {
     brandSlug: string;
     seriesSlug: string;
   }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 const serviceMap = {
@@ -72,7 +74,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 }
 
-export default async function ServiceSeriesPage({ params }: PageProps) {
+export default async function ServiceSeriesPage({ params, searchParams }: PageProps) {
   const { serviceType, brandSlug, seriesSlug } = await params;
   const config = serviceMap[serviceType as keyof typeof serviceMap];
 
@@ -80,6 +82,7 @@ export default async function ServiceSeriesPage({ params }: PageProps) {
     notFound();
   }
 
+  const repairCategoryId = readRepairSelection(await searchParams);
   const { brand, series } = await resolveSeriesPageData(brandSlug, seriesSlug, config.listingType);
   if (!brand) {
     notFound();
@@ -111,6 +114,7 @@ export default async function ServiceSeriesPage({ params }: PageProps) {
         seriesPath={`/service/${serviceType}/brands/${brand.slug}`}
         modelPathPrefix={`/service/${serviceType}/book/${brand.slug}/${series.slug}`}
         serviceLabel={config.label}
+        repairCategoryId={repairCategoryId}
       />
       <CrawlableInternalLinks
         title={`${brand.name} ${series.name} model links`}

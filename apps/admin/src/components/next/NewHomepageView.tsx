@@ -46,8 +46,8 @@ const services = [
     badge: "INSTALL",
     href: "/service/cctv",
     icon: Camera,
-    iconColor: "text-emerald-500",
-    iconBg: "bg-emerald-50",
+    iconColor: "text-brand-500",
+    iconBg: "bg-brand-50",
   },
   {
     id: "it-support",
@@ -56,8 +56,8 @@ const services = [
     badge: "REMOTE",
     href: "/service/it-support",
     icon: LifeBuoy,
-    iconColor: "text-emerald-500",
-    iconBg: "bg-emerald-50",
+    iconColor: "text-brand-500",
+    iconBg: "bg-brand-50",
   },
   {
     id: "managed-it-services",
@@ -124,7 +124,7 @@ export function NewHomepageView({
           <h1 className="text-[24px] sm:text-[28px] md:text-[44px] font-semibold text-[#111827] leading-[1.05] tracking-tight max-w-[21rem] sm:max-w-xl mx-auto">
             <span className="block">Doorstep Mobile Repair,</span>
             <span className="block">
-              <span className="text-[#0096FF]">Laptop Repair</span> & <span className="text-[#00D28E]">Tech Support</span> in 30 Minutes
+              <span className="text-[#056EF6]">Laptop Repair</span> & <span className="text-[#00D69A]">Tech Support</span> in 30 Minutes
             </span>
           </h1>
           <div className="max-w-xl mx-auto rounded-full bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-1.5 flex items-center mt-6">
@@ -150,8 +150,8 @@ export function NewHomepageView({
       <section className="pt-12 pb-6 px-4 container max-w-3xl mx-auto">
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">
-            <div className="h-1 w-6 bg-[#00B4D8] rounded-full"></div>
-            <span className="text-xs font-bold text-[#00B4D8] tracking-widest uppercase">
+            <div className="h-1 w-6 bg-[#01B5B5] rounded-full"></div>
+            <span className="text-xs font-bold text-[#01B5B5] tracking-widest uppercase">
               Pick a Service
             </span>
           </div>
@@ -209,8 +209,8 @@ export function NewHomepageView({
       <section className="py-6 px-4 container max-w-3xl mx-auto">
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">
-            <div className="h-1 w-6 bg-[#0096FF] rounded-full"></div>
-            <span className="text-xs font-bold text-[#0096FF] tracking-widest uppercase">
+            <div className="h-1 w-6 bg-[#056EF6] rounded-full"></div>
+            <span className="text-xs font-bold text-[#056EF6] tracking-widest uppercase">
               RECOMMENDED
             </span>
           </div>
@@ -263,8 +263,8 @@ export function NewHomepageView({
       <section className="py-12 px-4 container max-w-[1200px] mx-auto">
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-2">
-            <div className="h-1 w-6 bg-[#00B4D8] rounded-full"></div>
-            <span className="text-xs font-bold text-[#0096FF] tracking-widest uppercase">
+            <div className="h-1 w-6 bg-[#01B5B5] rounded-full"></div>
+            <span className="text-xs font-bold text-[#056EF6] tracking-widest uppercase">
               TOP SERVICES
             </span>
           </div>
@@ -306,7 +306,7 @@ export function NewHomepageView({
               </div>
             </div>
             
-            <Link href="/service/mobile-repair" className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#0096FF] to-[#00D28E] px-5 py-2.5 sm:px-6 sm:py-3 text-[12px] sm:text-[13px] font-bold text-white transition-all hover:opacity-90 self-start shadow-sm shadow-blue-500/20">
+            <Link href="/service/mobile-repair" className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#056EF6] to-[#00D69A] px-5 py-2.5 sm:px-6 sm:py-3 text-[12px] sm:text-[13px] font-bold text-white transition-all hover:opacity-90 self-start shadow-sm shadow-blue-500/20">
               Get Free Quote <ArrowRight className="size-3.5 sm:size-4" />
             </Link>
           </div>
@@ -343,7 +343,7 @@ export function NewHomepageView({
               </div>
             </div>
             
-            <Link href="/service/laptop-repair" className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#0096FF] to-[#00D28E] px-5 py-2.5 sm:px-6 sm:py-3 text-[12px] sm:text-[13px] font-bold text-white transition-all hover:opacity-90 self-start shadow-sm shadow-blue-500/20">
+            <Link href="/service/laptop-repair" className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#056EF6] to-[#00D69A] px-5 py-2.5 sm:px-6 sm:py-3 text-[12px] sm:text-[13px] font-bold text-white transition-all hover:opacity-90 self-start shadow-sm shadow-blue-500/20">
               Schedule Pickup <ArrowRight className="size-3.5 sm:size-4" />
             </Link>
           </div>
@@ -364,7 +364,7 @@ export function NewHomepageView({
           padding: 12px 4px;
         }
         .search-wrapper button {
-          background: linear-gradient(to right, #0096FF, #00D28E) !important;
+          background: linear-gradient(to right, #056EF6, #00D69A) !important;
           border-radius: 9999px !important;
           padding: 10px !important;
           margin-right: 2px !important;

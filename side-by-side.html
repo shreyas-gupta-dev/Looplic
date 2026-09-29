@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Looplic Localhost - Side by Side View</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090d16;
+      --surface: #101726;
+      --surface-border: rgba(255, 255, 255, 0.08);
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --user-accent: #3b82f6;
+      --admin-accent: #10b981;
+      --tech-accent: #f59e0b;
+      --op-accent: #d946ef;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    header {
+      background: rgba(16, 23, 38, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--surface-border);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      z-index: 10;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #2563eb, #06b6d4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+      color: white;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+    }
+
+    .brand-title {
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-badge {
+      font-size: 11px;
+      font-weight: 600;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+      padding: 3px 8px;
+      border-radius: 9999px;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-group {
+      display: flex;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 3px;
+      border-radius: 8px;
+      border: 1px solid var(--surface-border);
+    }
+
+    .btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn:hover {
+      color: var(--text-main);
+    }
+
+    .btn.active {
+      background: #2563eb;
+      color: white;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+    }
+
+    .action-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--surface-border);
+      color: var(--text-main);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .action-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    main {
+      flex: 1;
+      padding: 12px;
+      overflow: hidden;
+      display: grid;
+      gap: 12px;
+      transition: all 0.3s ease;
+    }
+
+    /* Layout modes */
+    main.layout-4cols {
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: 1fr;
+    }
+
+    main.layout-grid {
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+    }
+
+    main.layout-2cols {
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: 1fr;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .panel:hover {
+      border-color: rgba(255, 255, 255, 0.16);
+    }
+
+    .panel-header {
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--surface-border);
+      background: rgba(255, 255, 255, 0.02);
+      font-size: 13px;
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+    }
+
+    .panel-tag {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .panel-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .icon-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .icon-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .panel-iframe-wrapper {
+      flex: 1;
+      position: relative;
+      background: #ffffff;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: white;
+      transition: width 0.25s ease;
+    }
+
+    /* Device sizes */
+    body.device-mobile iframe {
+      width: 390px;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.3);
+    }
+
+    body.device-tablet iframe {
+      width: 768px;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Color accents */
+    .panel.user { border-top: 3px solid var(--user-accent); }
+    .panel.user .panel-tag { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+
+    .panel.admin { border-top: 3px solid var(--admin-accent); }
+    .panel.admin .panel-tag { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+
+    .panel.tech { border-top: 3px solid var(--tech-accent); }
+    .panel.tech .panel-tag { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+
+    .panel.operator { border-top: 3px solid var(--op-accent); }
+    .panel.operator .panel-tag { background: rgba(217, 70, 239, 0.15); color: #e879f9; }
+  </style>
+</head>
+<body class="device-full">
+  <header>
+    <div class="brand">
+      <div class="brand-logo">L</div>
+      <div class="brand-title">Looplic Monorepo</div>
+      <div class="brand-badge">4 Apps Active</div>
+    </div>
+
+    <div class="controls">
+      <!-- Layout Modes -->
+      <div class="btn-group">
+        <button class="btn active" onclick="setLayout('4cols', this)" title="4 Columns Side by Side">4 Side-by-Side</button>
+        <button class="btn" onclick="setLayout('grid', this)" title="2x2 Quad Grid">2x2 Grid</button>
+        <button class="btn" onclick="setLayout('2cols', this)" title="2 Split (User & Admin)">User + Admin</button>
+      </div>
+
+      <!-- Device Size -->
+      <div class="btn-group">
+        <button class="btn active" onclick="setDevice('full', this)">Responsive</button>
+        <button class="btn" onclick="setDevice('mobile', this)">Mobile (390px)</button>
+        <button class="btn" onclick="setDevice('tablet', this)">Tablet (768px)</button>
+      </div>
+
+      <button class="action-btn" onclick="refreshAll()" title="Reload All Applications">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+        Refresh All
+      </button>
+    </div>
+  </header>
+
+  <main id="view-container" class="layout-4cols">
+    <!-- User App -->
+    <section class="panel user">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span class="status-dot"></span>
+          <span>User Web App</span>
+          <span class="panel-tag">:3000</span>
+        </div>
+        <div class="panel-actions">
+          <button class="icon-btn" onclick="reloadFrame('frame-user')" title="Reload User App">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+          </button>
+          <a class="icon-btn" href="http://localhost:3000" target="_blank" title="Open in New Tab">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="panel-iframe-wrapper">
+        <iframe id="frame-user" src="http://localhost:3000"></iframe>
+      </div>
+    </section>
+
+    <!-- Admin App -->
+    <section class="panel admin">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span class="status-dot"></span>
+          <span>Admin Portal</span>
+          <span class="panel-tag">:3001</span>
+        </div>
+        <div class="panel-actions">
+          <button class="icon-btn" onclick="reloadFrame('frame-admin')" title="Reload Admin App">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+          </button>
+          <a class="icon-btn" href="http://localhost:3001" target="_blank" title="Open in New Tab">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="panel-iframe-wrapper">
+        <iframe id="frame-admin" src="http://localhost:3001"></iframe>
+      </div>
+    </section>
+
+    <!-- Technician App -->
+    <section class="panel tech" id="panel-tech">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span class="status-dot"></span>
+          <span>Technician App</span>
+          <span class="panel-tag">:3002</span>
+        </div>
+        <div class="panel-actions">
+          <button class="icon-btn" onclick="reloadFrame('frame-tech')" title="Reload Technician App">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+          </button>
+          <a class="icon-btn" href="http://localhost:3002" target="_blank" title="Open in New Tab">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="panel-iframe-wrapper">
+        <iframe id="frame-tech" src="http://localhost:3002"></iframe>
+      </div>
+    </section>
+
+    <!-- Operator App -->
+    <section class="panel operator" id="panel-operator">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span class="status-dot"></span>
+          <span>Operator App</span>
+          <span class="panel-tag">:3003</span>
+        </div>
+        <div class="panel-actions">
+          <button class="icon-btn" onclick="reloadFrame('frame-operator')" title="Reload Operator App">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+          </button>
+          <a class="icon-btn" href="http://localhost:3003" target="_blank" title="Open in New Tab">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="panel-iframe-wrapper">
+        <iframe id="frame-operator" src="http://localhost:3003"></iframe>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function setLayout(layout, btn) {
+      const container = document.getElementById('view-container');
+      const techPanel = document.getElementById('panel-tech');
+      const opPanel = document.getElementById('panel-operator');
+
+      container.className = 'layout-' + layout;
+      btn.parentElement.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      if (layout === '2cols') {
+        techPanel.style.display = 'none';
+        opPanel.style.display = 'none';
+      } else {
+        techPanel.style.display = 'flex';
+        opPanel.style.display = 'flex';
+      }
+    }
+
+    function setDevice(device, btn) {
+      document.body.className = 'device-' + device;
+      btn.parentElement.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function reloadFrame(frameId) {
+      const frame = document.getElementById(frameId);
+      if (frame) {
+        frame.src = frame.src;
+      }
+    }
+
+    function refreshAll() {
+      ['frame-user', 'frame-admin', 'frame-tech', 'frame-operator'].forEach(reloadFrame);
+    }
+  </script>
+</body>
+</html>

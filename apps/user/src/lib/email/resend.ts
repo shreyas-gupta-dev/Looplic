@@ -130,7 +130,7 @@ function buildLeadEmail(payload: LeadPayload) {
   const html = `
     <div style="margin:0;padding:24px;background:#f8fafc;font-family:Arial,sans-serif;color:#0f172a;">
       <div style="max-width:680px;margin:0 auto;border:1px solid #e5e7eb;border-radius:16px;overflow:hidden;background:#ffffff;">
-        <div style="padding:20px 22px;background:#0096ff;color:#ffffff;">
+        <div style="padding:20px 22px;background:#056EF6;color:#ffffff;">
           <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Looplic Lead</div>
           <h1 style="margin:8px 0 0;font-size:22px;line-height:1.3;">${escapeHtml(payload.title || "New lead received")}</h1>
         </div>
@@ -194,7 +194,7 @@ function buildCustomerBookingEmail(payload: LeadPayload) {
       <div style="display:none;max-height:0;overflow:hidden;opacity:0;">Your Looplic booking request has been received. Our technician will reach out shortly.</div>
       <div style="max-width:720px;margin:0 auto;padding:28px 16px;">
         <div style="overflow:hidden;border:1px solid #dbe8f1;border-radius:24px;background:#ffffff;box-shadow:0 18px 50px rgba(15,23,42,0.08);">
-          <div style="padding:24px;background:#0096ff;border-bottom:1px solid #0284c7;">
+          <div style="padding:24px;background:#056EF6;border-bottom:1px solid #0559C4;">
             <img src="${LOGO_URL}" width="170" alt="Looplic" style="display:block;width:170px;max-width:170px;height:auto;border:0;outline:none;text-decoration:none;" />
           </div>
           <div style="padding:30px 24px 28px;background:#eaf7ff;color:#0f172a;border-bottom:1px solid #dbeafe;">
@@ -209,9 +209,9 @@ function buildCustomerBookingEmail(payload: LeadPayload) {
               <div style="padding:14px 16px;background:#f8fbff;border-bottom:1px solid #e8edf3;font-size:13px;font-weight:800;color:#0f172a;text-transform:uppercase;letter-spacing:0.06em;">Booking details</div>
               <table role="presentation" style="width:100%;border-collapse:collapse;">${htmlRows}</table>
             </div>
-            <div style="margin:22px 0 0;border-radius:18px;background:#ecfdf5;border:1px solid #bbf7d0;padding:16px;">
-              <div style="font-size:14px;font-weight:800;color:#047857;">What happens next?</div>
-              <p style="margin:7px 0 0;font-size:14px;line-height:1.7;color:#065f46;">A Looplic technician or support executive will contact you to confirm the visit, quote, and repair flow before work begins.</p>
+            <div style="margin:22px 0 0;border-radius:18px;background:#E6FFF7;border:1px solid #8DFFD9;padding:16px;">
+              <div style="font-size:14px;font-weight:800;color:#008F69;">What happens next?</div>
+              <p style="margin:7px 0 0;font-size:14px;line-height:1.7;color:#008F69;">A Looplic technician or support executive will contact you to confirm the visit, quote, and repair flow before work begins.</p>
             </div>
             <div style="margin:16px 0 0;border-radius:18px;background:#fff7ed;border:1px solid #fed7aa;padding:16px;">
               <div style="font-size:14px;font-weight:800;color:#9a3412;">Important customer terms</div>
@@ -353,7 +353,7 @@ export async function sendPickupAgreementEmail(input: PickupAgreementEmailInput)
       <div style="display:none;max-height:0;overflow:hidden;opacity:0;">Looplic pickup agreement with device, issue, pickup, and return details.</div>
       <div style="max-width:720px;margin:0 auto;padding:28px 16px;">
         <div style="overflow:hidden;border:1px solid #dbe8f1;border-radius:22px;background:#ffffff;box-shadow:0 18px 45px rgba(15,23,42,0.08);">
-          <div style="padding:22px 24px;background:#0096ff;color:#ffffff;">
+          <div style="padding:22px 24px;background:#056EF6;color:#ffffff;">
             <img src="${LOGO_URL}" width="160" alt="Looplic" style="display:block;width:160px;max-width:160px;height:auto;border:0;" />
             <div style="margin-top:18px;font-size:12px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;">Pickup Agreement</div>
             <h1 style="margin:8px 0 0;font-size:24px;line-height:1.25;">Your device pickup is documented</h1>

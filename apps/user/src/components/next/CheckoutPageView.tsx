@@ -170,7 +170,7 @@ export function CheckoutPageView() {
           contact: phone,
         },
         theme: {
-          color: "#48C479",
+          color: "#056EF6",
         },
         modal: {
           ondismiss: function () {
@@ -203,7 +203,7 @@ export function CheckoutPageView() {
         <HomepageNavbar />
         <div className="container mx-auto max-w-lg px-4 py-16 text-center">
           <div className="rounded-2xl border border-gray-200 bg-white p-8">
-            <CheckCircle className="mx-auto mb-4 size-16 text-green-500" />
+            <CheckCircle className="mx-auto mb-4 size-16 text-brandteal-500" />
             <h1 className="text-2xl font-bold text-gray-900">Order Placed Successfully!</h1>
             <p className="mt-2 text-gray-500">Your order has been confirmed and will be shipped within 2-4 business days.</p>
             <div className="mt-4 space-y-1">
@@ -323,14 +323,14 @@ export function CheckoutPageView() {
                 <CreditCard className="size-5 text-primary" /> Payment Method
               </h3>
               <div className="space-y-3">
-                <label className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors ${paymentMethod === "online" ? "border-primary bg-green-50/50" : "border-gray-200"}`}>
+                <label className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors ${paymentMethod === "online" ? "border-primary bg-brand-50/50" : "border-gray-200"}`}>
                   <input type="radio" name="payment" value="online" checked={paymentMethod === "online"} onChange={() => setPaymentMethod("online")} className="text-primary focus:ring-primary" />
                   <div>
                     <p className="text-sm font-semibold text-gray-900">Pay Online (UPI / Card / Net Banking)</p>
                     <p className="text-xs text-gray-500">Pay securely via Razorpay</p>
                   </div>
                 </label>
-                <label className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors ${paymentMethod === "cod" ? "border-primary bg-green-50/50" : "border-gray-200"}`}>
+                <label className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition-colors ${paymentMethod === "cod" ? "border-primary bg-brand-50/50" : "border-gray-200"}`}>
                   <input type="radio" name="payment" value="cod" checked={paymentMethod === "cod"} onChange={() => setPaymentMethod("cod")} className="text-primary focus:ring-primary" />
                   <div>
                     <p className="text-sm font-semibold text-gray-900">Cash on Delivery (COD)</p>
@@ -365,7 +365,7 @@ export function CheckoutPageView() {
               </div>
               <div className="mt-4 space-y-2 border-t border-gray-100 pt-4 text-sm">
                 <div className="flex justify-between"><span className="text-gray-500">Subtotal</span><span>{formatInr(subtotal)}</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">Delivery</span><span className="text-green-600 font-medium">FREE</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Delivery</span><span className="text-brandteal-600 font-medium">FREE</span></div>
                 <div className="flex justify-between border-t border-gray-100 pt-2 text-base font-bold">
                   <span>Total</span><span>{formatInr(subtotal)}</span>
                 </div>
@@ -381,7 +381,7 @@ export function CheckoutPageView() {
               </button>
 
               <div className="mt-4 space-y-2 text-xs text-gray-500">
-                <p className="flex items-center gap-1.5"><Shield className="size-3.5 text-green-600" /> 100% secure payments</p>
+                <p className="flex items-center gap-1.5"><Shield className="size-3.5 text-brand-600" /> 100% secure payments</p>
                 <p className="flex items-center gap-1.5"><Truck className="size-3.5 text-blue-600" /> Delivery within 2-4 days</p>
               </div>
             </div>

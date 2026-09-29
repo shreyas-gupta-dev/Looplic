@@ -105,7 +105,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
       <CatalogNavbar />
       <main>
         <article>
-          <section className="border-b border-border bg-[radial-gradient(circle_at_top_left,_hsl(211_100%_50%_/_0.12),_transparent_28%),radial-gradient(circle_at_80%_12%,_hsl(165_100%_42%_/_0.12),_transparent_24%),linear-gradient(180deg,_rgba(255,255,255,0)_0%,_rgba(248,250,252,0.96)_100%)]">
+          <section className="border-b border-border bg-[radial-gradient(circle_at_top_left,_hsl(214_96%_49%_/_0.12),_transparent_28%),radial-gradient(circle_at_80%_12%,_hsl(163_100%_42%_/_0.12),_transparent_24%),linear-gradient(180deg,_rgba(255,255,255,0)_0%,_rgba(248,250,252,0.96)_100%)]">
             <div className="container max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
               <Link href="/blog" className="text-sm font-bold text-primary transition-opacity hover:opacity-80">
                 Blog
@@ -192,7 +192,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
                   </div>
                 </section>
 
-                <section className="rounded-2xl border border-border bg-[linear-gradient(135deg,_hsl(211_100%_50%_/_0.10),_hsl(165_100%_42%_/_0.10)),linear-gradient(180deg,_#ffffff,_#f8fafc)] p-6 shadow-sm sm:p-8">
+                <section className="rounded-2xl border border-border bg-[linear-gradient(135deg,_hsl(214_96%_49%_/_0.10),_hsl(163_100%_42%_/_0.10)),linear-gradient(180deg,_#ffffff,_#f8fafc)] p-6 shadow-sm sm:p-8">
                   <div className="text-xs font-black uppercase tracking-[0.18em] text-primary">Visual Guide</div>
                   <h2 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">The simple repair decision path</h2>
                   <div className="mt-5 grid gap-3 sm:grid-cols-3">

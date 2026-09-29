@@ -270,7 +270,7 @@ export function TechnicianLoginClient() {
             </>
           ) : null}
           {error ? <p className="text-center text-xs font-medium text-destructive">{error}</p> : null}
-          {applicationSuccess ? <p className="rounded-xl bg-emerald-50 px-3 py-2 text-center text-xs font-semibold text-emerald-700">{applicationSuccess}</p> : null}
+          {applicationSuccess ? <p className="rounded-xl bg-brandteal-50 px-3 py-2 text-center text-xs font-semibold text-brandteal-700">{applicationSuccess}</p> : null}
           {user && !hasRole ? <p className="text-center text-xs font-medium text-destructive">This account does not have technician access.</p> : null}
           <button type="submit" disabled={submitting || applying || (showApplication && !termsAccepted)} className="flex w-full items-center justify-center gap-2 rounded-xl gradient-brand py-3 text-sm font-bold text-primary-foreground disabled:opacity-60">
             {submitting || applying ? <Loader2 className="size-4 animate-spin" /> : null}

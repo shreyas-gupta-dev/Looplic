@@ -141,6 +141,10 @@ export async function notifyCustomerStatusChange(input: {
     `Status: *${statusText}*`,
     input.scheduledDate ? `Scheduled: ${input.scheduledDate}${input.timeSlot ? ` · ${input.timeSlot}` : ""}` : "",
     "",
+    // Full timeline, not just the current step. The page asks for the phone
+    // number as well as the code, so this link is safe to send over WhatsApp.
+    `See the full status: ${siteConfig.url}/track/${encodeURIComponent(input.bookingCode)}`,
+    "",
     "Reply here if you need anything, or type *track* to see the latest.",
   ].filter(Boolean);
 
@@ -148,11 +152,18 @@ export async function notifyCustomerStatusChange(input: {
 }
 
 // Only the stages a customer actually cares about get a WhatsApp ping.
+// Keys are canonical booking statuses (see packages/db/booking-status.ts) plus the
+// legacy "assigned" spelling, which older records and the bot still emit.
 const CUSTOMER_STATUS_TEXT: Record<string, string> = {
   confirmed: "Confirmed ✅",
   assigned: "Technician assigned 🧑‍🔧",
-  in_progress: "In progress 🔧",
+  pickup_requested: "Pickup requested 🧑‍🔧",
   picked_up: "Device picked up 📦",
+  in_progress: "In progress 🔧",
+  ready: "Ready ✨",
+  out_for_delivery: "Out for delivery 🚚",
+  delivered: "Delivered 📬",
+  on_hold: "On hold ⏸️",
   completed: "Completed ✅",
   cancelled: "Cancelled",
 };

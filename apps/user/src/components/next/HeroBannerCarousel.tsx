@@ -60,14 +60,14 @@ function SellPhoneVisual() {
   return (
     <div className="relative mx-auto flex w-full max-w-[340px] flex-col items-center justify-center p-2 sm:max-w-[380px]">
       {/* Outer Glow */}
-      <div className="absolute -inset-2 rounded-3xl bg-emerald-400/10 blur-xl" />
+      <div className="absolute -inset-2 rounded-3xl bg-brand-400/10 blur-xl" />
 
       {/* Main Valuation Card */}
-      <div className="relative w-full rounded-2xl border border-emerald-200/80 bg-white/95 p-4 shadow-xl backdrop-blur-sm transition-all sm:p-5">
+      <div className="relative w-full rounded-2xl border border-brand-200/80 bg-white/95 p-4 shadow-xl backdrop-blur-sm transition-all sm:p-5">
         {/* Card Header */}
         <div className="flex items-center justify-between border-b border-gray-100 pb-3">
           <div className="flex items-center gap-2">
-            <div className="flex size-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+            <div className="flex size-8 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
               <Smartphone className="size-4" />
             </div>
             <div>
@@ -75,27 +75,27 @@ function SellPhoneVisual() {
               <p className="text-xs font-bold text-gray-900 sm:text-sm">iPhone 15 Pro (128GB)</p>
             </div>
           </div>
-          <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+          <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-bold text-brand-700">
             Top Value
           </span>
         </div>
 
         {/* Estimated Cash Value */}
-        <div className="my-3 rounded-xl bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-transparent p-3 sm:my-4 sm:p-3.5">
+        <div className="my-3 rounded-xl bg-gradient-to-r from-brand-500/10 via-brandteal-500/5 to-transparent p-3 sm:my-4 sm:p-3.5">
           <div className="flex items-baseline justify-between">
             <span className="text-xs font-medium text-gray-600">Instant Cash Quote</span>
-            <span className="rounded bg-emerald-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
+            <span className="rounded bg-brand-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
               Guaranteed
             </span>
           </div>
           <div className="mt-1 flex items-baseline gap-1">
-            <span className="text-2xl font-black tracking-tight text-emerald-700 sm:text-3xl">
+            <span className="text-2xl font-black tracking-tight text-brand-700 sm:text-3xl">
               ₹52,800
             </span>
             <span className="text-[11px] text-gray-500 line-through">₹46,000</span>
           </div>
-          <p className="mt-1 flex items-center gap-1 text-[11px] text-emerald-800">
-            <CheckCircle2 className="size-3 text-emerald-600" />
+          <p className="mt-1 flex items-center gap-1 text-[11px] text-brand-800">
+            <CheckCircle2 className="size-3 text-brand-600" />
             Direct UPI / Bank Transfer at Pickup
           </p>
         </div>
@@ -103,19 +103,19 @@ function SellPhoneVisual() {
         {/* Trust Badges */}
         <div className="grid grid-cols-2 gap-2 text-[11px]">
           <div className="flex items-center gap-1.5 rounded-lg bg-gray-50 p-2 text-gray-700">
-            <Truck className="size-3.5 text-emerald-600" />
+            <Truck className="size-3.5 text-brand-600" />
             <span>30-Min Pickup</span>
           </div>
           <div className="flex items-center gap-1.5 rounded-lg bg-gray-50 p-2 text-gray-700">
-            <ShieldCheck className="size-3.5 text-emerald-600" />
+            <ShieldCheck className="size-3.5 text-brand-600" />
             <span>100% Data Safe</span>
           </div>
         </div>
       </div>
 
       {/* Floating Price Match Pill */}
-      <div className="absolute -bottom-2 -left-2 z-10 hidden items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-600 px-3 py-1 text-[11px] font-bold text-white shadow-lg sm:flex">
-        <Sparkles className="size-3.5 text-emerald-200" />
+      <div className="absolute -bottom-2 -left-2 z-10 hidden items-center gap-1.5 rounded-full border border-brand-200 bg-brand-600 px-3 py-1 text-[11px] font-bold text-white shadow-lg sm:flex">
+        <Sparkles className="size-3.5 text-brand-200" />
         <span>Highest Price Guaranteed</span>
       </div>
     </div>
@@ -158,7 +158,7 @@ function RepairPhoneVisual() {
               ₹499
             </span>
             <span className="text-xs text-gray-500 line-through">₹999</span>
-            <span className="text-[11px] font-semibold text-emerald-600">Save ₹500</span>
+            <span className="text-[11px] font-semibold text-brand-600">Save ₹500</span>
           </div>
           <p className="mt-1 flex items-center gap-1 text-[11px] text-blue-900">
             <Shield className="size-3 text-blue-600" />
@@ -288,7 +288,7 @@ function RefurbishedPhoneVisual() {
               ₹9,999
             </span>
             <span className="text-xs text-gray-500 line-through">₹29,999</span>
-            <span className="text-[11px] font-semibold text-emerald-600">Save Big</span>
+            <span className="text-[11px] font-semibold text-brand-600">Save Big</span>
           </div>
           <p className="mt-1 flex items-center gap-1 text-[11px] text-amber-900">
             <CreditCard className="size-3 text-amber-600" />
@@ -336,8 +336,8 @@ function CctvVisual() {
               <p className="text-xs font-bold text-gray-900 sm:text-sm">4K CCTV Home & Shop Setup</p>
             </div>
           </div>
-          <div className="flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
-            <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="flex items-center gap-1 rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-bold text-brand-700">
+            <span className="size-1.5 rounded-full bg-brand-500 animate-pulse" />
             LIVE FEED
           </div>
         </div>
@@ -356,7 +356,7 @@ function CctvVisual() {
             </span>
           </div>
           <p className="mt-1 flex items-center gap-1 text-[11px] text-slate-700">
-            <Eye className="size-3 text-emerald-600" />
+            <Eye className="size-3 text-brand-600" />
             Live Remote Mobile View on iOS & Android
           </p>
         </div>
@@ -390,17 +390,17 @@ const SLIDES: BannerSlide[] = [
     id: "sell",
     tagline: "INSTANT CASH AT DOORSTEP",
     taglineIcon: Zap,
-    taglineStyle: "bg-emerald-100 text-emerald-800 border-emerald-200",
+    taglineStyle: "bg-brand-100 text-brand-800 border-brand-200",
     headlinePrefix: "Sell Your Old Phone for ",
     headlineHighlight: "Instant Cash",
-    headlineHighlightColor: "text-emerald-600",
+    headlineHighlightColor: "text-brand-600",
     description:
       "Get the highest price quote in 60 seconds with free 30-minute doorstep pickup and instant UPI/bank payment.",
     ctaText: "Check Phone Value",
     ctaHref: "/sell",
-    ctaBg: "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20",
-    bgGradient: "bg-gradient-to-br from-[#F0FDF4] via-[#F8FAFC] to-[#ECFDF5]",
-    borderColor: "border-emerald-100",
+    ctaBg: "bg-brand-600 hover:bg-brand-700 text-white shadow-brand-600/20",
+    bgGradient: "bg-gradient-to-br from-[#EBF3FE] via-[#F8FAFC] to-[#E6FFF7]",
+    borderColor: "border-brand-100",
     trustNote: "Zero inspection fee • Instant payment on pickup",
     features: [
       { icon: IndianRupee, text: "Top Market Price" },

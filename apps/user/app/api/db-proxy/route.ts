@@ -32,6 +32,25 @@ const PUBLIC_READ_TABLES = new Set([
 
 const PUBLIC_INSERT_TABLES = new Set(["bookings", "technician_applications"]);
 
+/**
+ * `app_settings` keys a non-staff caller may read.
+ *
+ * `app_settings` is in PUBLIC_READ_TABLES because the storefront needs the
+ * price-visibility switch before anyone signs in. But the table is a key/value
+ * bag holding operational settings, and reading it is unauthenticated — so every
+ * row in it was world-readable through this proxy, whatever it contained.
+ *
+ * `repair_stream_centres` holds service-centre camera playlist URLs, which may
+ * carry credentials. The repair-stream endpoints go to real lengths never to
+ * disclose those (the customer only ever gets a path back through the app, and
+ * there is a test asserting the stream response contains neither the URL nor the
+ * provider ref) — and this proxy handed them out to anyone who asked.
+ *
+ * Closed by default: an allowlist, so a settings key added later is private
+ * unless someone deliberately makes it public.
+ */
+const PUBLIC_APP_SETTING_KEYS = new Set(["repair_subcategory_prices"]);
+
 // technician_applications is insert-only from this app (the technician signup
 // form) — nothing in apps/user ever reads it back, so a select is rejected
 // outright rather than left open to "any authenticated session" (which would
@@ -173,7 +192,19 @@ export async function POST(req: NextRequest) {
       const effectiveLimit = single ? 1 : (typeof limit === "number" && limit > 0 ? limit : undefined);
       if (effectiveLimit) query = query.limit(effectiveLimit);
       const rows: any[] = await query;
-      const mapped = rows.map(mapRowOut);
+      let mapped = rows.map(mapRowOut);
+
+      // Private settings are never served from this app's proxy, to anyone.
+      //
+      // Nothing in the customer app needs them in a browser: the only consumer of
+      // `repair_stream_centres` is `hls-config.ts`, which reads the table directly
+      // server-side and deliberately refuses to load in a browser at all. So there
+      // is no staff exception here — an unconditional filter is both simpler and
+      // tighter than one with a bypass to get wrong.
+      if (table === "app_settings") {
+        mapped = mapped.filter((row) => PUBLIC_APP_SETTING_KEYS.has(row.key));
+      }
+
       return NextResponse.json({ data: single ? (mapped[0] ?? null) : mapped });
     }
 
@@ -185,7 +216,9 @@ export async function POST(req: NextRequest) {
       }
 
       const rows = Array.isArray(payload) ? payload.map((row: any) => mapRowIn(row, tbl)) : [mapRowIn(payload, tbl)];
-      const inserted = await db.insert(tbl).values(rows).returning();
+      // `tbl` is resolved from TABLE_MAP at runtime, so Drizzle cannot infer the row
+      // type here and types the result as a union including QueryResult<never>.
+      const inserted = (await db.insert(tbl).values(rows).returning()) as Record<string, unknown>[];
       return NextResponse.json({ data: inserted.map(mapRowOut) });
     }
 
@@ -197,6 +230,17 @@ export async function POST(req: NextRequest) {
       const ownerColumn = OWNED_TABLES[table];
       if (!ownerColumn) {
         return NextResponse.json({ error: { message: "Updates to this table are not permitted from this app." } }, { status: 403 });
+      }
+      // A customer must not move their own booking through the workflow: the
+      // owner scoping below stops them touching someone else's row, but it would
+      // otherwise let them mark their own repair "completed" or "delivered". Only
+      // staff change status, and only through the dashboards' proxy, which records
+      // an audited booking_status_events row for every change.
+      if (table === "bookings" && payload && typeof payload === "object" && "status" in payload) {
+        return NextResponse.json(
+          { error: { message: "Booking status can only be changed by Looplic staff." } },
+          { status: 403 },
+        );
       }
       // Force-scope to the caller's own row regardless of the client-supplied
       // filters, so a forged filter (or a missing one) can't touch another

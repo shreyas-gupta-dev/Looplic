@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { Input } from "@/src/components/ui/input";
 import { InstallAppButton } from "@/src/components/next/InstallAppButton";
+import { RepairLiveCapture } from "@/src/components/next/RepairLiveCapture";
 import { formatBookingServiceType, formatBookingStatus, formatCctvBookingSelection, type BookingRow } from "@/src/lib/bookings";
 import { downloadInvoicePdf } from "@/src/lib/invoice-pdf";
 import { createClient } from "@/src/lib/data-client/client";
@@ -119,7 +120,7 @@ const statusStyles: Record<string, string> = {
   pending: "border-amber-200 bg-amber-50 text-amber-800",
   confirmed: "border-sky-200 bg-sky-50 text-sky-800",
   in_progress: "border-violet-200 bg-violet-50 text-violet-800",
-  completed: "border-emerald-200 bg-emerald-50 text-emerald-800",
+  completed: "border-brandteal-200 bg-brandteal-50 text-brandteal-800",
   cancelled: "border-rose-200 bg-rose-50 text-rose-800",
 };
 const milestoneLabels = ["Assigned", "Accepted", "Pickup", "Fixed"] as const;
@@ -1346,7 +1347,7 @@ export function TechnicianDashboardClient() {
               </span>
               <span className="hidden min-w-0 sm:block">
                 <span className="block text-xs font-black text-foreground">Profile</span>
-                <span className={`block text-[10px] font-bold ${alertsActive ? "text-emerald-600" : notificationPermission === "denied" ? "text-rose-600" : "text-amber-600"}`}>{alertButtonLabel}</span>
+                <span className={`block text-[10px] font-bold ${alertsActive ? "text-brandteal-600" : notificationPermission === "denied" ? "text-rose-600" : "text-amber-600"}`}>{alertButtonLabel}</span>
               </span>
               <ChevronDown className={`size-4 text-muted-foreground transition-transform ${profileMenuOpen ? "rotate-180" : ""}`} />
             </button>
@@ -1370,7 +1371,7 @@ export function TechnicianDashboardClient() {
                     title={alertButtonLabel}
                     className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-xs font-black text-foreground transition-colors hover:bg-secondary"
                   >
-                    <span className={`flex size-8 items-center justify-center rounded-full ${alertsActive ? "bg-emerald-50 text-emerald-700" : notificationPermission === "denied" ? "bg-rose-50 text-rose-700" : "bg-amber-50 text-amber-700"}`}>
+                    <span className={`flex size-8 items-center justify-center rounded-full ${alertsActive ? "bg-brandteal-50 text-brandteal-700" : notificationPermission === "denied" ? "bg-rose-50 text-rose-700" : "bg-amber-50 text-amber-700"}`}>
                       {alertsActive ? <Bell className="size-4" /> : <Volume2 className="size-4" />}
                     </span>
                     <span>
@@ -1471,11 +1472,11 @@ export function TechnicianDashboardClient() {
                         <div>
                           <div className="flex flex-wrap items-center gap-2">
                             <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold text-primary">{bill.invoice_number || booking?.booking_code || "Bill"}</span>
-                            <span className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${bill.payment_status === "paid" ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-amber-200 bg-amber-50 text-amber-800"}`}>{bill.payment_status}</span>
+                            <span className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${bill.payment_status === "paid" ? "border-brandteal-200 bg-brandteal-50 text-brandteal-800" : "border-amber-200 bg-amber-50 text-amber-800"}`}>{bill.payment_status}</span>
                           </div>
                           <div className="mt-2 text-sm font-black text-foreground">{bill.customer_name || booking?.customer_name || "Customer"}</div>
                           <div className="text-xs text-muted-foreground">{formatBookingServiceType(bill.service_type || booking?.service_type || "")}{bill.description ? ` - ${bill.description}` : ""}</div>
-                          {(bill.warranty_label || booking?.warranty_label) ? <div className="mt-2 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-black text-emerald-700">{bill.warranty_label || booking?.warranty_label}</div> : null}
+                          {(bill.warranty_label || booking?.warranty_label) ? <div className="mt-2 inline-flex rounded-full border border-brand-200 bg-brand-50 px-2.5 py-1 text-[11px] font-black text-brand-700">{bill.warranty_label || booking?.warranty_label}</div> : null}
                           <div className="mt-1 text-[11px] text-muted-foreground">{bill.created_at ? new Date(bill.created_at).toLocaleString("en-IN") : "No date"}</div>
                         </div>
                         <div className="flex items-start gap-2">
@@ -1526,7 +1527,7 @@ export function TechnicianDashboardClient() {
                     {formatBookingServiceType(booking.service_type)} • {booking.service_type === "cctv" ? formatCctvBookingSelection(booking.cctv_service, booking.cctv_brand) || "CCTV details pending" : [booking.brand_name, booking.model_name].filter(Boolean).join(" ") || "Device details pending"}
                   </div>
                   {(bill?.warranty_label || inspection?.warranty_label || booking.warranty_label) ? (
-                    <div className="mt-2 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-black text-emerald-700">{bill?.warranty_label || inspection?.warranty_label || booking.warranty_label}</div>
+                    <div className="mt-2 inline-flex rounded-full border border-brand-200 bg-brand-50 px-2.5 py-1 text-[11px] font-black text-brand-700">{bill?.warranty_label || inspection?.warranty_label || booking.warranty_label}</div>
                   ) : null}
                   <div className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
                     <a href={`tel:${booking.customer_phone}`} className="inline-flex items-center gap-2 rounded-xl bg-secondary px-3 py-2 font-bold text-foreground"><Phone className="size-3.5" />{booking.customer_phone}</a>
@@ -1543,7 +1544,7 @@ export function TechnicianDashboardClient() {
                     ) : null}
                     {canEditInspection ? <button onClick={() => openInspection(booking)} className="rounded-xl border border-border px-4 py-2.5 text-xs font-black text-foreground hover:border-primary/30 hover:text-primary">Inspect</button> : null}
                     {canQuote ? (
-                      <button onClick={() => openQuote(booking)} className="rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-black text-white">Quote and complete</button>
+                      <button onClick={() => openQuote(booking)} className="rounded-xl bg-brand-600 px-4 py-2.5 text-xs font-black text-white">Quote and complete</button>
                     ) : null}
                     {bill ? (
                       <button type="button" onClick={() => handleDownloadInvoice(bill, booking)} className="inline-flex items-center gap-2 rounded-xl border border-border px-3 py-2.5 text-xs font-black text-foreground hover:border-primary/30 hover:text-primary" title="Download invoice PDF">
@@ -1627,6 +1628,15 @@ export function TechnicianDashboardClient() {
               {["Issue", "Pickup", "Quote"].map((label, index) => (
                 <div key={label} className={`rounded-xl px-3 py-2 text-center text-xs font-black ${index === 0 ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>{label}</div>
               ))}
+            </div>
+
+            {/* Watch-my-repair: start a viewing window and send the customer a
+                photo at each stage as the work happens. */}
+            <div className="mb-4">
+              <RepairLiveCapture
+                bookingId={inspectTarget.id}
+                bookingLabel={inspectTarget.booking_code || undefined}
+              />
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               {inspectTarget.service_type !== "cctv" ? (
@@ -1811,7 +1821,7 @@ export function TechnicianDashboardClient() {
                 <CalendarClock className="size-4" />
                 Move to pickup
               </button>
-              <button onClick={openFinalQuoteFromInspection} disabled={saving} className="rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-black text-white disabled:opacity-60">Quote and complete</button>
+              <button onClick={openFinalQuoteFromInspection} disabled={saving} className="rounded-xl bg-brand-600 px-4 py-2.5 text-xs font-black text-white disabled:opacity-60">Quote and complete</button>
             </div>
           </div>
         </div>
@@ -1851,7 +1861,7 @@ export function TechnicianDashboardClient() {
               <label className="space-y-1">
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-[11px] font-black text-muted-foreground">Customer email</span>
-                  <span className={`text-[10px] font-black ${pickupEmailSource === "auto" ? "text-emerald-600" : "text-muted-foreground"}`}>
+                  <span className={`text-[10px] font-black ${pickupEmailSource === "auto" ? "text-brand-600" : "text-muted-foreground"}`}>
                     {pickupEmailLoading ? "Fetching..." : pickupEmailSource === "auto" ? "Auto-filled" : "Manual"}
                   </span>
                 </div>
@@ -2006,7 +2016,7 @@ export function TechnicianDashboardClient() {
             </div>
             <div className="mt-5 flex justify-end gap-2">
               <button onClick={() => setQuoteTarget(null)} className="rounded-xl border border-border px-4 py-2.5 text-xs font-black">Cancel</button>
-              <button onClick={generateBillAndComplete} disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-black text-white disabled:opacity-60">
+              <button onClick={generateBillAndComplete} disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-xs font-black text-white disabled:opacity-60">
                 <ReceiptText className="size-4" />
                 Complete order
               </button>

@@ -69,11 +69,11 @@ export function RepairBookingPopup() {
 
         <div className="p-4">
           <div className="flex items-start gap-3">
-            <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 ring-1 ring-emerald-100">
+            <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-brand-50 ring-1 ring-brand-100">
               <Image src="/whatsapp-popup.svg" alt="" width={24} height={24} className="size-7" aria-hidden="true" />
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] font-black uppercase tracking-[0.16em] text-emerald-700">Doorstep service</p>
+              <p className="text-[11px] font-black uppercase tracking-[0.16em] text-brand-700">Doorstep service</p>
               <h2 className="mt-1 text-xl font-black leading-tight text-slate-950">Book your repair</h2>
               <p className="mt-1 text-sm leading-5 text-slate-600">Mobile repair, laptop repair and tech support at your doorstep.</p>
             </div>
@@ -83,7 +83,7 @@ export function RepairBookingPopup() {
             href={`${whatsappUrl}?text=${encodeURIComponent("Hi Looplic, I want to book a repair.")}`}
             target="_blank"
             rel="noreferrer"
-            className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-5 text-sm font-black text-white shadow-lg shadow-emerald-500/25 transition-colors hover:bg-emerald-600"
+            className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-brand-500 px-5 text-sm font-black text-white shadow-lg shadow-brand-500/25 transition-colors hover:bg-brand-600"
           >
             <Image src="/whatsapp-popup.svg" alt="" width={20} height={20} className="size-6" aria-hidden="true" />
             Book on WhatsApp

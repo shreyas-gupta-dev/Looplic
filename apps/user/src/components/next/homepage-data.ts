@@ -1,60 +1,66 @@
 // ─── Static Homepage Data ────────────────────────────────────────────────────
 // Extracted from NewHomepageView to reduce client bundle size.
 // This module has no React/lucide dependencies for better tree-shaking.
+//
+// Images are NOT declared here. Every slot lives in src/lib/images/registry.ts
+// and is looked up by id, so this file stays about content and routing while the
+// registry owns assets and alt text. See that file for why the previous inline
+// Unsplash and s3ng.cashify.in URLs were removed.
 
 // Our Services grid
-// All images use a uniform square crop for a cohesive, professional grid:
-//   ?auto=format&fit=crop&w=400&h=400&q=80
-// Every URL below was verified to return HTTP 200 image/jpeg.
 export const ourServices = [
-  { id: "repair-phone", label: "Repair Phones", href: "/service/mobile-repair", image: "https://images.unsplash.com/photo-1512054502232-10a0a035d672?auto=format&fit=crop&w=400&h=400&q=80" },
-  { id: "repair-laptop", label: "Repair Laptop", href: "/service/laptop-repair", image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=400&h=400&q=80" },
-  { id: "data-recovery", label: "Hard Drive Data Recovery", href: "/service/it-support", image: "https://images.unsplash.com/photo-1601737487795-dab272f52420?auto=format&fit=crop&w=400&h=400&q=80" },
-  { id: "apple-watch-repair", label: "Apple Watch Repair", href: "/service/mobile-repair", image: "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?auto=format&fit=crop&w=400&h=400&q=80" },
-  { id: "airpods-repair", label: "AirPods Repair", href: "/service/mobile-repair", image: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?auto=format&fit=crop&w=400&h=400&q=80" },
-  { id: "desktop", label: "Desktop Assembly", href: "/service/desktop-assembly", image: "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?auto=format&fit=crop&w=400&h=400&q=80" },
-  { id: "it-support", label: "IT Support", href: "/service/it-support", image: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=400&h=400&q=80" },
-  { id: "cctv", label: "CCTV Installation", href: "/service/cctv", image: "https://images.unsplash.com/photo-1558002038-1055907df827?auto=format&fit=crop&w=400&h=400&q=80" },
-  { id: "sell-phone", label: "Sell Phone", href: "/sell", image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=400&h=400&q=80" },
-  { id: "sell-laptop", label: "Sell Laptop", href: "/sell/laptop", image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=400&h=400&q=80" },
-  { id: "accessories", label: "Accessories", href: "/buy?category=accessories", image: "https://images.unsplash.com/photo-1585790050230-5dd28404ccb9?auto=format&fit=crop&w=400&h=400&q=80" },
-  // "Our Store" shows a live map of the actual Looplic store location
-  // (1st Floor, Shawkat Building, SJP Road, Nagarathpete, Bengaluru 560002 —
-  // lat 12.9632, lng 77.5784), matching apps/user/src/components/next/StoreLocatorView.tsx.
-  { id: "store-locator", label: "Our Store", href: "/store-locator", image: "https://static-maps.yandex.ru/1.x/?ll=77.5784,12.9632&z=16&size=450,450&l=map&pt=77.5784,12.9632,pm2rdm&lang=en_US" },
+  { id: "repair-phone", label: "Repair Phones", href: "/service/mobile-repair" },
+  { id: "repair-laptop", label: "Repair Laptop", href: "/service/laptop-repair" },
+  { id: "data-recovery", label: "Hard Drive Data Recovery", href: "/service/it-support" },
+  { id: "apple-watch-repair", label: "Apple Watch Repair", href: "/service/mobile-repair" },
+  { id: "airpods-repair", label: "AirPods Repair", href: "/service/mobile-repair" },
+  { id: "desktop", label: "Desktop Assembly", href: "/service/desktop-assembly" },
+  { id: "it-support", label: "IT Support", href: "/service/it-support" },
+  { id: "cctv", label: "CCTV Installation", href: "/service/cctv" },
+  { id: "sell-phone", label: "Sell Phone", href: "/sell" },
+  { id: "sell-laptop", label: "Sell Laptop", href: "/sell/laptop" },
+  { id: "accessories", label: "Accessories", href: "/buy?category=accessories" },
+  // "Our Store" points at the store locator page, which renders the real map for
+  // 1st Floor, Shawkat Building, SJP Road, Nagarathpete, Bengaluru 560002
+  // (lat 12.9632, lng 77.5784) — see StoreLocatorView.tsx. The tile itself uses a
+  // brand illustration rather than a third-party static-map image.
+  { id: "store-locator", label: "Our Store", href: "/store-locator" },
 ];
 
 // Sell Your Old Device section
 export const sellCategories = [
-  { id: "mobile", label: "Sell Phone", href: "/sell", image: "https://s3ng.cashify.in/builder/81c3c74f0683463da548ae2cbe1fec28.webp?w=300" },
-  { id: "laptop", label: "Sell Laptop", href: "/sell/laptop", image: "https://s3ng.cashify.in/builder/e6ba507509994216936925bdfeb6cfa8.webp?w=300" },
-  { id: "tablet", label: "Sell Tablet", href: "/sell/tablet", image: "https://s3ng.cashify.in/builder/a12ac14b386b4b5286d424a83db4cad5.webp?w=300" },
-  { id: "smartwatch", label: "Sell Smartwatch", href: "/sell/smartwatch", image: "https://s3ng.cashify.in/builder/b6a95f2838184c9889711ea20f6ff468.webp?w=300" },
-  { id: "gaming", label: "Sell Console", href: "/sell", image: "https://s3ng.cashify.in/builder/5aba5b44686349a4a54d457016a257ac.webp?w=300" },
-  { id: "earphones", label: "Sell Earphones", href: "/sell/audio", image: "https://s3ng.cashify.in/builder/abd3c512bbac4232a95e0e15f5d3bbaf.webp?w=300" },
-  { id: "desktop", label: "Sell Desktop", href: "/sell/laptop", image: "https://s3ng.cashify.in/builder/1a1126c5c49f47b29cbb3aa63e6b385e.webp?w=300" },
+  { id: "mobile", label: "Sell Phone", href: "/sell" },
+  { id: "laptop", label: "Sell Laptop", href: "/sell/laptop" },
+  { id: "tablet", label: "Sell Tablet", href: "/sell/tablet" },
+  { id: "smartwatch", label: "Sell Smartwatch", href: "/sell/smartwatch" },
+  { id: "gaming", label: "Sell Console", href: "/sell" },
+  { id: "earphones", label: "Sell Earphones", href: "/sell/audio" },
+  { id: "desktop", label: "Sell Desktop", href: "/sell/laptop" },
 ];
 
 // Buy Refurbished Devices
+// `deviceType` selects the placeholder silhouette; there is no `image` field
+// because Looplic does not own product photography for these yet and the previous
+// URLs were a competitor's.
 export const refurbishedProducts = [
-  { name: "Samsung Galaxy S21 Ultra 5G", discount: "₹34,201 OFF", brand: "samsung", href: "/buy", image: "https://s3ng.cashify.in/cashify/product/img/xxhdpi/5ab3d199-fdb7.jpg" },
-  { name: "Samsung Galaxy S24 Ultra 5G", discount: "₹69,700 OFF", brand: "samsung", href: "/buy", image: "https://s3ng.cashify.in/cashify/product/img/xxhdpi/a69ef28f-fe68.jpg" },
-  { name: "Samsung Galaxy S20 FE 5G", discount: "₹2,900 OFF", brand: "samsung", href: "/buy", image: "https://s3ng.cashify.in/cashify/product/img/xxhdpi/dcbaf057-2937.jpg" },
-  { name: "Samsung Galaxy S25 Edge", discount: "₹69,400 OFF", brand: "samsung", href: "/buy", image: "https://s3ng.cashify.in/cashify/product/img/xxhdpi/90cb48b8-8691.jpg" },
-  { name: "OnePlus Nord 2 5G", discount: "₹12,800 OFF", brand: "oneplus", href: "/buy", image: "https://s3ng.cashify.in/cashify/product/img/xxhdpi/f6bf429a-1a54.jpg" },
-  { name: "OnePlus 12", discount: "₹28,500 OFF", brand: "oneplus", href: "/buy", image: "https://s3ng.cashify.in/cashify/product/img/xxhdpi/3ba10c91-7df6.jpg" },
+  { name: "Samsung Galaxy S21 Ultra 5G", discount: "₹34,201 OFF", brand: "samsung", href: "/buy", deviceType: "mobile" as const },
+  { name: "Samsung Galaxy S24 Ultra 5G", discount: "₹69,700 OFF", brand: "samsung", href: "/buy", deviceType: "mobile" as const },
+  { name: "Samsung Galaxy S20 FE 5G", discount: "₹2,900 OFF", brand: "samsung", href: "/buy", deviceType: "mobile" as const },
+  { name: "Samsung Galaxy S25 Edge", discount: "₹69,400 OFF", brand: "samsung", href: "/buy", deviceType: "mobile" as const },
+  { name: "OnePlus Nord 2 5G", discount: "₹12,800 OFF", brand: "oneplus", href: "/buy", deviceType: "mobile" as const },
+  { name: "OnePlus 12", discount: "₹28,500 OFF", brand: "oneplus", href: "/buy", deviceType: "mobile" as const },
 ];
 
 // Popular Devices to Sell
 export const popularDevices = [
-  { name: "iPhone 15 Pro Max", price: "₹62,000", href: "/sell", image: "https://s3ng.cashify.in/cashify/product/img/xxhdpi/5ab3d199-fdb7.jpg" },
-  { name: "iPhone 14", price: "₹35,000", href: "/sell", image: "https://s3ng.cashify.in/cashify/product/img/xxhdpi/a69ef28f-fe68.jpg" },
-  { name: "Samsung Galaxy S24", price: "₹42,000", href: "/sell", image: "https://s3ng.cashify.in/cashify/product/img/xxhdpi/dcbaf057-2937.jpg" },
-  { name: "OnePlus 12", price: "₹32,000", href: "/sell", image: "https://s3ng.cashify.in/cashify/product/img/xxhdpi/3ba10c91-7df6.jpg" },
-  { name: "MacBook Air M2", price: "₹58,000", href: "/sell/laptop", image: "https://s3ng.cashify.in/estore/90d6714360974efd81d8912c8bf00638.png" },
-  { name: "iPhone 13", price: "₹25,000", href: "/sell", image: "https://s3ng.cashify.in/cashify/product/img/xxhdpi/f6bf429a-1a54.jpg" },
-  { name: "Samsung Galaxy S23", price: "₹28,000", href: "/sell", image: "https://s3ng.cashify.in/cashify/product/img/xxhdpi/90cb48b8-8691.jpg" },
-  { name: "Google Pixel 8", price: "₹28,000", href: "/sell", image: "https://s3ng.cashify.in/cashify/product/img/xxhdpi/a69ef28f-fe68.jpg" },
+  { name: "iPhone 15 Pro Max", price: "₹62,000", href: "/sell", deviceType: "mobile" as const },
+  { name: "iPhone 14", price: "₹35,000", href: "/sell", deviceType: "mobile" as const },
+  { name: "Samsung Galaxy S24", price: "₹42,000", href: "/sell", deviceType: "mobile" as const },
+  { name: "OnePlus 12", price: "₹32,000", href: "/sell", deviceType: "mobile" as const },
+  { name: "MacBook Air M2", price: "₹58,000", href: "/sell/laptop", deviceType: "laptop" as const },
+  { name: "iPhone 13", price: "₹25,000", href: "/sell", deviceType: "mobile" as const },
+  { name: "Samsung Galaxy S23", price: "₹28,000", href: "/sell", deviceType: "mobile" as const },
+  { name: "Google Pixel 8", price: "₹28,000", href: "/sell", deviceType: "mobile" as const },
 ];
 
 // How It Works - uses string icon keys mapped to lucide icons in the component

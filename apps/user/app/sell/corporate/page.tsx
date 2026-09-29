@@ -61,8 +61,8 @@ export default function CorporateBuybackPage() {
 
         <div className="mb-6">
           <div className="mb-2 flex items-center gap-2">
-            <div className="h-1 w-6 rounded-full bg-[#00D28E]"></div>
-            <span className="text-xs font-bold uppercase tracking-widest text-[#00B47D]">Bulk / Corporate · B2B</span>
+            <div className="h-1 w-6 rounded-full bg-[#00D69A]"></div>
+            <span className="text-xs font-bold uppercase tracking-widest text-[#00B383]">Bulk / Corporate · B2B</span>
           </div>
           <h1 className="text-2xl font-semibold text-[#111827]">Company IT asset buy-back</h1>
           <p className="mt-1 max-w-lg text-[13px] leading-relaxed text-gray-500">
@@ -81,8 +81,8 @@ export default function CorporateBuybackPage() {
               const Icon = benefit.icon;
               return (
                 <div key={benefit.title} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
-                  <div className="mb-2 flex size-9 items-center justify-center rounded-xl bg-emerald-50">
-                    <Icon className="size-4 text-emerald-500" />
+                  <div className="mb-2 flex size-9 items-center justify-center rounded-xl bg-brand-50">
+                    <Icon className="size-4 text-brand-500" />
                   </div>
                   <h3 className="mb-1 text-[13px] font-semibold text-gray-900">{benefit.title}</h3>
                   <p className="text-[11px] leading-snug text-gray-500">{benefit.description}</p>

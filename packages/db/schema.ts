@@ -1,4 +1,4 @@
-import { boolean, integer, jsonb, numeric, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, index, integer, jsonb, numeric, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 export const appRoleEnum = pgEnum("app_role", ["admin", "operation", "technician", "user"]);
@@ -197,6 +197,114 @@ export const bookingInspections = pgTable("booking_inspections", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/**
+ * Append-only history of every booking status change.
+ *
+ * `bookings.status` only ever holds the current value, so before this table there
+ * was no way to answer "when was my device picked up?" — which is exactly what the
+ * customer-facing order tracking has to show. Rows are written by the shared
+ * helper in @looplic/db so no dashboard can change a status without recording who
+ * did it and when.
+ *
+ * Never updated or deleted; a correction is a new event.
+ */
+export const bookingStatusEvents = pgTable(
+  "booking_status_events",
+  {
+    id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+    bookingId: uuid("booking_id").notNull().references(() => bookings.id, { onDelete: "cascade" }),
+    /** Canonical status — see packages/db/booking-status.ts. Text, not an enum,
+     *  so the journey can gain a step without a locking migration. */
+    status: text("status").notNull(),
+    /** The status this replaced, for auditing out-of-order writes. */
+    previousStatus: text("previous_status"),
+    /** Optional operator note. Shown to the customer, so keep it customer-safe. */
+    note: text("note"),
+    /** Supabase auth user id of whoever made the change; null for system events. */
+    actorId: text("actor_id"),
+    /** admin | operation | technician | customer | system */
+    actorRole: text("actor_role").notNull().default("system"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    // The tracking page reads a single booking's history newest-first.
+    bookingCreatedIdx: index("booking_status_events_booking_created_idx").on(
+      table.bookingId,
+      table.createdAt,
+    ),
+  }),
+);
+
+/**
+ * A window during which one customer may watch work on one booking.
+ *
+ * Live video of a repair is a privacy-sensitive capability, so access is a
+ * time-boxed session against a single booking rather than a standing permission.
+ * Nothing is viewable unless a session row exists, is `open`, and has not expired —
+ * see app/api/repair-stream/[bookingId]/route.ts, which is the only place that
+ * turns a session into a playback grant.
+ *
+ * `provider` selects how the media is delivered:
+ *   stage-media — timestamped photos/clips the technician uploads per repair stage.
+ *                 Works with the existing S3 upload path, no new infrastructure.
+ *   hls         — a live stream pulled from a service-centre camera via a media
+ *                 server. Requires infrastructure that is not provisioned.
+ */
+export const repairStreamSessions = pgTable(
+  "repair_stream_sessions",
+  {
+    id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+    bookingId: uuid("booking_id").notNull().references(() => bookings.id, { onDelete: "cascade" }),
+    /** "stage-media" | "hls" */
+    provider: text("provider").notNull().default("stage-media"),
+    /** Provider-specific handle: a camera/stream key for hls, unused for stage-media. */
+    providerRef: text("provider_ref"),
+    /** "open" | "closed" */
+    state: text("state").notNull().default("open"),
+    /** Supabase auth user id of the staff member who opened it. */
+    openedBy: text("opened_by"),
+    openedAt: timestamp("opened_at", { withTimezone: true }).notNull().defaultNow(),
+    /** Hard stop. A session is never viewable past this instant, open or not. */
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    closedAt: timestamp("closed_at", { withTimezone: true }),
+    /** When the customer accepted being shown live footage. Null until they do. */
+    consentAt: timestamp("consent_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    bookingStateIdx: index("repair_stream_sessions_booking_state_idx").on(table.bookingId, table.state),
+  }),
+);
+
+/**
+ * Media captured for a repair, one row per photo or clip.
+ *
+ * The `stage-media` provider's payload. Keys are S3 object keys, never public URLs:
+ * media is served through the grant-checked route so a leaked link cannot outlive
+ * the session it belongs to.
+ */
+export const repairStageMedia = pgTable(
+  "repair_stage_media",
+  {
+    id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+    sessionId: uuid("session_id").notNull().references(() => repairStreamSessions.id, { onDelete: "cascade" }),
+    bookingId: uuid("booking_id").notNull().references(() => bookings.id, { onDelete: "cascade" }),
+    /** received | diagnosed | part_replaced | tested | closed */
+    stage: text("stage").notNull(),
+    /** "image" | "video" */
+    mediaType: text("media_type").notNull().default("image"),
+    /** S3 object key. Not a URL — see the note above. */
+    objectKey: text("object_key").notNull(),
+    caption: text("caption"),
+    capturedBy: text("captured_by"),
+    capturedByName: text("captured_by_name"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    sessionCreatedIdx: index("repair_stage_media_session_created_idx").on(table.sessionId, table.createdAt),
+  }),
+);
 
 // ─── Buyback ─────────────────────────────────────────────────────────────────
 // Per-model buyback base price (value of the device in perfect condition).

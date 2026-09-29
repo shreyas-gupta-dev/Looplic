@@ -4,6 +4,8 @@ import { Search, Smartphone } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { renderableImageUrl } from "@/src/lib/images/registry";
+
 export type SellModelItem = {
   id: string;
   name: string;
@@ -14,7 +16,8 @@ export type SellModelItem = {
 
 function ModelImage({ name, imageUrl }: { name: string; imageUrl: string | null }) {
   const [failed, setFailed] = useState(false);
-  const usable = typeof imageUrl === "string" && imageUrl.trim() && !failed ? imageUrl.trim() : "";
+  // Only allowlisted hosts: sell catalog rows still carry migrated third-party URLs.
+  const usable = !failed ? (renderableImageUrl(imageUrl) ?? "") : "";
 
   return (
     <div className="flex size-20 items-center justify-center rounded-2xl bg-gray-50 p-2.5">

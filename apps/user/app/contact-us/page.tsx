@@ -39,13 +39,13 @@ export default function ContactUsPage() {
           <div className="mt-4 break-all text-sm font-semibold text-foreground">{supportEmail}</div>
         </a>
 
-        <a href={whatsappUrl} target="_blank" rel="noreferrer" className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm transition-colors hover:border-emerald-300">
-          <div className="flex size-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+        <a href={whatsappUrl} target="_blank" rel="noreferrer" className="rounded-2xl border border-brand-200 bg-brand-50 p-5 shadow-sm transition-colors hover:border-brand-300">
+          <div className="flex size-11 items-center justify-center rounded-xl bg-brand-100 text-brand-700">
             <Image src="/whatsapp.svg" alt="" width={20} height={20} className="size-5" aria-hidden="true" />
           </div>
           <h2 className="mt-4 text-lg font-semibold tracking-tight text-foreground">WhatsApp</h2>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">Start a chat for fast support and booking-related communication.</p>
-          <div className="mt-4 text-sm font-semibold text-emerald-700">Message us on WhatsApp</div>
+          <div className="mt-4 text-sm font-semibold text-brand-700">Message us on WhatsApp</div>
         </a>
       </section>
 

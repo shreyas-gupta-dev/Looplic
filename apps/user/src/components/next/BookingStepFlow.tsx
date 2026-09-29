@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { buildBookingInsert, isMissingBookingCodeColumnError, isValidPhoneNumber, isValidPincode, parseBookingLocation } from "@/src/lib/bookings";
 import type { BookingInsert } from "@/src/lib/bookings";
 import { buildThankYouHref, trackGoogleAdsConversion } from "@/src/lib/gtag";
+import { renderableImageUrl } from "@/src/lib/images/registry";
 import { downloadBookingConfirmationPdf } from "@/src/lib/invoice-pdf";
 import { buildCustomerProfileInsert } from "@/src/lib/profile";
 import { formatVisitingCharge, getVisitingChargePolicy } from "@/src/lib/visiting-charge";
@@ -790,7 +791,7 @@ export function BookingStepFlow({
                 const label = displayGuardType(guard.guard_type);
                 return (
                   <button key={guard.id} onClick={() => continueAfterSelection({ guard: guard.id })} className="flex w-full items-center gap-3 rounded-2xl border-2 border-border bg-card p-4 text-left transition-all hover:border-primary/30 hover:shadow-card-brand">
-                    {guard.image_url ? <img src={guard.image_url} alt={label} className="size-11 rounded-2xl object-contain border border-border/70 bg-background p-1.5" /> : <div className="flex size-11 items-center justify-center rounded-2xl border border-border/70 bg-secondary text-sm font-bold text-primary">{serviceBadges[label] || "Shield"}</div>}
+                    {renderableImageUrl(guard.image_url) ? <img src={renderableImageUrl(guard.image_url)!} alt={label} className="size-11 rounded-2xl object-contain border border-border/70 bg-background p-1.5" /> : <div className="flex size-11 items-center justify-center rounded-2xl border border-border/70 bg-secondary text-sm font-bold text-primary">{serviceBadges[label] || "Shield"}</div>}
                     <div className="flex-1"><span className="text-sm font-bold text-foreground">{label}</span></div>
                     <div className="text-right"><span className="text-lg font-extrabold gradient-brand-text">Rs. {guard.price}</span></div>
                   </button>
@@ -812,7 +813,7 @@ export function BookingStepFlow({
             <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
               {filteredCategories.map((category) => (
                 <button key={category.id} onClick={() => pushFlow("repair", { category: category.id, repair: null, guard: null })} className="flex flex-col items-center gap-2 rounded-2xl border-2 border-border bg-card p-4 transition-all hover:border-primary/30 hover:shadow-card-brand">
-                  {category.image_url ? <img src={category.image_url} alt={category.name} className="size-10 rounded-xl object-contain" /> : <div className="flex size-10 items-center justify-center rounded-xl bg-secondary"><Wrench className="size-5 text-primary" /></div>}
+                  {renderableImageUrl(category.image_url) ? <img src={renderableImageUrl(category.image_url)!} alt={category.name} className="size-10 rounded-xl object-contain" /> : <div className="flex size-10 items-center justify-center rounded-xl bg-secondary"><Wrench className="size-5 text-primary" /></div>}
                   <span className="text-center text-xs font-bold text-foreground">{category.name}</span>
                 </button>
               ))}
@@ -833,7 +834,7 @@ export function BookingStepFlow({
             ) : (
               filteredSubcategories.map((subcategory) => (
                 <button key={subcategory.id} onClick={() => continueAfterSelection({ category: selectedCategoryId || "", repair: subcategory.id })} className="flex w-full items-center gap-3 rounded-3xl border border-border/80 bg-card p-4 text-left transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-card-brand">
-                  {subcategory.image_url ? <img src={subcategory.image_url} alt={subcategory.name} className="size-10 rounded-xl object-contain" /> : <div className="flex size-10 items-center justify-center rounded-xl bg-secondary"><Wrench className="size-5 text-muted-foreground" /></div>}
+                  {renderableImageUrl(subcategory.image_url) ? <img src={renderableImageUrl(subcategory.image_url)!} alt={subcategory.name} className="size-10 rounded-xl object-contain" /> : <div className="flex size-10 items-center justify-center rounded-xl bg-secondary"><Wrench className="size-5 text-muted-foreground" /></div>}
                   <div className="flex-1">
                     <span className="block text-sm font-bold text-foreground">{subcategory.name}</span>
                     <RepairWarrantyTag subcategoryName={subcategory.name} className="mt-2" />
@@ -871,10 +872,10 @@ export function BookingStepFlow({
                 <div className="relative"><User className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><input type="text" placeholder="Your name" value={name} onChange={(event) => setName(event.target.value)} maxLength={100} className="w-full rounded-xl border border-border bg-background py-3 pl-10 pr-4 text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
                 <div className="relative"><Phone className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><input type="tel" placeholder="Phone number" value={phone} onChange={(event) => setPhone(event.target.value)} maxLength={15} className="w-full rounded-xl border border-border bg-background py-3 pl-10 pr-4 text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
                 <div className="relative"><MapPin className="absolute left-3 top-3.5 size-4 text-muted-foreground" /><textarea placeholder="Inspect location address" value={address} onChange={(event) => setAddress(event.target.value)} rows={2} maxLength={200} className="w-full rounded-xl border border-border bg-background py-2.5 pl-10 pr-4 text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" /></div>
-                <div className="rounded-3xl border border-emerald-200 bg-emerald-50/30 p-4 shadow-sm">
+                <div className="rounded-3xl border border-brand-200 bg-brand-50/30 p-4 shadow-sm">
                   <div className="mb-3 flex items-start justify-between gap-3">
                     <h3 className="text-base font-semibold text-foreground">Inspect Location</h3>
-                    <div className="flex size-11 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+                    <div className="flex size-11 items-center justify-center rounded-full bg-brand-100 text-brand-600">
                       <MapPinned className="size-5" />
                     </div>
                   </div>
@@ -883,12 +884,12 @@ export function BookingStepFlow({
                     onClick={useCurrentLocation}
                     disabled={locating}
                     aria-label="Use current location"
-                    className="mb-3 flex w-full items-center justify-center gap-2 rounded-3xl border border-dashed border-emerald-300 bg-emerald-50 px-4 py-2.5 text-sm font-black text-foreground transition-colors hover:border-emerald-400 hover:bg-emerald-100/70 disabled:opacity-60"
+                    className="mb-3 flex w-full items-center justify-center gap-2 rounded-3xl border border-dashed border-brand-300 bg-brand-50 px-4 py-2.5 text-sm font-black text-foreground transition-colors hover:border-brand-400 hover:bg-brand-100/70 disabled:opacity-60"
                   >
-                    {locating ? <Loader2 className="size-4 animate-spin text-emerald-600" /> : <Navigation className="size-4 text-emerald-600" />}
+                    {locating ? <Loader2 className="size-4 animate-spin text-brand-600" /> : <Navigation className="size-4 text-brand-600" />}
                     {locating ? "Fetching current location" : "Fetch Current location"}
                   </button>
-                  <div className={`relative h-40 overflow-hidden rounded-3xl border border-border/70 bg-slate-100 shadow-inner ${pinEditable ? "ring-2 ring-emerald-300" : ""}`}>
+                  <div className={`relative h-40 overflow-hidden rounded-3xl border border-border/70 bg-slate-100 shadow-inner ${pinEditable ? "ring-2 ring-brand-300" : ""}`}>
                     <iframe
                       key={inspectMapEmbedUrl}
                       src={inspectMapEmbedUrl}
@@ -900,20 +901,20 @@ export function BookingStepFlow({
                     <div ref={mapElementRef} className={`size-full bg-transparent ${mapReady && pinEditable ? "relative z-10" : "pointer-events-none absolute inset-0 z-0 opacity-0"}`} />
                     <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-16 bg-gradient-to-t from-background/35 to-transparent" />
                     <div className="pointer-events-none absolute left-1/2 top-1/2 z-30 flex -translate-x-1/2 -translate-y-full flex-col items-center">
-                      <div className={`flex size-9 items-center justify-center rounded-full border-4 border-white shadow-xl transition-colors ${pinEditable ? "bg-emerald-600 text-white" : "bg-slate-900 text-white"}`}>
+                      <div className={`flex size-9 items-center justify-center rounded-full border-4 border-white shadow-xl transition-colors ${pinEditable ? "bg-brand-600 text-white" : "bg-slate-900 text-white"}`}>
                         <MapPin className="size-5" />
                       </div>
                       <div className="h-3 w-0.5 bg-slate-900/70" />
                     </div>
                     {pinEditable ? (
-                      <div className="pointer-events-none absolute bottom-3 left-3 z-30 rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-black text-emerald-700 shadow-lg">
+                      <div className="pointer-events-none absolute bottom-3 left-3 z-30 rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-black text-brand-700 shadow-lg">
                         Move map to place pin
                       </div>
                     ) : null}
                     <button
                       type="button"
                       onClick={() => setPinEditable((editable) => !editable)}
-                      className={`absolute right-3 top-3 z-40 flex size-10 items-center justify-center rounded-full bg-card shadow-lg transition-colors ${pinEditable ? "text-primary ring-2 ring-primary/20" : "text-emerald-600 hover:text-primary"}`}
+                      className={`absolute right-3 top-3 z-40 flex size-10 items-center justify-center rounded-full bg-card shadow-lg transition-colors ${pinEditable ? "text-primary ring-2 ring-primary/20" : "text-brand-600 hover:text-primary"}`}
                       title={pinEditable ? "Lock pin" : "Edit pin"}
                       aria-label="Edit map pin"
                     >

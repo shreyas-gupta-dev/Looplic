@@ -129,7 +129,7 @@ export function HomepageNavbar() {
                       <Link
                         key={item.href}
                         href={item.href}
-                        className="flex items-center gap-2.5 rounded-lg px-2 py-2 text-sm text-gray-700 transition-colors hover:bg-green-50 hover:text-primary"
+                        className="flex items-center gap-2.5 rounded-lg px-2 py-2 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-primary"
                       >
                         <span className="text-base">{item.icon}</span>
                         {item.label}
@@ -142,7 +142,7 @@ export function HomepageNavbar() {
                       <Link
                         key={item.href}
                         href={item.href}
-                        className="block rounded-lg px-2 py-2 text-sm text-gray-700 transition-colors hover:bg-green-50 hover:text-primary"
+                        className="block rounded-lg px-2 py-2 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-primary"
                       >
                         {item.label}
                       </Link>
@@ -247,7 +247,7 @@ export function HomepageNavbar() {
                 key={item.href}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-green-50 hover:text-primary"
+                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-brand-50 hover:text-primary"
               >
                 <span>{item.icon}</span> {item.label}
               </Link>

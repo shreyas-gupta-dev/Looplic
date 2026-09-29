@@ -205,7 +205,7 @@ export default function BlogTab() {
                       <div className="text-xs text-muted-foreground">/blog/{post.slug}</div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${post.status === "published" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${post.status === "published" ? "bg-brand-100 text-brand-700" : "bg-amber-100 text-amber-700"}`}>
                         {post.status}
                       </span>
                     </td>

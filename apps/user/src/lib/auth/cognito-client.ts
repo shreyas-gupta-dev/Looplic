@@ -70,36 +70,92 @@ export async function verifyOtp(
 }
 
 /**
- * Sign in with email/phone + password. Requires prior OTP verification.
+ * Sign in with email + password.
+ *
+ * Sign-in is OTP-gated, so the caller already holds a verification token. That
+ * token is what lets us confirm a legacy unconfirmed account: /api/auth/confirm-user
+ * requires proof of ownership and will refuse without it.
  */
-export async function signInWithEmail(email: string, password: string) {
+export async function signInWithEmail(email: string, password: string, verificationToken?: string) {
   const supabase = getBrowserSupabase();
+  const normalizedEmail = email.trim().toLowerCase();
   const { data, error } = await supabase.auth.signInWithPassword({
-    email: email.trim().toLowerCase(),
+    email: normalizedEmail,
     password: password.trim(),
   });
 
   if (error) {
-    if (error.message.includes("Email not confirmed") || error.message.includes("email_not_confirmed")) {
+    const isUnconfirmed =
+      error.message.includes("Email not confirmed") || error.message.includes("email_not_confirmed");
+
+    if (isUnconfirmed && verificationToken) {
       const confirmResponse = await fetch("/api/auth/confirm-user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+        body: JSON.stringify({ email: normalizedEmail, verificationToken }),
       });
 
       if (confirmResponse.ok) {
         const { data: retryData, error: retryError } = await supabase.auth.signInWithPassword({
-          email: email.trim().toLowerCase(),
+          email: normalizedEmail,
           password: password.trim(),
         });
         if (retryError) throw new Error(retryError.message);
         return { isSignedIn: Boolean(retryData.session) };
       }
     }
+
+    if (isUnconfirmed) {
+      throw new Error(
+        "Your email is not verified yet. Please complete OTP verification and try again.",
+      );
+    }
+
     throw new Error(error.message);
   }
 
   return { isSignedIn: Boolean(data.session) };
+}
+
+/**
+ * Asks the server to send a password reset link.
+ *
+ * The request is deliberately fire-and-forget from the UI's point of view: the
+ * server answers identically whether or not the address has an account, so this
+ * form cannot be used to discover who is registered. See
+ * app/api/auth/request-password-reset/route.ts.
+ */
+export async function requestPasswordReset(email: string) {
+  const response = await fetch("/api/auth/request-password-reset", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: email.trim().toLowerCase() }),
+  });
+
+  if (!response.ok) {
+    const result = await response.json().catch(() => null);
+    throw new Error(result?.error || "Could not send the reset link");
+  }
+
+  return { sent: true };
+}
+
+/**
+ * Completes a password reset. Requires the recovery session established by the
+ * link in the reset email, which Supabase puts in place before this runs.
+ */
+export async function completePasswordReset(newPassword: string) {
+  const supabase = getBrowserSupabase();
+
+  const { data: sessionData } = await supabase.auth.getSession();
+  if (!sessionData.session) {
+    throw new Error("This password reset link has expired. Please request a new one.");
+  }
+
+  const { error } = await supabase.auth.updateUser({ password: newPassword.trim() });
+  if (error) throw new Error(error.message);
+
+  return { updated: true };
 }
 
 /**

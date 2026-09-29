@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { renderableImageUrl } from "@/src/lib/images/registry";
+
 import type {
   CatalogBrand,
   CatalogModel,
@@ -270,8 +272,8 @@ export function BookingClientPage({
                           : "border-border bg-card shadow-card-brand hover:border-primary/30"
                       }`}
                     >
-                      {category.image_url ? (
-                        <img src={category.image_url} alt={category.name} className="size-10 rounded-xl object-contain" />
+                      {renderableImageUrl(category.image_url) ? (
+                        <img src={renderableImageUrl(category.image_url)!} alt={category.name} className="size-10 rounded-xl object-contain" />
                       ) : (
                         <div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
                           <Wrench className="size-5 text-primary" />
@@ -300,8 +302,8 @@ export function BookingClientPage({
                                 : "border-border/80 bg-card shadow-card-brand hover:-translate-y-0.5 hover:border-primary/30"
                             }`}
                           >
-                            {subcategory.image_url ? (
-                              <img src={subcategory.image_url} alt={subcategory.name} className="size-10 rounded-xl object-contain" />
+                            {renderableImageUrl(subcategory.image_url) ? (
+                              <img src={renderableImageUrl(subcategory.image_url)!} alt={subcategory.name} className="size-10 rounded-xl object-contain" />
                             ) : (
                               <div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
                                 <Wrench className="size-5 text-muted-foreground" />
@@ -349,7 +351,7 @@ export function BookingClientPage({
                       : "border-border bg-card shadow-card-brand hover:border-primary/30"
                   }`}
                 >
-                  {guard.image_url ? <img src={guard.image_url} alt={label} className="size-11 rounded-2xl object-contain border border-border/70 bg-background p-1.5" /> : <div className="flex size-11 items-center justify-center rounded-2xl border border-border/70 bg-secondary text-sm font-bold text-primary">{guardIcons[label] || "Shield"}</div>}
+                  {renderableImageUrl(guard.image_url) ? <img src={renderableImageUrl(guard.image_url)!} alt={label} className="size-11 rounded-2xl object-contain border border-border/70 bg-background p-1.5" /> : <div className="flex size-11 items-center justify-center rounded-2xl border border-border/70 bg-secondary text-sm font-bold text-primary">{guardIcons[label] || "Shield"}</div>}
                   <div className="flex-1">
                     <span className="text-sm font-bold text-foreground">{label}</span>
                   </div>

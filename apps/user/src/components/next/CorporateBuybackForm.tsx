@@ -47,8 +47,8 @@ export function CorporateBuybackForm() {
   if (status === "done") {
     return (
       <div className="rounded-3xl border border-gray-200 bg-white p-8 text-center shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
-        <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-emerald-50">
-          <CheckCircle className="size-7 text-emerald-500" />
+        <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-brand-50">
+          <CheckCircle className="size-7 text-brandteal-500" />
         </div>
         <h2 className="text-[18px] font-semibold text-gray-900">Enquiry received!</h2>
         <p className="mx-auto mt-2 max-w-sm text-[13px] leading-relaxed text-gray-500">
@@ -72,8 +72,8 @@ export function CorporateBuybackForm() {
   return (
     <form onSubmit={handleSubmit} className="rounded-3xl border border-gray-200 bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] sm:p-6">
       <div className="mb-5 flex items-center gap-3">
-        <div className="flex size-10 items-center justify-center rounded-xl bg-emerald-50">
-          <Building2 className="size-5 text-emerald-500" />
+        <div className="flex size-10 items-center justify-center rounded-xl bg-brand-50">
+          <Building2 className="size-5 text-brand-500" />
         </div>
         <div>
           <h2 className="text-[15px] font-semibold text-gray-900">Tell us about your devices</h2>

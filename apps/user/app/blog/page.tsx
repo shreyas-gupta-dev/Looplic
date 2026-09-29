@@ -27,7 +27,7 @@ export default async function BlogPage() {
     <div className="min-h-screen bg-background">
       <CatalogNavbar />
       <main>
-        <section className="border-b border-border bg-[radial-gradient(circle_at_top_left,_hsl(211_100%_50%_/_0.12),_transparent_28%),radial-gradient(circle_at_80%_12%,_hsl(165_100%_42%_/_0.12),_transparent_24%),linear-gradient(180deg,_rgba(255,255,255,0)_0%,_rgba(248,250,252,0.96)_100%)]">
+        <section className="border-b border-border bg-[radial-gradient(circle_at_top_left,_hsl(214_96%_49%_/_0.12),_transparent_28%),radial-gradient(circle_at_80%_12%,_hsl(163_100%_42%_/_0.12),_transparent_24%),linear-gradient(180deg,_rgba(255,255,255,0)_0%,_rgba(248,250,252,0.96)_100%)]">
           <div className="container max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
             <div className="inline-flex rounded-full border border-primary/15 bg-primary/[0.06] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
               Looplic Blog
@@ -89,7 +89,7 @@ export default async function BlogPage() {
                   </Link>
                 </div>
               </div>
-              <div className="border-t border-border bg-[linear-gradient(135deg,_hsl(211_100%_50%_/_0.12),_hsl(165_100%_42%_/_0.12)),linear-gradient(180deg,_#ffffff,_#f8fafc)] p-6 lg:border-l lg:border-t-0">
+              <div className="border-t border-border bg-[linear-gradient(135deg,_hsl(214_96%_49%_/_0.12),_hsl(163_100%_42%_/_0.12)),linear-gradient(180deg,_#ffffff,_#f8fafc)] p-6 lg:border-l lg:border-t-0">
                 <div className="flex h-full min-h-56 flex-col justify-between rounded-2xl border border-white/70 bg-white/70 p-5">
                   <BookOpen className="size-10 text-primary" />
                   <div>
@@ -133,7 +133,6 @@ export default async function BlogPage() {
                 {cmsPosts.map((post) => (
                   <article key={post.id} className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
                     {post.cover_image_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img src={post.cover_image_url} alt={post.cover_image_alt || post.title} className="h-40 w-full object-cover" />
                     ) : null}
                     <div className="flex flex-1 flex-col p-5">

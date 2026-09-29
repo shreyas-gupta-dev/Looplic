@@ -86,7 +86,7 @@ const statusColors: Record<string, string> = {
   pending: "border-amber-200 bg-amber-50 text-amber-800",
   confirmed: "border-sky-200 bg-sky-50 text-sky-800",
   in_progress: "border-violet-200 bg-violet-50 text-violet-800",
-  completed: "border-emerald-200 bg-emerald-50 text-emerald-800",
+  completed: "border-brandteal-200 bg-brandteal-50 text-brandteal-800",
   cancelled: "border-rose-200 bg-rose-50 text-rose-800",
 };
 
@@ -693,7 +693,7 @@ const BookingsTab = ({ role = "operation" }: BookingsTabProps) => {
                       {formatBookingServiceType(booking.service_type)} • {booking.service_type === "cctv" ? formatCctvBookingSelection(booking.cctv_service, booking.cctv_brand) || "CCTV details pending" : [booking.brand_name, booking.model_name].filter(Boolean).join(" ") || "Device pending"}
                     </div>
                     {booking.warranty_label || formatWarrantyLabel(booking.warranty_duration_value, booking.warranty_duration_unit) ? (
-                      <div className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-black text-emerald-700">{booking.warranty_label || formatWarrantyLabel(booking.warranty_duration_value, booking.warranty_duration_unit)}</div>
+                      <div className="inline-flex rounded-full border border-brand-200 bg-brand-50 px-2.5 py-1 text-[11px] font-black text-brand-700">{booking.warranty_label || formatWarrantyLabel(booking.warranty_duration_value, booking.warranty_duration_unit)}</div>
                     ) : null}
                     <div className="text-xs text-muted-foreground">{booking.scheduled_date ? `${new Date(booking.scheduled_date).toLocaleDateString("en-IN")} • ${booking.time_slot || "No slot"}` : new Date(booking.created_at).toLocaleString("en-IN")}</div>
                     <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-muted-foreground">
@@ -767,7 +767,7 @@ const BookingsTab = ({ role = "operation" }: BookingsTabProps) => {
                 <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Service details</div>
                 <div className="mt-2 text-foreground">{detail.service_type === "cctv" ? formatCctvBookingSelection(detail.cctv_service, detail.cctv_brand) || formatBookingServiceType(detail.service_type) : detail.guard_type || detail.repair_subcategory_name || detail.repair_category_name || formatBookingServiceType(detail.service_type)}</div>
                 {detail.warranty_label || formatWarrantyLabel(detail.warranty_duration_value, detail.warranty_duration_unit) ? (
-                  <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-700">{detail.warranty_label || formatWarrantyLabel(detail.warranty_duration_value, detail.warranty_duration_unit)}</div>
+                  <div className="mt-3 rounded-xl border border-brand-200 bg-brand-50 px-3 py-2 text-xs font-black text-brand-700">{detail.warranty_label || formatWarrantyLabel(detail.warranty_duration_value, detail.warranty_duration_unit)}</div>
                 ) : null}
                 <div className="mt-2 text-muted-foreground">Booked on {new Date(detail.created_at).toLocaleString("en-IN")}</div>
                 {detail.notes ? <div className="mt-2 text-muted-foreground">{detail.notes}</div> : null}
@@ -803,10 +803,10 @@ const BookingsTab = ({ role = "operation" }: BookingsTabProps) => {
                       </div>
                     ) : null}
                     {detailInspection.quote_notes || detailInspection.quote_amount ? (
-                      <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3">
-                        <div className="text-[11px] font-black uppercase tracking-[0.12em] text-emerald-700">Quote</div>
-                        {detailInspection.quote_amount ? <div className="mt-1 text-base font-black text-emerald-800">₹{Number(detailInspection.quote_amount).toLocaleString("en-IN")}</div> : null}
-                        {detailInspection.quote_notes ? <div className="mt-2 text-xs text-emerald-900">{renderInspectionText(detailInspection.quote_notes)}</div> : null}
+                      <div className="rounded-xl border border-brand-200 bg-brand-50 p-3">
+                        <div className="text-[11px] font-black uppercase tracking-[0.12em] text-brand-700">Quote</div>
+                        {detailInspection.quote_amount ? <div className="mt-1 text-base font-black text-brand-800">₹{Number(detailInspection.quote_amount).toLocaleString("en-IN")}</div> : null}
+                        {detailInspection.quote_notes ? <div className="mt-2 text-xs text-brand-900">{renderInspectionText(detailInspection.quote_notes)}</div> : null}
                       </div>
                     ) : null}
                   </div>

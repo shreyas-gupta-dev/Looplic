@@ -1,12 +1,13 @@
 "use client";
 
-import { BarChart3, CalendarCheck, CreditCard, Laptop, LogOut, Newspaper, Package, Recycle, Smartphone, UserRoundCheck } from "lucide-react";
+import { BarChart3, CalendarCheck, CreditCard, Laptop, LogOut, Newspaper, Package, Recycle, Smartphone, UserRoundCheck, Video } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import BlogTab from "@/src/components/admin/BlogTab";
 import BookingsTab from "@/src/components/admin/BookingsTab";
 import BuybackTab from "@/src/components/admin/BuybackTab";
+import LiveViewTab from "@/src/components/admin/LiveViewTab";
 import PaymentsTab from "@/src/components/admin/PaymentsTab";
 import ProductsTab from "@/src/components/admin/ProductsTab";
 import TechniciansTab from "@/src/components/admin/TechniciansTab";
@@ -106,7 +107,7 @@ function AnalyticsTab() {
           action: "Buyback booking",
           detail: `${b.brand_name} ${b.model_name}${b.quoted_amount ? ` — ₹${Number(b.quoted_amount).toLocaleString("en-IN")}` : ""}`,
           time: formatRelativeTime(createdAt),
-          color: "bg-green-500",
+          color: "bg-brand-500",
           timestamp: createdAt.getTime(),
         });
       });
@@ -168,7 +169,7 @@ function AnalyticsTab() {
 
   const maxRevenue = Math.max(...revenueByDay.map((d) => d.amount), 1);
   const maxTypeCount = Math.max(...ordersByType.map((t) => t.count), 1);
-  const typeColors = ["bg-green-500", "bg-blue-500", "bg-purple-500", "bg-orange-500", "bg-pink-500", "bg-cyan-500", "bg-yellow-500"];
+  const typeColors = ["bg-brand-500", "bg-blue-500", "bg-purple-500", "bg-orange-500", "bg-pink-500", "bg-cyan-500", "bg-yellow-500"];
 
   return (
     <div className="space-y-6 py-4">
@@ -301,7 +302,7 @@ export function AdminDashboardClient() {
 
       <div className="container py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="flex !h-auto w-full max-w-full !justify-start gap-1 overflow-x-auto rounded-2xl p-1 sm:grid sm:max-w-6xl sm:grid-cols-9 sm:overflow-visible">
+          <TabsList className="flex !h-auto w-full max-w-full !justify-start gap-1 overflow-x-auto rounded-2xl p-1 sm:grid sm:max-w-6xl sm:grid-cols-10 sm:overflow-visible">
             <TabsTrigger value="analytics" className="min-w-[104px] flex-shrink-0 gap-1.5 px-3 py-2.5 text-xs sm:min-w-0">
               <BarChart3 className="size-3.5" />
               <span className="hidden sm:inline">Analytics</span>
@@ -343,6 +344,11 @@ export function AdminDashboardClient() {
               <Newspaper className="size-3.5" />
               Blog
             </TabsTrigger>
+            <TabsTrigger value="live-view" className="min-w-[104px] flex-shrink-0 gap-1.5 px-3 py-2.5 text-xs sm:min-w-0">
+              <Video className="size-3.5" />
+              <span className="hidden sm:inline">Live View</span>
+              <span className="sm:hidden">Live</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="analytics">
@@ -379,6 +385,10 @@ export function AdminDashboardClient() {
 
           <TabsContent value="blog">
             {activeTab === "blog" ? <BlogTab /> : null}
+          </TabsContent>
+
+          <TabsContent value="live-view">
+            {activeTab === "live-view" ? <LiveViewTab /> : null}
           </TabsContent>
         </Tabs>
       </div>

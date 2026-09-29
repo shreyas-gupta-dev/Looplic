@@ -7,6 +7,8 @@ import { useMemo, useState } from "react";
 import { BrandLogo } from "@/src/components/next/BrandLogo";
 import { CatalogPrefetchLink } from "@/src/components/next/CatalogPrefetchLink";
 import type { CatalogBrand, CatalogSeries } from "@/src/lib/data/catalog";
+import { renderableImageUrl } from "@/src/lib/images/registry";
+import { withRepairSelection } from "@/src/lib/repair-selection";
 
 // Series are stored with a trailing "Series" (e.g. "iPhone 11 Series") and often
 // repeat the brand ("Apple iPhone 11 Series"). On the brand page the brand is
@@ -14,7 +16,7 @@ import type { CatalogBrand, CatalogSeries } from "@/src/lib/data/catalog";
 // "Series" word for a cleaner, shorter label ("iPhone 11"). Fall back to the
 // original name if stripping leaves nothing.
 function formatSeriesLabel(name: string, brandName?: string) {
-  let label = name.replace(/\s*series\s*$/i, "").trim();
+  const label = name.replace(/\s*series\s*$/i, "").trim();
   return label || name;
 }
 
@@ -39,6 +41,8 @@ type MobileSeriesCatalogPageProps = {
   seriesPathPrefix: string;
   serviceLabel: string;
   homeHref?: string;
+  /** Repair category chosen upstream, carried down to the booking flow. */
+  repairCategoryId?: string | null;
 };
 
 export function MobileSeriesCatalogPage({
@@ -48,6 +52,7 @@ export function MobileSeriesCatalogPage({
   seriesPathPrefix,
   serviceLabel,
   homeHref = "/",
+  repairCategoryId = null,
 }: MobileSeriesCatalogPageProps) {
   const [search, setSearch] = useState("");
 
@@ -125,14 +130,19 @@ export function MobileSeriesCatalogPage({
             {filteredSeries.map((series) => (
               <CatalogPrefetchLink
                 key={series.id}
-                href={`${seriesPathPrefix}/${series.slug}`}
+                href={withRepairSelection(`${seriesPathPrefix}/${series.slug}`, repairCategoryId)}
                 eagerPrefetch={!search}
                 className="group flex items-center justify-between gap-2 rounded-2xl border border-border bg-card px-3 py-3 shadow-card-brand transition-all hover:border-primary/30 hover:shadow-elevated-brand active:scale-95 sm:gap-3 sm:px-4 sm:py-4"
               >
                 <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                   <div className="flex size-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-secondary sm:size-11">
-                    {(series.image_url || brand.image_url) ? (
-                      <img src={series.image_url || brand.image_url!} alt={series.name} className="size-full object-contain p-1" loading="lazy" />
+                    {renderableImageUrl(series.image_url ?? brand.image_url) ? (
+                      <img
+                        src={renderableImageUrl(series.image_url ?? brand.image_url)!}
+                        alt={series.name}
+                        className="size-full object-contain p-1"
+                        loading="lazy"
+                      />
                     ) : (
                       <Smartphone className="size-4 text-primary sm:size-5" />
                     )}

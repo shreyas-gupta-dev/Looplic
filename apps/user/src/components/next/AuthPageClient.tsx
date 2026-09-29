@@ -218,9 +218,11 @@ export function AuthPageClient() {
           }
         }
       } else {
-        // Sign in with password (OTP already verified identity)
+        // Sign in with password (OTP already verified identity). The token is
+        // passed through so a legacy unconfirmed account can be confirmed with
+        // proof of ownership rather than on request.
         if (inputMethod === "email") {
-          const result = await signInWithEmail(email, password);
+          const result = await signInWithEmail(email, password, verificationToken);
           if (result.isSignedIn) {
             toast.success("Welcome back!");
             navigateAfterAuth(redirect);
@@ -255,7 +257,7 @@ export function AuthPageClient() {
     <main className="flex flex-1 items-center justify-center p-4 sm:p-6">
       <div className="grid w-full max-w-5xl overflow-hidden rounded-[28px] border border-border bg-card shadow-elevated-brand lg:grid-cols-[1.02fr_0.98fr]">
         {/* Left panel - info */}
-        <section className="hidden border-r border-border bg-[radial-gradient(circle_at_top_left,_hsl(211_100%_50%_/_0.14),_transparent_35%),radial-gradient(circle_at_75%_20%,_hsl(165_100%_42%_/_0.12),_transparent_28%),linear-gradient(180deg,_rgba(255,255,255,0)_0%,_rgba(248,250,252,0.96)_100%)] p-8 lg:block">
+        <section className="hidden border-r border-border bg-[radial-gradient(circle_at_top_left,_hsl(214_96%_49%_/_0.14),_transparent_35%),radial-gradient(circle_at_75%_20%,_hsl(163_100%_42%_/_0.12),_transparent_28%),linear-gradient(180deg,_rgba(255,255,255,0)_0%,_rgba(248,250,252,0.96)_100%)] p-8 lg:block">
           <Link href="/">
             <img src={logo.src} alt="Looplic" className="h-8" />
           </Link>
@@ -466,6 +468,19 @@ export function AuthPageClient() {
                       maxLength={72}
                       className="w-full rounded-2xl border border-border bg-card py-3 pl-10 pr-4 text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                     />
+                  </div>
+                )}
+
+                {/* Password recovery. Email only — a reset link needs an inbox,
+                    and phone accounts recover by signing in with an OTP. */}
+                {mode === "login" && inputMethod === "email" && (
+                  <div className="flex justify-end">
+                    <Link
+                      href={email.trim() ? `/auth/reset-password?email=${encodeURIComponent(email.trim())}` : "/auth/reset-password"}
+                      className="rounded text-xs font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                    >
+                      Forgot your password?
+                    </Link>
                   </div>
                 )}
 
