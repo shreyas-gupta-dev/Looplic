@@ -137,7 +137,7 @@ export function ServiceLandingPage({
           selection into the booking flow. */}
       {repairCategories.length > 0 && (
         <section className="border-t border-gray-100 bg-gray-50 py-12 md:py-16">
-          <div className="mx-auto max-w-6xl px-4">
+          <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-center text-2xl font-bold text-gray-900">What needs fixing?</h2>
             <p className="mt-2 text-center text-sm text-gray-500">
               Pick the issue and we will take you straight to your device
@@ -187,7 +187,7 @@ export function ServiceLandingPage({
 
       {/* Brand Picker */}
       <section className="bg-white py-12 md:py-16">
-        <div className="mx-auto max-w-6xl px-4">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-gray-900">{config.brandLabel}</h2>
@@ -263,7 +263,7 @@ export function ServiceLandingPage({
 
       {/* How it Works */}
       <section className="border-t border-gray-100 bg-gray-50 py-12 md:py-16">
-        <div className="mx-auto max-w-5xl px-4">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-center text-2xl font-bold text-gray-900">How It Works</h2>
           <p className="mt-2 text-center text-sm text-gray-500">Get your device repaired in 4 simple steps</p>
 
@@ -283,7 +283,7 @@ export function ServiceLandingPage({
 
       {/* Live CCTV Feature Spotlight */}
       <section className="border-t border-gray-100 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 py-12 text-white md:py-16">
-        <div className="mx-auto max-w-5xl px-4">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center justify-between gap-8 md:flex-row">
             <div className="max-w-xl text-center md:text-left">
               <div className="inline-flex items-center gap-2 rounded-full border border-rose-500/30 bg-rose-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-rose-400">
@@ -337,7 +337,7 @@ export function ServiceLandingPage({
       {/* Trust Signals — informational only, so deliberately no hover affordance:
           nothing here is clickable and it must not look like it is. */}
       <section className="bg-white py-12 md:py-16">
-        <div className="mx-auto max-w-5xl px-4">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-center text-2xl font-bold text-gray-900">Why Choose Looplic?</h2>
           <ul className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {trustSignals.map((signal) => {

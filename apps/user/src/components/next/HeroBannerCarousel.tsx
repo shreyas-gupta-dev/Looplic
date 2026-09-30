@@ -567,7 +567,7 @@ export function HeroBannerCarousel() {
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      <div className="relative container mx-auto max-w-6xl px-4 pt-3 pb-2">
+      <div className="relative container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-4 pb-2">
         {/* Main Banner Container */}
         <div
           ref={emblaRef}
@@ -655,17 +655,17 @@ export function HeroBannerCarousel() {
           </div>
         </div>
 
-        {/* Carousel Navigation Arrows */}
+        {/* Carousel Navigation Arrows - hidden on mobile so touch gestures are used without button overlap */}
         <button
           onClick={scrollPrev}
-          className="absolute left-6 top-1/2 z-20 flex size-9 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200/90 bg-white/90 text-slate-700 shadow-md backdrop-blur-sm transition-all hover:bg-white hover:scale-105 hover:text-slate-900 active:scale-95 sm:left-7 sm:size-10"
+          className="hidden sm:flex absolute left-3 sm:left-6 lg:left-7 top-1/2 z-20 size-9 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200/90 bg-white/90 text-slate-700 shadow-md backdrop-blur-sm transition-all hover:bg-white hover:scale-105 hover:text-slate-900 active:scale-95 sm:size-10"
           aria-label="Previous slide"
         >
           <ChevronLeft className="size-5" />
         </button>
         <button
           onClick={scrollNext}
-          className="absolute right-6 top-1/2 z-20 flex size-9 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200/90 bg-white/90 text-slate-700 shadow-md backdrop-blur-sm transition-all hover:bg-white hover:scale-105 hover:text-slate-900 active:scale-95 sm:right-7 sm:size-10"
+          className="hidden sm:flex absolute right-3 sm:right-6 lg:right-7 top-1/2 z-20 size-9 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200/90 bg-white/90 text-slate-700 shadow-md backdrop-blur-sm transition-all hover:bg-white hover:scale-105 hover:text-slate-900 active:scale-95 sm:size-10"
           aria-label="Next slide"
         >
           <ChevronRight className="size-5" />

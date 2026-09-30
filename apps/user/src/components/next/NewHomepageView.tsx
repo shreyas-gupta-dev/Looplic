@@ -120,36 +120,37 @@ export function NewHomepageView({
       <HeroBannerCarousel />
 
       {/* ─── Quick Search Bar ──────────────────────────────────────── */}
-      <section className="relative z-10 px-4 py-5 sm:py-6">
-        <div className="container mx-auto max-w-3xl">
-          <div className="rounded-2xl border border-border bg-white p-3 shadow-xl sm:p-4">
+      <section className="relative z-10 px-4 sm:px-6 lg:px-8 -mt-2 sm:-mt-3 mb-2 sm:mb-4">
+        <div className="container mx-auto max-w-4xl lg:max-w-5xl">
+          <div className="rounded-2xl border border-gray-200/90 bg-white/95 p-2 sm:p-2.5 shadow-lg backdrop-blur-md transition-shadow hover:shadow-xl">
             <DeviceSearchBox
-              placeholder="Search your device e.g. iPhone 15, Galaxy S24..."
+              placeholder="Search your device e.g. iPhone 15, Galaxy S24, MacBook Air..."
               browseHref="/sell"
               brands={searchBrands}
               series={searchSeries}
               models={searchModels}
               mode="mobile-repair"
+              className="mt-0 px-0"
             />
           </div>
         </div>
       </section>
 
       {/* ─── Instant Buyback Price Calculator (Cashify-style) ────────── */}
-      <section className="px-4 py-3 sm:py-5">
-        <div className="container mx-auto max-w-5xl">
+      <section className="px-4 sm:px-6 lg:px-8 py-3 sm:py-5">
+        <div className="container mx-auto max-w-7xl">
           <QuickBuybackCalculator brands={brands} models={searchModels} />
         </div>
       </section>
 
       {/* ─── Our Services Grid (Icon-based, always renders) ────────── */}
-      <section className="py-10 md:py-14">
-        <div className="container mx-auto max-w-6xl px-4">
+      <section className="py-8 md:py-12">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div>
-            <h2 className="mb-8 text-2xl font-bold text-gray-900 sm:text-3xl">
+            <h2 className="mb-6 text-2xl font-bold text-gray-900 sm:text-3xl">
               Our Services
             </h2>
-            <div className="grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6">
+            <div className="grid grid-cols-3 gap-3.5 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 sm:gap-5">
               {ourServices.map((svc) => {
                 const image = getServiceImage(svc.id);
                 return (
@@ -182,8 +183,8 @@ export function NewHomepageView({
       </section>
 
       {/* ─── Sell Your Old Device (Icon-based horizontal scroll) ───── */}
-      <section className="py-10 md:py-14">
-        <div className="container mx-auto max-w-6xl px-4">
+      <section className="py-8 md:py-12">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div>
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">Sell Your Old Device Now</h2>
@@ -242,8 +243,8 @@ export function NewHomepageView({
 
 
       {/* ─── Buy Refurbished Devices (Interactive Brand Carousel) ── */}
-      <section className="bg-gray-50 py-10 md:py-14">
-        <div className="container mx-auto max-w-6xl px-4">
+      <section className="bg-gray-50 py-8 md:py-12">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div>
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -407,8 +408,8 @@ export function NewHomepageView({
       </section>
 
       {/* ─── Top Brands (Using database brand images) ─────────────── */}
-      <section className="py-10 md:py-14">
-        <div className="container mx-auto max-w-6xl px-4">
+      <section className="py-8 md:py-12">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div>
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">Top Brands</h2>
@@ -456,8 +457,8 @@ export function NewHomepageView({
 
 
       {/* ─── How It Works ─────────────────────────────────────────── */}
-      <section className="bg-gray-50 py-10 md:py-14">
-        <div className="container mx-auto max-w-5xl px-4">
+      <section className="bg-gray-50 py-8 md:py-12">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div>
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">How It Works</h2>
@@ -490,7 +491,7 @@ export function NewHomepageView({
 
       {/* ─── Trust Stats Bar ──────────────────────────────────────── */}
       <section className="border-y border-gray-100 bg-brand-50/50 py-8">
-        <div className="container mx-auto max-w-5xl px-4">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
             {trustStats.map((stat) => (
               <div key={stat.label} className="text-center">
@@ -503,8 +504,8 @@ export function NewHomepageView({
       </section>
 
       {/* ─── Popular Devices (Brand image cards) ──────────────────── */}
-      <section className="py-10 md:py-14">
-        <div className="container mx-auto max-w-6xl px-4">
+      <section className="py-8 md:py-12">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div>
             <div className="mb-4 flex items-center justify-between">
               <div>
@@ -555,8 +556,8 @@ export function NewHomepageView({
 
 
       {/* ─── Testimonials (Horizontal Carousel) ─────────────────── */}
-      <section className="bg-gray-50 py-10 md:py-14">
-        <div className="container mx-auto max-w-6xl px-4">
+      <section className="bg-gray-50 py-8 md:py-12">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div>
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">Customer Stories</h2>
@@ -600,7 +601,7 @@ export function NewHomepageView({
 
       {/* ─── Book on WhatsApp CTA ─────────────────────────────── */}
       <section className="bg-primary py-12 md:py-16">
-        <div className="container mx-auto max-w-5xl px-4">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center gap-8 md:flex-row md:justify-between">
             <div className="text-center md:text-left">
               <h2 className="text-2xl font-bold text-white sm:text-3xl">
@@ -647,7 +648,7 @@ export function NewHomepageView({
 
       {/* ─── Why Choose Looplic (6 Trust Badges) ─────────────────── */}
       <section className="py-10 md:py-14">
-        <div className="container mx-auto max-w-5xl px-4">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="mb-8 text-center text-2xl font-bold text-gray-900 sm:text-3xl">
             Why Choose Looplic?
           </h2>

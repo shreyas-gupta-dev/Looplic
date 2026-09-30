@@ -78,7 +78,7 @@ export function HomepageNavbar() {
     >
       {/* Top info bar */}
       <div className="hidden border-b border-gray-100 bg-gray-50 lg:block">
-        <div className="container mx-auto flex h-8 max-w-7xl items-center justify-between px-6 text-xs text-gray-500">
+        <div className="container mx-auto flex h-8 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 text-xs text-gray-500">
           <div className="flex items-center gap-4">
             <span>🇮🇳 India&apos;s #1 Device Recommerce Platform</span>
           </div>
@@ -95,7 +95,7 @@ export function HomepageNavbar() {
       </div>
 
       {/* Main nav */}
-      <nav aria-label="Primary" className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4 lg:px-6">
+      <nav aria-label="Primary" className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-1">
           <Image

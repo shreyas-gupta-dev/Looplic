@@ -65,7 +65,7 @@ export function HomepageFooter() {
   return (
     <footer className="border-t border-gray-200 bg-gray-900 text-gray-300">
       {/* Main footer content */}
-      <div className="container mx-auto max-w-7xl px-4 py-12 lg:px-8">
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 py-12 lg:px-8">
         <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
           {/* Column 1: Brand + Contact */}
           <div className="sm:col-span-2 md:col-span-3 lg:col-span-2">
@@ -200,7 +200,7 @@ export function HomepageFooter() {
 
       {/* Bottom bar */}
       <div className="border-t border-gray-800">
-        <div className="container mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 py-4 sm:flex-row lg:px-8">
+        <div className="container mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 sm:px-6 py-4 sm:flex-row lg:px-8">
           <p className="text-xs text-gray-500">
             © {new Date().getFullYear()} {companyName}. All rights reserved.
           </p>

@@ -15,6 +15,7 @@ type DeviceSearchBoxProps = {
   series: SearchSeries[];
   models: SearchModel[];
   mode: ServiceType;
+  className?: string;
 };
 
 type SearchResult = {
@@ -33,7 +34,15 @@ function scoreMatch(query: string, value: string) {
   return 0;
 }
 
-export function DeviceSearchBox({ placeholder, browseHref, brands, series, models, mode }: DeviceSearchBoxProps) {
+export function DeviceSearchBox({
+  placeholder,
+  browseHref,
+  brands,
+  series,
+  models,
+  mode,
+  className,
+}: DeviceSearchBoxProps) {
   const [query, setQuery] = useState("");
   const router = useRouter();
 
@@ -94,7 +103,7 @@ export function DeviceSearchBox({ placeholder, browseHref, brands, series, model
   }
 
   return (
-    <div className="relative mt-6 px-1">
+    <div className={`relative ${className ?? "mt-6 px-1"}`}>
       <form onSubmit={handleSubmit} className="flex items-center rounded-2xl border-2 border-transparent bg-card shadow-card-brand transition-all duration-300 focus-within:border-primary/50 focus-within:shadow-search">
         <Search className="ml-3.5 size-4 flex-shrink-0 text-muted-foreground" />
         <input
@@ -102,7 +111,7 @@ export function DeviceSearchBox({ placeholder, browseHref, brands, series, model
           placeholder={placeholder}
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          className="w-full bg-transparent p-3.5 text-[13px] font-semibold text-foreground outline-none placeholder:text-muted-foreground"
+          className="w-full bg-transparent p-3 sm:p-3.5 text-xs sm:text-sm font-semibold text-foreground outline-none placeholder:text-muted-foreground"
         />
         <button
           type="submit"
