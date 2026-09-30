@@ -15,7 +15,6 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState, useMemo } from "react";
-import dynamic from "next/dynamic";
 
 import { HomepageNavbar } from "@/src/components/next/HomepageNavbar";
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
@@ -23,19 +22,9 @@ import { buildWhatsappLink } from "@/src/lib/whatsapp-links";
 import type { CatalogBrand, SearchModel, SearchSeries } from "@/src/lib/data/catalog";
 import type { FeaturedProduct } from "@/src/lib/data/products";
 
-// Lazy-load heavy interactive components — not needed for first paint
-const HeroBannerCarousel = dynamic(
-  () => import("@/src/components/next/HeroBannerCarousel").then((m) => m.HeroBannerCarousel),
-  { ssr: false, loading: () => <div className="h-[180px] sm:h-[200px] md:h-[220px] lg:h-[240px] bg-gradient-to-br from-brand-600/20 to-brandteal-400/20 animate-pulse" /> },
-);
-const DeviceSearchBox = dynamic(
-  () => import("@/src/components/next/DeviceSearchBox").then((m) => m.DeviceSearchBox),
-  { ssr: false, loading: () => <div className="h-12 rounded-xl bg-muted animate-pulse" /> },
-);
-const QuickBuybackCalculator = dynamic(
-  () => import("@/src/components/next/QuickBuybackCalculator").then((m) => m.QuickBuybackCalculator),
-  { ssr: false, loading: () => <div className="h-44 rounded-2xl bg-slate-900/40 animate-pulse" /> },
-);
+import { HeroBannerCarousel } from "@/src/components/next/HeroBannerCarousel";
+import { DeviceSearchBox } from "@/src/components/next/DeviceSearchBox";
+import { QuickBuybackCalculator } from "@/src/components/next/QuickBuybackCalculator";
 
 // ─── Data (imported from separate module for better tree-shaking) ────────────
 import {
