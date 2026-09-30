@@ -77,6 +77,7 @@ npm run db:push
 
 ## Documentation
 
+- [Dashboard Access & Test Credentials](./docs/dashboard-access.md)
 - [AWS Setup Guide](./AWS_SETUP_GUIDE.md)
 - [Multi-App Deployment](./MULTI_APP_DEPLOYMENT.md)
 - [WhatsApp Cloud API Setup](./docs/whatsapp-cloud-api-setup.md)

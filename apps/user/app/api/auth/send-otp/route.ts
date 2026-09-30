@@ -44,7 +44,7 @@ export async function POST(request: Request) {
       // Phone OTP goes out through the SMS provider configured in Supabase.
       const { error } = await admin.auth.signInWithOtp({ phone: normalizedIdentifier });
       if (error) {
-        return NextResponse.json({ error: error.message }, { status: 400 });
+        return NextResponse.json({ error: friendlyOtpError(error.message) }, { status: 400 });
       }
       return NextResponse.json({ success: true, message: "OTP sent to phone" });
     }
@@ -75,5 +75,15 @@ export async function POST(request: Request) {
     const message = err instanceof Error ? err.message : "Failed to send OTP";
     return NextResponse.json({ error: message }, { status: 500 });
   }
+}
+
+/**
+ * Translate Supabase's raw rate-limit message into a clearer, user-facing hint.
+ */
+function friendlyOtpError(message: string): string {
+  if (/only request this after|rate limit|too many/i.test(message)) {
+    return "Please wait a few seconds before requesting another code, then try again.";
+  }
+  return message;
 }
 

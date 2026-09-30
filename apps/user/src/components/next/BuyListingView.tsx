@@ -22,8 +22,8 @@ export type ProductListing = {
   storage: string | null;
   ram: string | null;
   color: string | null;
-  description: string | null;
-  specifications: Record<string, string> | null;
+  description?: string | null;
+  specifications?: Record<string, string> | null;
   warrantyMonths: number;
   stock: number;
   featured: boolean;
