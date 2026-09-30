@@ -7,7 +7,8 @@ let pool: Pool | null = null;
 function getPool(): Pool {
   if (pool) return pool;
 
-  const connectionString = process.env.DATABASE_URL;
+  const raw = process.env.DATABASE_URL?.trim();
+  const connectionString = raw ? raw.replace(/^["']|["']$/g, "").trim() : undefined;
 
   if (connectionString) {
     pool = new Pool({
