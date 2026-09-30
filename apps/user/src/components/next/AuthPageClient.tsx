@@ -18,6 +18,7 @@ import {
   signUpWithPhone,
   verifyOtp,
 } from "@/src/lib/auth/cognito-client";
+import { getBrowserSupabase } from "@/src/lib/supabase/browser";
 
 type Step = "credentials" | "otp";
 type InputMethod = "email" | "phone";
@@ -174,34 +175,28 @@ export function AuthPageClient() {
           }
         }
       } catch (err: any) {
-        toast.error(err.message || "Failed to sign in. Please check your credentials.");
+        const msg = err.message || "";
+        if (msg.includes("Email not confirmed") || msg.includes("email_not_confirmed")) {
+          toast.error("Please verify your email. Click 'Sign in with OTP instead' below.");
+        } else {
+          toast.error(msg || "Failed to sign in. Please check your credentials.");
+        }
       } finally {
         setSubmitting(null);
       }
       return;
     }
 
-    // Direct Sign Up
+    // Sign Up: send OTP to verify email/phone before account creation
     if (mode === "signup") {
       setSubmitting("email");
       try {
-        if (inputMethod === "email") {
-          const result = await signUpWithEmail(email, password, name);
-          if (result.isSignUpComplete) {
-            toast.success("Account created successfully!");
-            navigateAfterAuth(redirect);
-            return;
-          }
-        } else {
-          const result = await signUpWithPhone(phone, password, name);
-          if (result.isSignUpComplete) {
-            toast.success("Account created successfully!");
-            navigateAfterAuth(redirect);
-            return;
-          }
-        }
+        await sendOtp(identifier);
+        toast.success(`Verification code sent to your ${inputMethod === "email" ? "email" : "phone"}`);
+        setStep("otp");
+        setOtpResendCountdown(60);
       } catch (err: any) {
-        toast.error(err.message || "Failed to create account");
+        toast.error(err.message || "Failed to send verification code");
       } finally {
         setSubmitting(null);
       }
@@ -267,7 +262,7 @@ export function AuthPageClient() {
     setSubmitting("otp");
     try {
       // Verify OTP
-      const { verificationToken } = await verifyOtp(identifier, otp);
+      const { verificationToken, magicLinkTokenHash } = await verifyOtp(identifier, otp);
 
       if (mode === "signup") {
         // Sign up with password + verification token
@@ -285,10 +280,20 @@ export function AuthPageClient() {
           }
         }
       } else {
-        // Sign in with password (OTP already verified identity). The token is
-        // passed through so a legacy unconfirmed account can be confirmed with
-        // proof of ownership rather than on request.
+        // Sign in with password or passwordless session
         if (inputMethod === "email") {
+          if (!password.trim() && magicLinkTokenHash) {
+            const supabase = getBrowserSupabase();
+            const { error: sessionError } = await supabase.auth.verifyOtp({
+              token_hash: magicLinkTokenHash,
+              type: "magiclink",
+            });
+            if (sessionError) throw new Error(sessionError.message);
+            toast.success("Welcome back!");
+            navigateAfterAuth(redirect);
+            return;
+          }
+
           const result = await signInWithEmail(email, password, verificationToken);
           if (result.isSignedIn) {
             toast.success("Welcome back!");
@@ -568,9 +573,14 @@ export function AuthPageClient() {
                 >
                   {submitting === "email" ? <Loader2 className="size-4 animate-spin" /> : null}
                   {submitting === "email"
-                    ? (mode === "login" ? "Signing in..." : "Creating account...")
+                    ? (mode === "login" ? "Signing in..." : "Sending verification code...")
                     : (mode === "login" ? "Sign In" : "Create Account")}
                 </button>
+                {mode === "signup" && (
+                  <p className="text-center text-xs text-muted-foreground pt-1">
+                    We&apos;ll send a 6-digit verification code to your {inputMethod === "email" ? "email" : "phone"}.
+                  </p>
+                )}
               </form>
             )}
 

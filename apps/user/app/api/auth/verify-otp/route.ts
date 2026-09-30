@@ -1,11 +1,12 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
-import { isPhoneIdentifier, normalizeIdentifier } from "@/src/lib/auth/admin-users";
+import { findAuthUserByEmail, isPhoneIdentifier, normalizeIdentifier } from "@/src/lib/auth/admin-users";
 import { supabaseUrl } from "@/src/lib/auth/config";
 import { verifyEmailOtp } from "@/src/lib/auth/email-otp";
 import { hasVerificationSecret, mintVerificationToken } from "@/src/lib/auth/verification-token";
 import { guardRateLimit } from "@/src/lib/rate-limit";
+import { getAdminSupabase, hasServiceRole } from "@/src/lib/supabase/server";
 
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
@@ -36,6 +37,7 @@ export async function POST(request: Request) {
 
     const isPhone = isPhoneIdentifier(identifier);
     const normalizedIdentifier = normalizeIdentifier(identifier);
+    let magicLinkTokenHash: string | undefined;
 
     if (isPhone) {
       // A fresh client, not the shared admin one: verifyOtp establishes a session
@@ -62,11 +64,31 @@ export async function POST(request: Request) {
       if (!check.valid) {
         return NextResponse.json({ error: check.error || "Invalid OTP code" }, { status: 400 });
       }
+
+      if (hasServiceRole) {
+        try {
+          const admin = getAdminSupabase();
+          const existingUser = await findAuthUserByEmail(admin, normalizedIdentifier);
+          if (existingUser) {
+            await admin.auth.admin.updateUserById(existingUser.id, { email_confirm: true });
+            const linkRes = await admin.auth.admin.generateLink({
+              type: "magiclink",
+              email: normalizedIdentifier,
+            });
+            if (linkRes.data?.properties?.hashed_token) {
+              magicLinkTokenHash = linkRes.data.properties.hashed_token;
+            }
+          }
+        } catch (err) {
+          console.warn("[verify-otp] Could not generate magiclink hash for existing user:", err);
+        }
+      }
     }
 
     return NextResponse.json({
       success: true,
       verificationToken: mintVerificationToken(normalizedIdentifier),
+      ...(magicLinkTokenHash ? { magicLinkTokenHash } : {}),
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "OTP verification failed";

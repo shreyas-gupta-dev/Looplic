@@ -54,7 +54,7 @@ export async function sendOtp(identifier: string): Promise<{ success: boolean }>
 export async function verifyOtp(
   identifier: string,
   token: string,
-): Promise<{ isVerified: boolean; verificationToken?: string }> {
+): Promise<{ isVerified: boolean; verificationToken?: string; magicLinkTokenHash?: string }> {
   const res = await fetch("/api/auth/verify-otp", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -66,7 +66,11 @@ export async function verifyOtp(
     throw new Error(result.error || "OTP verification failed");
   }
 
-  return { isVerified: true, verificationToken: result.verificationToken };
+  return {
+    isVerified: true,
+    verificationToken: result.verificationToken,
+    magicLinkTokenHash: result.magicLinkTokenHash,
+  };
 }
 
 /**
