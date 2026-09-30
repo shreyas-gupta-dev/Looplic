@@ -108,7 +108,7 @@ export default async function SellEvaluatePage({ params }: PageProps) {
                 href={`/sell/${sellCategory}/${b.slug}`}
                 className="flex flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white px-2 py-3.5 shadow-[0_18px_50px_rgba(15,23,42,0.06)] transition-all duration-200 hover:-translate-y-0.5 hover:border-violet-200"
               >
-                <BrandLogo name={b.name} imageUrl={b.image_url} letter={b.letter} gradient={b.gradient} className="size-9 rounded-xl object-contain" fallbackClassName="size-9 rounded-xl shadow-sm" />
+                <BrandLogo name={b.name} imageUrl={b.image_url} letter={b.letter} gradient={b.gradient} slug={b.slug} className="size-9 rounded-xl object-contain" fallbackClassName="size-9 rounded-xl shadow-sm" />
                 <span className="text-[11px] font-bold text-gray-900">{b.name}</span>
               </Link>
             ))}

@@ -91,6 +91,7 @@ export function BrandsCatalogPage({
                   imageUrl={brand.image_url}
                   letter={brand.letter}
                   gradient={brand.gradient}
+                  slug={brand.slug}
                   className="size-12 rounded-xl object-contain"
                   fallbackClassName="size-12 rounded-xl shadow-sm"
                 />

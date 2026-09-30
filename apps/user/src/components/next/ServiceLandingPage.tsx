@@ -210,6 +210,7 @@ export function ServiceLandingPage({
                     imageUrl={brand.image_url}
                     letter={brand.letter}
                     gradient={brand.gradient}
+                    slug={brand.slug}
                     className="size-10 rounded-lg object-contain"
                     fallbackClassName="size-10 rounded-lg"
                   />
@@ -235,6 +236,7 @@ export function ServiceLandingPage({
                     imageUrl={brand.image_url}
                     letter={brand.letter}
                     gradient={brand.gradient}
+                    slug={brand.slug}
                     className="size-9 rounded-lg object-contain"
                     fallbackClassName="size-9 rounded-lg"
                   />

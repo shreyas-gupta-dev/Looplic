@@ -61,6 +61,7 @@ export function HomepageBrandGrid({ brands }: { brands: CatalogBrand[] }) {
                 imageUrl={brand.image_url}
                 letter={brand.letter}
                 gradient={brand.gradient}
+                slug={brand.slug}
                 className="size-10 rounded-xl object-contain"
                 fallbackClassName="size-10 rounded-xl shadow-sm"
               />

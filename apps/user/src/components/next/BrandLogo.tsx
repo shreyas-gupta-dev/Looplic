@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { getLocalBrandLogo } from "@/src/lib/images/brand-logos";
 import { renderableImageUrl } from "@/src/lib/images/registry";
 
 type BrandLogoProps = {
@@ -11,6 +12,7 @@ type BrandLogoProps = {
   gradient: string;
   className: string;
   fallbackClassName?: string;
+  slug?: string;
 };
 
 export function BrandLogo({
@@ -20,13 +22,17 @@ export function BrandLogo({
   gradient,
   className,
   fallbackClassName,
+  slug,
 }: BrandLogoProps) {
   const [failed, setFailed] = useState(false);
-  // Catalog rows carry logos from mixed sources; only render the ones we host or
-  // allowlist (see isRenderableImageUrl). Everything else falls through to the
-  // branded letter tile, which is a better fallback than a third-party favicon.
+
+  // 1. Prefer local first-party brand logo (crisp, zero competitor hotlink)
+  const localLogo = getLocalBrandLogo(slug || name);
+
+  // 2. Allowlisted URL from DB or external source
   const allowed = renderableImageUrl(imageUrl);
-  const usableImageUrl = allowed && !failed ? allowed : "";
+
+  const usableImageUrl = !failed ? (localLogo || allowed || "") : "";
 
   if (usableImageUrl) {
     return (

@@ -77,6 +77,7 @@ export function SeriesCatalogPage({
             imageUrl={brand.image_url}
             letter={brand.letter}
             gradient={brand.gradient}
+            slug={brand.slug}
             className="size-16 rounded-2xl border border-border object-contain shadow-card-brand"
             fallbackClassName="size-16 rounded-2xl shadow-sm"
           />

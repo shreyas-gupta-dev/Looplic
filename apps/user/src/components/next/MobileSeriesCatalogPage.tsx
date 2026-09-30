@@ -94,6 +94,7 @@ export function MobileSeriesCatalogPage({
             imageUrl={brand.image_url}
             letter={brand.letter}
             gradient={brand.gradient}
+            slug={brand.slug}
             className="size-12 flex-shrink-0 rounded-2xl border border-border object-contain shadow-card-brand sm:size-16"
             fallbackClassName="size-12 flex-shrink-0 rounded-2xl shadow-sm sm:size-16"
           />
