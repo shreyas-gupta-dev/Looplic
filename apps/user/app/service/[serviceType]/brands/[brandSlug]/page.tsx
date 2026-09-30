@@ -12,6 +12,7 @@ import { SeriesCatalogPage } from "@/src/components/next/SeriesCatalogPage";
 import { getSeriesForBrand } from "@/src/lib/data/catalog";
 import { resolveBrandPageData } from "@/src/lib/data/catalog-page";
 import { buildPageMetadata } from "@/src/lib/metadata";
+import { withRepairSelection } from "@/src/lib/repair-selection";
 import { screenReplacementLandingByBrandSlug } from "@/src/lib/seo-service-pages";
 import { BreadcrumbJsonLd } from "@/src/components/seo/BreadcrumbJsonLd";
 
@@ -23,6 +24,7 @@ type PageProps = {
     serviceType: string;
     brandSlug: string;
   }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 const serviceMap = {
@@ -65,7 +67,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 }
 
-export default async function ServiceBrandPage({ params }: PageProps) {
+export default async function ServiceBrandPage({ params, searchParams }: PageProps) {
   const { serviceType, brandSlug } = await params;
   const config = serviceMap[serviceType as keyof typeof serviceMap];
 
@@ -79,6 +81,10 @@ export default async function ServiceBrandPage({ params }: PageProps) {
     notFound();
   }
 
+  const { category } = (await searchParams) ?? {};
+  const repairCategoryId = typeof category === "string" ? category : null;
+  const categoryQuery = repairCategoryId ? `?category=${encodeURIComponent(repairCategoryId)}` : "";
+
   const seriesList = await getSeriesForBrand(brand.id);
 
   // Some brands (Motorola, Nokia, Infinix, LG, ...) carry a single
@@ -87,7 +93,7 @@ export default async function ServiceBrandPage({ params }: PageProps) {
   // (e.g. /brands/lg → /brands/lg/all-models) instead of rendering it inline,
   // so the models always live under the canonical series URL.
   if (seriesList.length === 1) {
-    redirect(`/service/${serviceType}/brands/${brand.slug}/${seriesList[0].slug}`);
+    redirect(`/service/${serviceType}/brands/${brand.slug}/${seriesList[0].slug}${categoryQuery}`);
   }
 
   const screenReplacementLanding = config.listingType === "mobile" ? screenReplacementLandingByBrandSlug.get(brand.slug) : undefined;
@@ -115,16 +121,17 @@ export default async function ServiceBrandPage({ params }: PageProps) {
             brandsPath={`/service/${serviceType}/brands`}
             seriesPathPrefix={`/service/${serviceType}/brands/${brand.slug}`}
             serviceLabel={config.label}
+            repairCategoryId={repairCategoryId}
           />
         </Suspense>
         <CrawlableInternalLinks
           title={`${brand.name} ${config.label} models`}
           links={[
-            { href: `/service/${serviceType}/brands`, label: `All ${config.label} brands` },
+            { href: withRepairSelection(`/service/${serviceType}/brands`, repairCategoryId), label: `All ${config.label} brands` },
             { href: `/service/${serviceType}`, label: `${config.label} overview` },
             ...(screenReplacementLanding ? [screenReplacementLanding] : []),
             ...seriesList.map((series) => ({
-              href: `/service/${serviceType}/brands/${brand.slug}/${series.slug}`,
+              href: withRepairSelection(`/service/${serviceType}/brands/${brand.slug}/${series.slug}`, repairCategoryId),
               label: `${brand.name} ${series.name}`,
             })),
           ]}
@@ -147,16 +154,17 @@ export default async function ServiceBrandPage({ params }: PageProps) {
           brandsPath={`/service/${serviceType}/brands`}
           seriesPathPrefix={`/service/${serviceType}/brands/${brand.slug}`}
           serviceLabel={config.label}
+          repairCategoryId={repairCategoryId}
         />
       </Suspense>
       {config.listingType === "laptop" ? <LaptopBrandBookingPrompt brandName={brand.name} /> : null}
       <CrawlableInternalLinks
         title={`${brand.name} ${config.label} series`}
         links={[
-          { href: `/service/${serviceType}/brands`, label: `All ${config.label} brands` },
+          { href: withRepairSelection(`/service/${serviceType}/brands`, repairCategoryId), label: `All ${config.label} brands` },
           { href: `/service/${serviceType}`, label: `${config.label} overview` },
           ...seriesList.map((series) => ({
-            href: `/service/${serviceType}/brands/${brand.slug}/${series.slug}`,
+            href: withRepairSelection(`/service/${serviceType}/brands/${brand.slug}/${series.slug}`, repairCategoryId),
             label: `${brand.name} ${series.name}`,
           })),
         ]}

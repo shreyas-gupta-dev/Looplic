@@ -555,7 +555,7 @@ export function AuthPageClient() {
                         href={email.trim() ? `/auth/reset-password?email=${encodeURIComponent(email.trim())}` : "/auth/reset-password"}
                         className="font-semibold text-muted-foreground underline-offset-4 hover:underline focus-visible:outline-none"
                       >
-                        Forgot password?
+                        Forgot your password?
                       </Link>
                     )}
                   </div>

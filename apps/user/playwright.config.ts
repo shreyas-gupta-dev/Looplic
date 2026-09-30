@@ -31,6 +31,9 @@ export default defineConfig({
     baseURL,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
+    extraHTTPHeaders: {
+      "x-playwright-test": "1",
+    },
     ...devices["Desktop Chrome"],
   },
   webServer:

@@ -11,6 +11,7 @@ import { BreadcrumbJsonLd } from "@/src/components/seo/BreadcrumbJsonLd";
 import { getModelsForSeries } from "@/src/lib/data/catalog";
 import { resolveSeriesPageData } from "@/src/lib/data/catalog-page";
 import { buildPageMetadata } from "@/src/lib/metadata";
+import { withRepairSelection } from "@/src/lib/repair-selection";
 
 // Pre-render at build time + ISR instead of force-dynamic, so series/model lists
 // are baked from the database at build and never render empty when the runtime
@@ -23,6 +24,7 @@ type PageProps = {
     brandSlug: string;
     seriesSlug: string;
   }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 const serviceMap = {
@@ -69,7 +71,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 }
 
-export default async function ServiceSeriesPage({ params }: PageProps) {
+export default async function ServiceSeriesPage({ params, searchParams }: PageProps) {
   const { serviceType, brandSlug, seriesSlug } = await params;
   const config = serviceMap[serviceType as keyof typeof serviceMap];
 
@@ -84,6 +86,9 @@ export default async function ServiceSeriesPage({ params }: PageProps) {
   if (!series) {
     notFound();
   }
+
+  const { category } = (await searchParams) ?? {};
+  const repairCategoryId = typeof category === "string" ? category : null;
 
   const models = await getModelsForSeries(series.id);
 
@@ -109,15 +114,16 @@ export default async function ServiceSeriesPage({ params }: PageProps) {
           seriesPath={`/service/${serviceType}/brands/${brand.slug}`}
           modelPathPrefix={`/service/${serviceType}/book/${brand.slug}/${series.slug}`}
           serviceLabel={config.label}
+          repairCategoryId={repairCategoryId}
         />
       </Suspense>
       <CrawlableInternalLinks
         title={`${brand.name} ${series.name} model links`}
         links={[
-          { href: `/service/${serviceType}/brands/${brand.slug}`, label: `All ${brand.name} series` },
-          { href: `/service/${serviceType}/brands`, label: `All ${config.label} brands` },
+          { href: withRepairSelection(`/service/${serviceType}/brands/${brand.slug}`, repairCategoryId), label: `All ${brand.name} series` },
+          { href: withRepairSelection(`/service/${serviceType}/brands`, repairCategoryId), label: `All ${config.label} brands` },
           ...models.map((model) => ({
-            href: `/service/${serviceType}/book/${brand.slug}/${series.slug}/${model.slug}`,
+            href: withRepairSelection(`/service/${serviceType}/book/${brand.slug}/${series.slug}/${model.slug}`, repairCategoryId),
             label: `${brand.name} ${model.name} ${config.label}`,
           })),
         ]}

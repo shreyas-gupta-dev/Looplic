@@ -43,14 +43,19 @@ export async function POST(request: Request) {
 
     const normalizedEmail = normalizeIdentifier(email);
 
-    if (verificationToken) {
-      const check = verifyVerificationToken(verificationToken, normalizedEmail);
-      if (!check.valid) {
-        return NextResponse.json(
-          { error: "OTP verification expired or invalid. Please verify again." },
-          { status: 400 },
-        );
-      }
+    if (!verificationToken || typeof verificationToken !== "string") {
+      return NextResponse.json(
+        { error: "OTP verification is required to confirm this account" },
+        { status: 400 },
+      );
+    }
+
+    const check = verifyVerificationToken(verificationToken, normalizedEmail);
+    if (!check.valid) {
+      return NextResponse.json(
+        { error: "OTP verification expired or invalid. Please verify again." },
+        { status: 400 },
+      );
     }
 
     const admin = getAdminSupabase();

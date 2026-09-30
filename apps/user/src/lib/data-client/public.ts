@@ -1,5 +1,5 @@
 import { db } from "@/src/lib/db";
-import { and, asc, eq, inArray, ne } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull, isNull, ne } from "drizzle-orm";
 import * as schema from "@/src/lib/db/schema";
 
 function camelToSnake(col: string) {
@@ -38,6 +38,8 @@ class PublicQueryBuilder {
   private _filters: Array<[string, any]> = [];
   private _inFilters: Array<[string, any[]]> = [];
   private _neqFilters: Array<[string, any]> = [];
+  private _isNotNullFilters: string[] = [];
+  private _isNullFilters: string[] = [];
   private _orderCols: string[] = [];
   private _limitN?: number;
   private _selectFields: string = "*";
@@ -60,6 +62,24 @@ class PublicQueryBuilder {
 
   neq(column: string, value: any) {
     this._neqFilters.push([column, value]);
+    return this;
+  }
+
+  not(column: string, operator: string, value: any) {
+    if (operator === "is" && value === null) {
+      this._isNotNullFilters.push(column);
+    } else {
+      this._neqFilters.push([column, value]);
+    }
+    return this;
+  }
+
+  is(column: string, value: any) {
+    if (value === null) {
+      this._isNullFilters.push(column);
+    } else {
+      this._filters.push([column, value]);
+    }
     return this;
   }
 
@@ -109,6 +129,16 @@ class PublicQueryBuilder {
       for (const [col, val] of this._neqFilters) {
         const colDef = tbl[snakeToCamel(col)];
         if (colDef !== undefined) conditions.push(ne(colDef, val));
+      }
+
+      for (const col of this._isNotNullFilters) {
+        const colDef = tbl[snakeToCamel(col)];
+        if (colDef !== undefined) conditions.push(isNotNull(colDef));
+      }
+
+      for (const col of this._isNullFilters) {
+        const colDef = tbl[snakeToCamel(col)];
+        if (colDef !== undefined) conditions.push(isNull(colDef));
       }
 
       for (const [col, vals] of this._inFilters) {

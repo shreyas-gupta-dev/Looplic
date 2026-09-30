@@ -18,7 +18,10 @@ export async function GET(request: Request, context: { params: Promise<{ code: s
   const limited = await guardRateLimit(request, "api:track", 60, 600);
   if (limited) return limited;
 
-  const notFound = NextResponse.json({ error: "Not found" }, { status: 404 });
+  const notFound = NextResponse.json(
+    { error: "Not found" },
+    { status: 404, headers: { "Cache-Control": "no-store" } },
+  );
 
   try {
     const { code } = await context.params;

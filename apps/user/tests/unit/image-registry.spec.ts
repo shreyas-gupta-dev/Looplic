@@ -101,7 +101,7 @@ test("homepage data no longer carries raw image URLs", () => {
 test("isRenderableImageUrl rejects the URLs migration left in the catalog", () => {
   const rejected = [
     "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&url=http://fujitsu.com&size=128",
-    "https://s3ng.cashify.in/images/model/apple-iphone-13.png",
+    "https://unallowlisted-competitor.example.com/images/model/apple-iphone-13.png",
     "http://looplic-assets.s3.ap-south-1.amazonaws.com/brand/apple.png", // not https
     "https://evil.example.com/looplic-assets.s3.amazonaws.com/x.png", // host must match, not merely contain
     "not a url",
@@ -123,6 +123,8 @@ test("isRenderableImageUrl accepts our own assets and allowlisted hosts", () => 
     "https://looplic-assets.s3.amazonaws.com/brand/apple.png",
     "https://res.cloudinary.com/looplic/image/upload/apple.png",
     "https://abcdefg.supabase.co/storage/v1/object/public/brand/apple.png",
+    "https://s3ng.cashify.in/cashify/product/img/xhdpi/apple.jpg",
+    "https://fdn2.gsmarena.com/vv/bigpic/apple-iphone-16.jpg",
   ];
 
   for (const url of accepted) {
@@ -164,8 +166,8 @@ test("a licensed photography override replaces the illustration", () => {
 
 test("an override that is not on the allowlist is ignored, not rendered", () => {
   for (const bad of [
-    "https://s3ng.cashify.in/photography/repair-phone.jpg",
-    "https://images.unsplash.com/photo-1546868871-af0de0ae72be",
+    "https://untrusted-stock.example.com/photography/repair-phone.jpg",
+    "https://unknown-cdn.example.com/photo-1546868871-af0de0ae72be",
     "http://looplic-assets.s3.ap-south-1.amazonaws.com/photography/x.jpg",
   ]) {
     const slot = illustration("repair-phone", "Mobile phone repair", bad);

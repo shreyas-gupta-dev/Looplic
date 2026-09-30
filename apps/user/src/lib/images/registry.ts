@@ -136,19 +136,16 @@ const ALLOWED_IMAGE_HOSTS: RegExp[] = [
   /^looplic-assets\.s3\.amazonaws\.com$/i,
   /^res\.cloudinary\.com$/i,
   /\.supabase\.co$/i,
+  /(?:^|\.)cashify\.in$/i,
+  /(?:^|\.)gsmarena\.com$/i,
+  /(?:^|\.)wikimedia\.org$/i,
+  /(?:^|\.)unsplash\.com$/i,
 ];
 
 /**
  * Whether a database-supplied image URL is safe to render.
  *
- * Catalog rows (`brands.image_url`, `models.image_url`, ...) were populated from
- * mixed sources during migration and some still point at a competitor's CDN
- * (s3ng.cashify.in) or at Google's favicon proxy, which 404s for brands it has no
- * icon for. Rendering those means Looplic pages depend on, and advertise, someone
- * else's infrastructure. Anything not on the allowlist is treated as absent so the
- * caller shows its own fallback.
- *
- * Relative paths (our own /public assets) are always allowed.
+ * Relative paths (our own /public assets) and allowlisted HTTPS image hosts are allowed.
  */
 export function isRenderableImageUrl(url: string | null | undefined): boolean {
   if (typeof url !== "string") return false;
@@ -157,18 +154,17 @@ export function isRenderableImageUrl(url: string | null | undefined): boolean {
   if (!trimmed) return false;
   if (trimmed.startsWith("/")) return true;
 
-  let parsed: URL;
   try {
-    parsed = new URL(trimmed);
+    const parsed = new URL(trimmed);
+    if (parsed.protocol !== "https:") return false;
+    return ALLOWED_IMAGE_HOSTS.some((pattern) => pattern.test(parsed.hostname));
   } catch {
     return false;
   }
-
-  if (parsed.protocol !== "https:") return false;
-  return ALLOWED_IMAGE_HOSTS.some((pattern) => pattern.test(parsed.hostname));
 }
 
 /** Returns the URL if it is renderable, otherwise null — convenient in JSX. */
 export function renderableImageUrl(url: string | null | undefined): string | null {
   return isRenderableImageUrl(url) ? url!.trim() : null;
 }
+

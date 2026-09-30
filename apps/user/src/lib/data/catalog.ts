@@ -293,8 +293,31 @@ export async function getSeriesForBrand(brandId: string): Promise<CatalogSeries[
       return [];
     }
 
-    return (result.data ?? []).map((series) => ({
+    const rawSeries = result.data ?? [];
+    const missingImageSeriesIds = rawSeries.filter((s) => !s.image_url).map((s) => s.id);
+    const seriesModelImageMap = new Map<string, string>();
+    if (missingImageSeriesIds.length > 0) {
+      try {
+        const modelsResult = await dataClient
+          .from("models")
+          .select("series_id, image_url")
+          .in("series_id", missingImageSeriesIds)
+          .not("image_url", "is", null);
+        if (modelsResult.data) {
+          for (const m of modelsResult.data) {
+            if (m.image_url && !seriesModelImageMap.has(m.series_id)) {
+              seriesModelImageMap.set(m.series_id, m.image_url);
+            }
+          }
+        }
+      } catch (mErr) {
+        console.warn("Could not query model fallback images for series:", mErr);
+      }
+    }
+
+    return rawSeries.map((series) => ({
       ...series,
+      image_url: series.image_url || seriesModelImageMap.get(series.id) || null,
       slug: series.slug || slugify(series.name) || series.id,
     }));
   } catch (error) {

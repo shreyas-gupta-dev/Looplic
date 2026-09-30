@@ -135,12 +135,12 @@ export function ModelsCatalogPage({
                   {loadingHref === `${modelPathPrefix}/${model.slug}` ? (
                     <Loader2 className="size-6 animate-spin text-primary" />
                   ) : modelImage ? (
-                    <Image
+                    <img
                       src={modelImage}
                       alt={model.name}
-                      width={72}
-                      height={72}
                       className="h-full w-full object-contain"
+                      loading="lazy"
+                      decoding="async"
                     />
                   ) : brandImage ? (
                     <img src={brandImage} alt={brand.name} className="h-full w-full object-contain p-1" loading="lazy" />

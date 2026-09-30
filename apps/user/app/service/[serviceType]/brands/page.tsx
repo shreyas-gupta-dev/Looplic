@@ -9,6 +9,7 @@ import { CrawlableInternalLinks } from "@/src/components/next/CrawlableInternalL
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { getBrandsForListing } from "@/src/lib/data/catalog";
 import { buildPageMetadata } from "@/src/lib/metadata";
+import { withRepairSelection } from "@/src/lib/repair-selection";
 
 export const revalidate = 300;
 
@@ -16,6 +17,7 @@ type PageProps = {
   params: Promise<{
     serviceType: string;
   }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 const serviceMap = {
@@ -54,13 +56,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 }
 
-export default async function ServiceBrandsPage({ params }: PageProps) {
+export default async function ServiceBrandsPage({ params, searchParams }: PageProps) {
   const { serviceType } = await params;
   const config = serviceMap[serviceType as keyof typeof serviceMap];
 
   if (!config) {
     notFound();
   }
+
+  const { category } = (await searchParams) ?? {};
+  const repairCategoryId = typeof category === "string" ? category : null;
 
   const brands = await getBrandsForListing(config.listingType);
 
@@ -73,14 +78,15 @@ export default async function ServiceBrandsPage({ params }: PageProps) {
           brands={brands}
           serviceLabel={config.label}
           servicePathPrefix={`/service/${serviceType}/brands`}
+          repairCategoryId={repairCategoryId}
         />
       </Suspense>
       <CrawlableInternalLinks
         title={`${config.label} brand links`}
         links={[
-          { href: `/service/${serviceType}`, label: `${config.label} overview` },
+          { href: withRepairSelection(`/service/${serviceType}`, repairCategoryId), label: `${config.label} overview` },
           ...brands.map((brand) => ({
-            href: `/service/${serviceType}/brands/${brand.slug}`,
+            href: withRepairSelection(`/service/${serviceType}/brands/${brand.slug}`, repairCategoryId),
             label: `${brand.name} ${config.label}`,
           })),
         ]}

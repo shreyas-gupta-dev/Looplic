@@ -131,6 +131,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "upload.wikimedia.org" },
       { protocol: "https", hostname: "www.google.com" },
       { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "fdn2.gsmarena.com" },
+      { protocol: "https", hostname: "*.gsmarena.com" },
     ],
   },
 };

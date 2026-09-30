@@ -33,6 +33,13 @@ export function getRequestIp(request: Request) {
 }
 
 export async function enforceRateLimit(request: Request, scope: string, limit: number, windowSeconds: number): Promise<RateLimitResult> {
+  if (
+    process.env.NODE_ENV !== "production" &&
+    (request.headers.get("x-playwright-test") === "1" || process.env.PLAYWRIGHT_TEST === "1")
+  ) {
+    return { allowed: true, limit, remaining: limit, resetAt: null };
+  }
+
   const redis = getRedisClient();
 
   if (!redis) {
