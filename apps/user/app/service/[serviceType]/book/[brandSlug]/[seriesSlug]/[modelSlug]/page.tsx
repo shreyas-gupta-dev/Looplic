@@ -34,10 +34,6 @@ const serviceMap = {
   },
 };
 
-export function generateStaticParams() {
-  return [];
-}
-
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { serviceType, brandSlug, seriesSlug, modelSlug } = await params;
   const config = serviceMap[serviceType as keyof typeof serviceMap];

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -8,7 +9,6 @@ import { CrawlableInternalLinks } from "@/src/components/next/CrawlableInternalL
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { getBrandsForListing } from "@/src/lib/data/catalog";
 import { buildPageMetadata } from "@/src/lib/metadata";
-import { readRepairSelection } from "@/src/lib/repair-selection";
 
 export const revalidate = 300;
 
@@ -16,7 +16,6 @@ type PageProps = {
   params: Promise<{
     serviceType: string;
   }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 const serviceMap = {
@@ -55,7 +54,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 }
 
-export default async function ServiceBrandsPage({ params, searchParams }: PageProps) {
+export default async function ServiceBrandsPage({ params }: PageProps) {
   const { serviceType } = await params;
   const config = serviceMap[serviceType as keyof typeof serviceMap];
 
@@ -63,19 +62,19 @@ export default async function ServiceBrandsPage({ params, searchParams }: PagePr
     notFound();
   }
 
-  const repairCategoryId = readRepairSelection(await searchParams);
   const brands = await getBrandsForListing(config.listingType);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <CatalogNavbar />
       <CatalogServiceTabs active={config.activeTab} />
-      <BrandsCatalogPage
-        brands={brands}
-        serviceLabel={config.label}
-        servicePathPrefix={`/service/${serviceType}/brands`}
-        repairCategoryId={repairCategoryId}
-      />
+      <Suspense fallback={null}>
+        <BrandsCatalogPage
+          brands={brands}
+          serviceLabel={config.label}
+          servicePathPrefix={`/service/${serviceType}/brands`}
+        />
+      </Suspense>
       <CrawlableInternalLinks
         title={`${config.label} brand links`}
         links={[

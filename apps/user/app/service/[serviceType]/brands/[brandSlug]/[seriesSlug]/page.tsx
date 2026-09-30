@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -10,7 +11,6 @@ import { BreadcrumbJsonLd } from "@/src/components/seo/BreadcrumbJsonLd";
 import { getModelsForSeries } from "@/src/lib/data/catalog";
 import { resolveSeriesPageData } from "@/src/lib/data/catalog-page";
 import { buildPageMetadata } from "@/src/lib/metadata";
-import { readRepairSelection } from "@/src/lib/repair-selection";
 
 // Pre-render at build time + ISR instead of force-dynamic, so series/model lists
 // are baked from the database at build and never render empty when the runtime
@@ -23,7 +23,6 @@ type PageProps = {
     brandSlug: string;
     seriesSlug: string;
   }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 const serviceMap = {
@@ -40,10 +39,6 @@ const serviceMap = {
     pathPrefix: "/service/laptop-repair/brands",
   },
 };
-
-export function generateStaticParams() {
-  return [];
-}
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { serviceType, brandSlug, seriesSlug } = await params;
@@ -74,7 +69,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 }
 
-export default async function ServiceSeriesPage({ params, searchParams }: PageProps) {
+export default async function ServiceSeriesPage({ params }: PageProps) {
   const { serviceType, brandSlug, seriesSlug } = await params;
   const config = serviceMap[serviceType as keyof typeof serviceMap];
 
@@ -82,7 +77,6 @@ export default async function ServiceSeriesPage({ params, searchParams }: PagePr
     notFound();
   }
 
-  const repairCategoryId = readRepairSelection(await searchParams);
   const { brand, series } = await resolveSeriesPageData(brandSlug, seriesSlug, config.listingType);
   if (!brand) {
     notFound();
@@ -106,16 +100,17 @@ export default async function ServiceSeriesPage({ params, searchParams }: PagePr
       />
       <CatalogNavbar />
       <CatalogServiceTabs active={config.activeTab} />
-      <ModelsCatalogPage
-        brand={brand}
-        series={series}
-        models={models}
-        brandsPath={`/service/${serviceType}/brands`}
-        seriesPath={`/service/${serviceType}/brands/${brand.slug}`}
-        modelPathPrefix={`/service/${serviceType}/book/${brand.slug}/${series.slug}`}
-        serviceLabel={config.label}
-        repairCategoryId={repairCategoryId}
-      />
+      <Suspense fallback={null}>
+        <ModelsCatalogPage
+          brand={brand}
+          series={series}
+          models={models}
+          brandsPath={`/service/${serviceType}/brands`}
+          seriesPath={`/service/${serviceType}/brands/${brand.slug}`}
+          modelPathPrefix={`/service/${serviceType}/book/${brand.slug}/${series.slug}`}
+          serviceLabel={config.label}
+        />
+      </Suspense>
       <CrawlableInternalLinks
         title={`${brand.name} ${series.name} model links`}
         links={[

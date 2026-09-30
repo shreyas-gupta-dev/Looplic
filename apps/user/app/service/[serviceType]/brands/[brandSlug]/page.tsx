@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 
@@ -11,13 +12,10 @@ import { SeriesCatalogPage } from "@/src/components/next/SeriesCatalogPage";
 import { getSeriesForBrand } from "@/src/lib/data/catalog";
 import { resolveBrandPageData } from "@/src/lib/data/catalog-page";
 import { buildPageMetadata } from "@/src/lib/metadata";
-import { readRepairSelection, withRepairSelection } from "@/src/lib/repair-selection";
 import { screenReplacementLandingByBrandSlug } from "@/src/lib/seo-service-pages";
 import { BreadcrumbJsonLd } from "@/src/components/seo/BreadcrumbJsonLd";
 
-// Pre-render these pages at build time and serve them via ISR (revalidate below)
-// instead of querying the database on every request. force-dynamic caused empty
-// "0 models available" pages whenever the runtime could not reach the database.
+// Pre-render these pages and serve them via ISR (revalidate below).
 export const revalidate = 300;
 
 type PageProps = {
@@ -25,7 +23,6 @@ type PageProps = {
     serviceType: string;
     brandSlug: string;
   }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 const serviceMap = {
@@ -42,10 +39,6 @@ const serviceMap = {
     pathPrefix: "/service/laptop-repair/brands",
   },
 };
-
-export function generateStaticParams() {
-  return [];
-}
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { serviceType, brandSlug } = await params;
@@ -72,7 +65,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 }
 
-export default async function ServiceBrandPage({ params, searchParams }: PageProps) {
+export default async function ServiceBrandPage({ params }: PageProps) {
   const { serviceType, brandSlug } = await params;
   const config = serviceMap[serviceType as keyof typeof serviceMap];
 
@@ -80,7 +73,6 @@ export default async function ServiceBrandPage({ params, searchParams }: PagePro
     notFound();
   }
 
-  const repairCategoryId = readRepairSelection(await searchParams);
   const { brand } = await resolveBrandPageData(brandSlug, config.listingType);
 
   if (!brand) {
@@ -95,9 +87,7 @@ export default async function ServiceBrandPage({ params, searchParams }: PagePro
   // (e.g. /brands/lg → /brands/lg/all-models) instead of rendering it inline,
   // so the models always live under the canonical series URL.
   if (seriesList.length === 1) {
-    redirect(
-      withRepairSelection(`/service/${serviceType}/brands/${brand.slug}/${seriesList[0].slug}`, repairCategoryId),
-    );
+    redirect(`/service/${serviceType}/brands/${brand.slug}/${seriesList[0].slug}`);
   }
 
   const screenReplacementLanding = config.listingType === "mobile" ? screenReplacementLandingByBrandSlug.get(brand.slug) : undefined;
@@ -118,14 +108,15 @@ export default async function ServiceBrandPage({ params, searchParams }: PagePro
         {brandBreadcrumb}
         <CatalogNavbar />
         <CatalogServiceTabs active={config.activeTab} />
-        <MobileSeriesCatalogPage
-          brand={brand}
-          seriesList={seriesList}
-          brandsPath={`/service/${serviceType}/brands`}
-          seriesPathPrefix={`/service/${serviceType}/brands/${brand.slug}`}
-          serviceLabel={config.label}
-          repairCategoryId={repairCategoryId}
-        />
+        <Suspense fallback={null}>
+          <MobileSeriesCatalogPage
+            brand={brand}
+            seriesList={seriesList}
+            brandsPath={`/service/${serviceType}/brands`}
+            seriesPathPrefix={`/service/${serviceType}/brands/${brand.slug}`}
+            serviceLabel={config.label}
+          />
+        </Suspense>
         <CrawlableInternalLinks
           title={`${brand.name} ${config.label} models`}
           links={[
@@ -149,14 +140,15 @@ export default async function ServiceBrandPage({ params, searchParams }: PagePro
     <div className="min-h-screen bg-background flex flex-col">
       <CatalogNavbar />
       <CatalogServiceTabs active={config.activeTab} />
-      <SeriesCatalogPage
-        brand={brand}
-        seriesList={seriesList}
-        brandsPath={`/service/${serviceType}/brands`}
-        seriesPathPrefix={`/service/${serviceType}/brands/${brand.slug}`}
-        serviceLabel={config.label}
-        repairCategoryId={repairCategoryId}
-      />
+      <Suspense fallback={null}>
+        <SeriesCatalogPage
+          brand={brand}
+          seriesList={seriesList}
+          brandsPath={`/service/${serviceType}/brands`}
+          seriesPathPrefix={`/service/${serviceType}/brands/${brand.slug}`}
+          serviceLabel={config.label}
+        />
+      </Suspense>
       {config.listingType === "laptop" ? <LaptopBrandBookingPrompt brandName={brand.name} /> : null}
       <CrawlableInternalLinks
         title={`${brand.name} ${config.label} series`}

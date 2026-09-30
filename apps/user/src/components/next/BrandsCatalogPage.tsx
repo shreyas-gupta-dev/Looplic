@@ -2,6 +2,7 @@
 
 import { ChevronRight, Search } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { BrandLogo } from "@/src/components/next/BrandLogo";
@@ -29,6 +30,8 @@ export function BrandsCatalogPage({
   homeHref = "/",
   repairCategoryId = null,
 }: BrandsCatalogPageProps) {
+  const queryParams = useSearchParams();
+  const effectiveRepairCategoryId = repairCategoryId ?? queryParams?.get("category") ?? null;
   const [search, setSearch] = useState("");
 
   const filteredBrands = useMemo(() => {
@@ -79,7 +82,7 @@ export function BrandsCatalogPage({
             {filteredBrands.map((brand) => (
               <CatalogPrefetchLink
                 key={brand.id}
-                href={withRepairSelection(`${servicePathPrefix}/${brand.slug}`, repairCategoryId)}
+                href={withRepairSelection(`${servicePathPrefix}/${brand.slug}`, effectiveRepairCategoryId)}
                 eagerPrefetch={!search}
                 className="flex cursor-pointer flex-col items-center gap-2 rounded-2xl border border-border bg-card px-2 py-4 shadow-card-brand transition-all hover:border-primary/30 hover:shadow-elevated-brand active:scale-95"
               >

@@ -62,9 +62,3 @@ export default async function BangaloreAreaPage({ params }: PageProps) {
     />
   );
 }
-
-export function generateStaticParams() {
-  return bangaloreAreas.map((area) => ({
-    areaSlug: area.slug,
-  }));
-}

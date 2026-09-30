@@ -111,8 +111,6 @@ const nextConfig: NextConfig = {
       '@radix-ui/react-toggle-group',
       '@radix-ui/react-tooltip',
     ],
-    webpackBuildWorker: true,
-    parallelServerCompiles: true,
   },
   eslint: {
     ignoreDuringBuilds: true,

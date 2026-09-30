@@ -2,6 +2,7 @@
 
 import { ChevronRight, Laptop, Smartphone } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { BrandLogo } from "@/src/components/next/BrandLogo";
@@ -40,6 +41,8 @@ export function SeriesCatalogPage({
   homeHref = "/",
   repairCategoryId = null,
 }: SeriesCatalogPageProps) {
+  const queryParams = useSearchParams();
+  const effectiveRepairCategoryId = repairCategoryId ?? queryParams?.get("category") ?? null;
   const DeviceIcon = brand.service_type === "laptop" ? Laptop : Smartphone;
   const deviceLabel = brand.service_type === "laptop" ? "Laptop" : "Phone";
   const [search, setSearch] = useState("");
@@ -110,7 +113,7 @@ export function SeriesCatalogPage({
             {filteredSeries.map((series) => (
               <CatalogPrefetchLink
                 key={series.id}
-                href={withRepairSelection(`${seriesPathPrefix}/${series.slug}`, repairCategoryId)}
+                href={withRepairSelection(`${seriesPathPrefix}/${series.slug}`, effectiveRepairCategoryId)}
                 eagerPrefetch={!search}
                 className="group flex items-center rounded-2xl border border-border bg-card p-3 shadow-card-brand transition-all hover:border-primary/30 hover:shadow-elevated-brand active:scale-[0.98] sm:p-4"
               >

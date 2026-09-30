@@ -104,12 +104,3 @@ export default async function BangaloreAreaServicePage({ params }: PageProps) {
     </div>
   );
 }
-
-export function generateStaticParams() {
-  return bangaloreAreas.flatMap((area) =>
-    (Object.keys(serviceMap) as Array<keyof typeof serviceMap>).map((serviceType) => ({
-      areaSlug: area.slug,
-      serviceType,
-    })),
-  );
-}
