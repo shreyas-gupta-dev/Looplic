@@ -34,6 +34,9 @@ export function CatalogNavbar() {
           <Link href="/service/mobile-repair" className="transition-colors hover:text-foreground">
             Repairs
           </Link>
+          <Link href="/track" className="transition-colors hover:text-foreground">
+            Track Order
+          </Link>
           <Link href="/about-us" className="transition-colors hover:text-foreground">
             About
           </Link>
@@ -64,6 +67,9 @@ export function CatalogNavbar() {
             </Link>
             <Link href="/service/mobile-repair" className="py-2 text-sm font-medium text-foreground" onClick={() => setOpen(false)}>
               Repairs
+            </Link>
+            <Link href="/track" className="py-2 text-sm font-medium text-foreground" onClick={() => setOpen(false)}>
+              Track Order
             </Link>
             <Link href="/about-us" className="py-2 text-sm font-medium text-foreground" onClick={() => setOpen(false)}>
               About

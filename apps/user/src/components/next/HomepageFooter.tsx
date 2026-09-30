@@ -46,7 +46,8 @@ const companyLinks = [
 const supportLinks = [
   { href: "/faq", label: "FAQ / Help Center" },
   { href: "/contact-us", label: "Contact Us" },
-  { href: "/sell/track", label: "Track Your Order" },
+  { href: "/track", label: "Track Repair Order" },
+  { href: "/sell/track", label: "Track Buyback Order" },
   { href: "/terms-and-conditions", label: "Terms & Conditions" },
   { href: "/privacy-policy", label: "Privacy Policy" },
   { href: "/refund-policy", label: "Return & Refund Policy" },

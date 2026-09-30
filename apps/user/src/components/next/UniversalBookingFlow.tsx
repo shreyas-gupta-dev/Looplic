@@ -30,6 +30,7 @@ import {
   cctvBrandOptions, cctvServiceOptions, getCctvServiceLabel,
   isCctvBrandValue, isCctvServiceValue,
 } from "@/src/lib/cctv-booking";
+import { repairCategoryIcon } from "@/src/lib/repair-selection";
 
 // ─── Global declarations ──────────────────────────────────────────────────────
 
@@ -158,18 +159,16 @@ function getStaticInspectMapUrl(position: { lat: number; lng: number }) {
 
 // Renders a repair-category thumbnail. If the image is missing (null) or fails
 // to load at runtime (e.g. a 404 from the assets bucket), it gracefully falls
-// back to a Wrench icon instead of showing a broken-image glyph. When the asset
-// is later restored at the same URL it will display again with no code change.
+// back to its semantic category icon (Screen -> Monitor, Battery -> Battery, etc.)
+// instead of showing a broken-image glyph or a generic wrench.
 function CategoryImage({ src, alt }: { src: string | null | undefined; alt: string }) {
   const [failed, setFailed] = useState(false);
-  // Catalog rows carry logos from mixed sources. onError alone is not enough: a
-  // competitor CDN or favicon-proxy URL that happens to load fine would still be
-  // rendered. Only allowlisted hosts get through (see isRenderableImageUrl).
   const allowed = renderableImageUrl(src);
   if (!allowed || failed) {
+    const Icon = repairCategoryIcon(alt);
     return (
-      <div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
-        <Wrench className="size-5 text-primary" />
+      <div className="flex size-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600 shadow-sm transition-colors group-hover:bg-brand-100">
+        <Icon className="size-5" />
       </div>
     );
   }

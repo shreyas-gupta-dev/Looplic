@@ -85,7 +85,7 @@ export function HomepageNavbar() {
           <div className="flex items-center gap-4">
             <Link href="/store-locator" className="hover:text-primary transition-colors">Store Locator</Link>
             <span className="text-gray-300">|</span>
-            <Link href="/sell/track" className="hover:text-primary transition-colors">Track Order</Link>
+            <Link href="/track" className="hover:text-primary transition-colors">Track Order</Link>
             <span className="text-gray-300">|</span>
             <a href={`tel:+91${supportPhone}`} className="flex items-center gap-1 hover:text-primary transition-colors">
               <Phone className="size-3" /> Support
@@ -271,8 +271,11 @@ export function HomepageNavbar() {
 
             <div className="my-3 border-t border-gray-100" />
 
-            <Link href="/service/mobile" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            <Link href="/service/mobile-repair" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
               Repair
+            </Link>
+            <Link href="/track" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+              Track Order
             </Link>
             <Link href="/store-locator" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
               Store Locator

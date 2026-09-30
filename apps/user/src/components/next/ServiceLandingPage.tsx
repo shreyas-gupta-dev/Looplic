@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, ChevronRight, Laptop, Smartphone, Shield, Clock, Wrench } from "lucide-react";
+import { ChevronDown, ChevronRight, Laptop, Smartphone, Shield, Clock, Wrench, Video } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -55,9 +55,10 @@ const howItWorksSteps = [
 ];
 
 const trustSignals = [
-  { icon: Shield, title: "6 Month Warranty", description: "On all repairs performed" },
-  { icon: Wrench, title: "Expert Technicians", description: "Certified & experienced professionals" },
-  { icon: Clock, title: "30 Min Service", description: "Most repairs completed on spot" },
+  { icon: Video, title: "Live CCTV Repair Stream", description: "Watch your device repair live in real time via secure shop camera access" },
+  { icon: Shield, title: "6 Month Warranty", description: "On all genuine parts & repairs performed" },
+  { icon: Wrench, title: "Expert Technicians", description: "Certified & background-verified professionals" },
+  { icon: Clock, title: "Doorstep & Workshop", description: "Fast turnaround with live tracking at every step" },
 ];
 
 export function ServiceLandingPage({
@@ -280,12 +281,65 @@ export function ServiceLandingPage({
         </div>
       </section>
 
+      {/* Live CCTV Feature Spotlight */}
+      <section className="border-t border-gray-100 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 py-12 text-white md:py-16">
+        <div className="mx-auto max-w-5xl px-4">
+          <div className="flex flex-col items-center justify-between gap-8 md:flex-row">
+            <div className="max-w-xl text-center md:text-left">
+              <div className="inline-flex items-center gap-2 rounded-full border border-rose-500/30 bg-rose-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-rose-400">
+                <span className="relative flex size-2">
+                  <span className="absolute inline-flex size-full animate-ping rounded-full bg-rose-400 opacity-75" />
+                  <span className="relative inline-flex size-2 rounded-full bg-rose-500" />
+                </span>
+                Industry-First Live CCTV Streaming
+              </div>
+              <h2 className="mt-4 text-2xl font-bold tracking-tight sm:text-3xl md:text-4xl">
+                100% Repair Transparency. <span className="bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">Watch It Live.</span>
+              </h2>
+              <p className="mt-3 text-sm text-gray-300 sm:text-base">
+                Never worry about your device data, privacy, or parts authenticity. While our technicians service your phone or laptop in the workshop, stream live CCTV footage directly on your mobile screen in real time.
+              </p>
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-3 md:justify-start">
+                <Link
+                  href="/track"
+                  className="inline-flex items-center gap-2 rounded-full gradient-brand px-5 py-2.5 text-sm font-bold text-white shadow-lg transition-transform hover:scale-105"
+                >
+                  <Video className="size-4" /> Track Order & Watch Live
+                </Link>
+                <Link
+                  href="/about-us"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/20"
+                >
+                  How Live Stream Works
+                </Link>
+              </div>
+            </div>
+            <div className="relative flex w-full max-w-sm flex-col items-center rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md shadow-2xl">
+              <div className="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-xl bg-slate-950 border border-slate-800">
+                <img src="/images/services/cctv.webp" alt="Live CCTV camera preview" className="size-full object-cover opacity-60" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40" />
+                <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 rounded-md bg-rose-600/90 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                  <span className="size-1.5 rounded-full bg-white animate-pulse" /> LIVE CCTV
+                </div>
+                <div className="absolute bottom-2.5 left-2.5 text-left">
+                  <p className="text-xs font-bold text-white">Workshop Bay #3 — Precision Workstation</p>
+                  <p className="text-[10px] text-gray-300">Customer device: Active Repair Stream</p>
+                </div>
+              </div>
+              <p className="mt-3 text-center text-xs text-gray-400">
+                Encrypted end-to-end stream accessible only by the order owner.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Trust Signals — informational only, so deliberately no hover affordance:
           nothing here is clickable and it must not look like it is. */}
       <section className="bg-white py-12 md:py-16">
         <div className="mx-auto max-w-5xl px-4">
           <h2 className="text-center text-2xl font-bold text-gray-900">Why Choose Looplic?</h2>
-          <ul className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-3">
+          <ul className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {trustSignals.map((signal) => {
               const Icon = signal.icon;
               return (
