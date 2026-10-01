@@ -22,6 +22,7 @@ import { downloadBookingConfirmationPdf } from "@/src/lib/invoice-pdf";
 import { notifyLeadSubmission } from "@/src/lib/leads/client";
 import { createClient } from "@/src/lib/data-client/client";
 import { RepairWarrantyTag } from "@/src/components/next/RepairWarrantyTag";
+import { RepairCategoryIcon } from "@/src/components/next/RepairCategoryIcon";
 
 type BookingClientPageProps = {
   brand: CatalogBrand;
@@ -272,13 +273,7 @@ export function BookingClientPage({
                           : "border-border bg-card shadow-card-brand hover:border-primary/30"
                       }`}
                     >
-                      {renderableImageUrl(category.image_url) ? (
-                        <img src={renderableImageUrl(category.image_url)!} alt={category.name} className="size-10 rounded-xl object-contain" />
-                      ) : (
-                        <div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
-                          <Wrench className="size-5 text-primary" />
-                        </div>
-                      )}
+                      <RepairCategoryIcon name={category.name} imageUrl={category.image_url} />
                       <span className="text-center text-xs font-bold text-foreground">{category.name}</span>
                     </button>
                   ))}
@@ -302,13 +297,7 @@ export function BookingClientPage({
                                 : "border-border/80 bg-card shadow-card-brand hover:-translate-y-0.5 hover:border-primary/30"
                             }`}
                           >
-                            {renderableImageUrl(subcategory.image_url) ? (
-                              <img src={renderableImageUrl(subcategory.image_url)!} alt={subcategory.name} className="size-10 rounded-xl object-contain" />
-                            ) : (
-                              <div className="flex size-10 items-center justify-center rounded-xl bg-secondary">
-                                <Wrench className="size-5 text-muted-foreground" />
-                              </div>
-                            )}
+                            <RepairCategoryIcon name={subcategory.name} imageUrl={subcategory.image_url} />
                             <div className="flex-1">
                               <span className="block text-sm font-bold text-foreground">{subcategory.name}</span>
                               <RepairWarrantyTag subcategoryName={subcategory.name} className="mt-2" />
