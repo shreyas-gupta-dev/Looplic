@@ -42,11 +42,12 @@ function lastTenDigits(value: string): string {
  *
  * `phone` is optional; when absent only the signed-in path can succeed.
  */
-export async function authorizeBookingViewer(bookingId: string, phone?: string | null): Promise<ViewerAuthorization> {
-  if (!bookingId) return { authorized: false };
+export async function authorizeBookingViewer(bookingIdOrCode: string, phone?: string | null): Promise<ViewerAuthorization> {
+  if (!bookingIdOrCode) return { authorized: false };
 
-  // A malformed id must not reach the database as a wildcard of any kind.
-  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(bookingId)) {
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(bookingIdOrCode);
+  const isBookingCode = /^[A-Z0-9_-]{4,64}$/i.test(bookingIdOrCode);
+  if (!isUuid && !isBookingCode) {
     return { authorized: false };
   }
 
@@ -55,7 +56,7 @@ export async function authorizeBookingViewer(bookingId: string, phone?: string |
     const rows = await db
       .select({ id: bookings.id, userId: bookings.userId, customerPhone: bookings.customerPhone })
       .from(bookings)
-      .where(eq(bookings.id, bookingId))
+      .where(isUuid ? eq(bookings.id, bookingIdOrCode) : eq(bookings.bookingCode, bookingIdOrCode))
       .limit(1);
     row = rows[0] as typeof row;
   } catch {

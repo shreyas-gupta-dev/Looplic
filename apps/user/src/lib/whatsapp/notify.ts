@@ -151,6 +151,34 @@ export async function notifyCustomerStatusChange(input: {
   await sendText(to, lines.join("\n"), "status-change");
 }
 
+// Alerts the customer that the technician has opened a live CCTV stream on the workbench.
+export async function notifyCustomerLiveStreamStarted(input: {
+  phone: string;
+  bookingCode: string;
+  deviceLabel?: string | null;
+  benchLabel?: string | null;
+}): Promise<void> {
+  if (!isWhatsappConfigured()) return;
+  const to = toWaId(input.phone);
+  if (!to) return;
+
+  const lines = [
+    `*Looplic* — Live Workbench CCTV Stream 🔴`,
+    "",
+    `Your mobile device repair has begun!`,
+    input.deviceLabel ? `Device: *${input.deviceLabel}*` : "",
+    `Booking ID: *${input.bookingCode}*`,
+    input.benchLabel ? `Station: *${input.benchLabel}*` : "",
+    "",
+    `Watch your phone being repaired live on workbench CCTV:`,
+    `${siteConfig.url}/track/${encodeURIComponent(input.bookingCode)}?phone=${encodeURIComponent(input.phone)}&watch=live`,
+    "",
+    "This private stream is active only while our technician works on your device.",
+  ].filter(Boolean);
+
+  await sendText(to, lines.join("\n"), "cctv-live-stream");
+}
+
 // Only the stages a customer actually cares about get a WhatsApp ping.
 // Keys are canonical booking statuses (see packages/db/booking-status.ts) plus the
 // legacy "assigned" spelling, which older records and the bot still emit.

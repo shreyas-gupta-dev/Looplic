@@ -7,6 +7,8 @@ import { CatalogNavbar } from "@/src/components/next/CatalogNavbar";
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { RepairLiveView } from "@/src/components/next/RepairLiveView";
 import { StatusTimeline } from "@/src/components/next/StatusTimeline";
+import { getActiveSession } from "@looplic/db/repair-stream";
+import { db } from "@/src/lib/db";
 import { serviceLabelFor, trackBooking } from "@/src/lib/data/booking-tracking";
 import { buildPageMetadata } from "@/src/lib/metadata";
 import { enforceRateLimit } from "@/src/lib/rate-limit";
@@ -51,6 +53,8 @@ export default async function TrackPage({ params, searchParams }: PageProps) {
 
   const booking = attempted && rateLimit.allowed ? await trackBooking(code, phone) : null;
   const rateLimited = attempted && !rateLimit.allowed;
+  const liveSession = booking ? await getActiveSession(db as never, booking.bookingId).catch(() => null) : null;
+  const isLiveCctv = liveSession?.provider === "hls";
 
   const inputClassName =
     "w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-[13px] font-medium text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100";
@@ -125,6 +129,31 @@ export default async function TrackPage({ params, searchParams }: PageProps) {
             </Link>
             .
           </p>
+        ) : null}
+
+        {isLiveCctv ? (
+          <div className="mt-5 flex items-center justify-between gap-3 rounded-3xl border border-red-200 bg-gradient-to-r from-red-50 to-orange-50 p-4 shadow-sm sm:p-5">
+            <div className="flex items-center gap-3">
+              <span className="relative flex size-3">
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-red-400 opacity-75" />
+                <span className="relative inline-flex size-3 rounded-full bg-red-600" />
+              </span>
+              <div>
+                <div className="text-[11px] font-extrabold uppercase tracking-wider text-red-600">
+                  🔴 Live CCTV Stream Active
+                </div>
+                <div className="text-xs sm:text-sm font-bold text-gray-900">
+                  Your phone is currently on the workbench being repaired.
+                </div>
+              </div>
+            </div>
+            <a
+              href="#live-repair-view"
+              className="shrink-0 rounded-full bg-red-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-red-700 transition-colors"
+            >
+              Watch Live ↓
+            </a>
+          </div>
         ) : null}
 
         {booking ? (

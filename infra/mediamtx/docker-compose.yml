@@ -1,0 +1,55 @@
+# Media server for the repair live view.
+#
+#   docker compose -f infra/mediamtx/docker-compose.yml up -d
+#   docker compose -f infra/mediamtx/docker-compose.yml logs -f
+#   docker compose -f infra/mediamtx/docker-compose.yml down
+#
+# Then point a centre at it in app_settings:
+#   node scripts/repair-stream-centres.cjs --set-local
+#
+# The HLS playlist lands at http://127.0.0.1:8888/bench-test/index.m3u8
+#
+# ── Why the ports are bound to 127.0.0.1 ──────────────────────────────────────
+#
+# This server has no authentication. Anything that can reach 8888 can watch a
+# camera pointed at a repair bench, with no session, no consent and no grant. The
+# Looplic app is the only thing that should ever connect to it: the customer's
+# browser talks to the app, and the app re-checks authorization on the playlist and
+# on every single segment.
+#
+# Binding to 127.0.0.1 means "not on the network" rather than "on the network and
+# hopefully nobody notices". In production, run this on a private subnet reachable
+# only from the app's egress, and never give it a public address or an ingress rule
+# from 0.0.0.0/0.
+
+services:
+  mediamtx:
+    # Pinned. `latest` would silently change the streaming stack under a feature
+    # customers watch. The -ffmpeg variant carries ffmpeg, which the synthetic
+    # bench-test path needs; a real-camera-only deployment can use the plain tag.
+    image: bluenviron/mediamtx:1.9.3-ffmpeg
+    container_name: looplic-mediamtx
+    restart: unless-stopped
+    ports:
+      # HLS — read by the Looplic app, server-side only.
+      - "127.0.0.1:8888:8888"
+      # RTSP ingest. Also local-only: on a real deployment cameras reach this on the
+      # private network, not through a published port.
+      - "127.0.0.1:8554:8554"
+    volumes:
+      - ./mediamtx.yml:/mediamtx.yml:ro
+    environment:
+      # Camera credentials, substituted into mediamtx.yml so they stay out of the
+      # committed file. Set these in a .env next to this compose file.
+      MEDIAMTX_BENCH1_USER: "${MEDIAMTX_BENCH1_USER:-}"
+      MEDIAMTX_BENCH1_PASS: "${MEDIAMTX_BENCH1_PASS:-}"
+      MEDIAMTX_BENCH2_USER: "${MEDIAMTX_BENCH2_USER:-}"
+      MEDIAMTX_BENCH2_PASS: "${MEDIAMTX_BENCH2_PASS:-}"
+    healthcheck:
+      # The playlist existing is the only health signal that means anything here:
+      # the process can be up while the stream is dead.
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8888/bench-test/index.m3u8"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s

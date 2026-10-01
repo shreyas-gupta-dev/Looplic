@@ -8,14 +8,12 @@ import { RepairLiveStream } from "@/src/components/next/RepairLiveStream";
 /**
  * "Watch my repair" — the customer's live view of work on their own device.
  *
- * Polls for a playback grant and the media captured so far, so new photos appear
- * within a few seconds of the technician taking them without the customer
- * refreshing. The panel renders nothing at all when there is no open session:
- * an empty "no live view available" box on every order would be noise, and would
- * also advertise that the feature exists for bookings that are not being worked on.
+ * Polls for a playback grant and the media captured so far, or renders the
+ * real-time HLS workbench CCTV stream when an active camera session is open.
  *
- * The grant is short-lived by design, so it is re-fetched on every poll rather than
- * held. That is what makes closing a session take effect immediately.
+ * Privacy & Security:
+ * - Grants are short-lived HMAC tokens (TTL 2 minutes).
+ * - Every denial fails closed to 404 to avoid leaking repair presence.
  */
 
 const POLL_INTERVAL_MS = 8000;
@@ -46,6 +44,7 @@ function formatTime(iso: string): string {
 export function RepairLiveView({ bookingId, phone }: RepairLiveViewProps) {
   const [available, setAvailable] = useState<boolean | null>(null);
   const [provider, setProvider] = useState<string>("stage-media");
+  const [providerRef, setProviderRef] = useState<string | null>(null);
   const [grant, setGrant] = useState<string>("");
   const [consentGiven, setConsentGiven] = useState(false);
   const [items, setItems] = useState<MediaItem[]>([]);
@@ -73,6 +72,7 @@ export function RepairLiveView({ bookingId, phone }: RepairLiveViewProps) {
 
       const nextProvider = String(grantData.provider ?? "stage-media");
       setProvider(nextProvider);
+      setProviderRef(grantData.providerRef ? String(grantData.providerRef) : null);
       setGrant(String(grantData.grant ?? ""));
       setConsentGiven(Boolean(grantData.consentGiven));
       setAvailable(true);
@@ -96,8 +96,7 @@ export function RepairLiveView({ bookingId, phone }: RepairLiveViewProps) {
 
       setItems(Array.isArray(mediaData.items) ? mediaData.items : []);
     } catch {
-      // A network blip should not tear the panel down; keep what is on screen and
-      // try again on the next tick.
+      // Keep what is on screen on brief network blips
       if (!cancelled.current && available === null) setAvailable(false);
     }
   }, [available, bookingId, phone]);
@@ -114,7 +113,7 @@ export function RepairLiveView({ bookingId, phone }: RepairLiveViewProps) {
         await load();
       }
     } catch {
-      // Leave the gate up; the customer can try again.
+      // Leave gate up for retry
     }
   }, [bookingId, load, phone]);
 
@@ -130,9 +129,7 @@ export function RepairLiveView({ bookingId, phone }: RepairLiveViewProps) {
       cancelled.current = true;
       clearInterval(timer);
     };
-    // `load` is stable enough for this: it only depends on the booking and phone.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bookingId, phone]);
+  }, [bookingId, phone, load]);
 
   async function handleManualRefresh() {
     setRefreshing(true);
@@ -143,20 +140,35 @@ export function RepairLiveView({ bookingId, phone }: RepairLiveViewProps) {
   // Nothing open: render nothing rather than an empty placeholder.
   if (available !== true) return null;
 
+  const isHls = provider === "hls";
+
   return (
-    <section className="mt-5 rounded-3xl border border-gray-200 bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] sm:p-6">
+    <section
+      id="live-repair-view"
+      className={`mt-6 rounded-3xl border bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.08)] sm:p-6 transition-all ${
+        isHls ? "border-red-200/80 ring-1 ring-red-100" : "border-gray-200"
+      }`}
+    >
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="flex items-center gap-2 text-[14px] font-bold text-gray-900">
+          <h2 className="flex items-center gap-2 text-sm font-bold text-gray-900 sm:text-base">
             <span className="relative flex size-2.5">
-              <span className="absolute inline-flex size-full animate-ping rounded-full bg-brand-400 opacity-75" />
-              <span className="relative inline-flex size-2.5 rounded-full bg-brand-500" />
+              <span
+                className={`absolute inline-flex size-full animate-ping rounded-full opacity-75 ${
+                  isHls ? "bg-red-400" : "bg-brand-400"
+                }`}
+              />
+              <span
+                className={`relative inline-flex size-2.5 rounded-full ${
+                  isHls ? "bg-red-600" : "bg-brand-500"
+                }`}
+              />
             </span>
-            Watch your repair
+            {isHls ? "Live Workshop CCTV Stream" : "Watch your repair"}
           </h2>
           <p className="mt-1 text-[12px] text-gray-500">
-            {provider === "hls"
-              ? "A live camera feed from the service centre while your device is being worked on."
+            {isHls
+              ? `Real-time CCTV camera feed from the repair workshop workbench while your device is being serviced.`
               : "Photos from our technician as each stage of your repair is completed."}
           </p>
         </div>
@@ -172,13 +184,14 @@ export function RepairLiveView({ bookingId, phone }: RepairLiveViewProps) {
         </button>
       </div>
 
-      {provider === "hls" ? (
+      {isHls ? (
         <RepairLiveStream
           bookingId={bookingId}
           phone={phone}
           grant={grant}
           consentGiven={consentGiven}
           onConsent={handleConsent}
+          benchLabel={providerRef}
         />
       ) : items.length === 0 ? (
         <p className="rounded-2xl bg-gray-50 px-4 py-6 text-center text-[13px] text-gray-500">
@@ -198,9 +211,6 @@ export function RepairLiveView({ bookingId, phone }: RepairLiveViewProps) {
                     aria-label={`${item.stageLabel} clip`}
                   />
                 ) : (
-                  // Deliberately a plain img: these are private, no-store bytes
-                  // served through our own route, so they must not go through the
-                  // Next.js image optimizer or any shared cache.
                   <img
                     src={item.url}
                     alt={item.caption ?? item.stageLabel}

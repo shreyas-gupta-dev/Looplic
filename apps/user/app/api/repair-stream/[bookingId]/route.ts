@@ -52,6 +52,7 @@ export async function GET(request: Request, context: { params: Promise<{ booking
       {
         sessionId: session.id,
         provider: session.provider,
+        providerRef: session.providerRef,
         // Consent is reported so the client knows whether to ask; it is not a
         // precondition for the grant itself, because the stage-media provider
         // shows the customer's own device and needs no separate agreement.

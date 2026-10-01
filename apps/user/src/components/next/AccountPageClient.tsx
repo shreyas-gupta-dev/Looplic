@@ -688,20 +688,38 @@ export function AccountPageClient({ buybackOrders }: { buybackOrders?: React.Rea
                         </div>
                         <div className="flex flex-col gap-2 sm:flex-row">
                           {booking.booking_code ? (
-                            <Button
-                              asChild
-                              variant="outline"
-                              size="sm"
-                              className="h-11 w-full rounded-xl sm:w-auto"
-                            >
-                              <Link
-                                href={`/track/${encodeURIComponent(booking.booking_code)}`}
-                                aria-label={`Track order ${booking.booking_code}`}
+                            <>
+                              <Button
+                                asChild
+                                size="sm"
+                                className="h-11 w-full rounded-xl bg-red-600 text-white hover:bg-red-700 font-bold sm:w-auto shadow-sm"
                               >
-                                <PackageSearch className="size-4" />
-                                Track
-                              </Link>
-                            </Button>
+                                <Link
+                                  href={`/track/${encodeURIComponent(booking.booking_code)}?watch=live`}
+                                  aria-label={`Watch live CCTV stream for ${booking.booking_code}`}
+                                >
+                                  <span className="relative flex size-2 mr-1.5">
+                                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-white opacity-80" />
+                                    <span className="relative inline-flex size-2 rounded-full bg-white" />
+                                  </span>
+                                  Live CCTV
+                                </Link>
+                              </Button>
+                              <Button
+                                asChild
+                                variant="outline"
+                                size="sm"
+                                className="h-11 w-full rounded-xl sm:w-auto"
+                              >
+                                <Link
+                                  href={`/track/${encodeURIComponent(booking.booking_code)}`}
+                                  aria-label={`Track order ${booking.booking_code}`}
+                                >
+                                  <PackageSearch className="size-4" />
+                                  Track
+                                </Link>
+                              </Button>
+                            </>
                           ) : null}
                           {canDownloadInvoice(booking) ? (
                             <Button

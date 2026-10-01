@@ -88,7 +88,38 @@ function badRequest(message: string) {
   return NextResponse.json({ error: { message } }, { status: 400 });
 }
 
-/** GET ?bookingId=... — current session plus what has been captured so far. */
+async function getAvailableCentres() {
+  try {
+    const rows = await db
+      .select({ value: schema.appSettings.value })
+      .from(schema.appSettings)
+      .where(eq(schema.appSettings.key, "repair_stream_centres"))
+      .limit(1);
+
+    if (rows.length === 0 || !rows[0].value) return [];
+    let parsed: any = rows[0].value;
+    if (typeof parsed === "string") {
+      try {
+        parsed = JSON.parse(parsed);
+      } catch {
+        return [];
+      }
+    }
+    const centres = parsed?.centres;
+    const defaultCentre = parsed?.defaultCentre;
+    if (!centres || typeof centres !== "object") return [];
+
+    return Object.entries(centres).map(([key, val]: [string, any]) => ({
+      key,
+      label: val?.label || key,
+      isDefault: key === defaultCentre,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+/** GET ?bookingId=... — current session plus what has been captured so far and available camera centres. */
 export async function GET(request: NextRequest) {
   const staff = await requireStaff();
   if (!staff.ok) return staff.response;
@@ -96,9 +127,17 @@ export async function GET(request: NextRequest) {
   const bookingId = request.nextUrl.searchParams.get("bookingId");
   if (!bookingId) return badRequest("A bookingId is required.");
 
+  const availableCentres = await getAvailableCentres();
   const session = await getActiveSession(db as never, bookingId);
   if (!session) {
-    return NextResponse.json({ data: { session: null, media: [], stages: REPAIR_STAGES } });
+    return NextResponse.json({
+      data: {
+        session: null,
+        media: [],
+        stages: REPAIR_STAGES,
+        centres: availableCentres,
+      },
+    });
   }
 
   const media = await getStageMedia(db as never, session.id);
@@ -108,6 +147,7 @@ export async function GET(request: NextRequest) {
       session: {
         id: session.id,
         provider: session.provider,
+        providerRef: session.providerRef,
         expiresAt: session.expiresAt.toISOString(),
         consentGiven: Boolean(session.consentAt),
       },
@@ -123,6 +163,7 @@ export async function GET(request: NextRequest) {
         createdAt: item.createdAt.toISOString(),
       })),
       stages: REPAIR_STAGES,
+      centres: availableCentres,
     },
   });
 }
@@ -171,12 +212,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const [bookingRow] = await db
+      .select({
+        bookingCode: schema.bookings.bookingCode,
+        customerPhone: schema.bookings.customerPhone,
+        customerName: schema.bookings.customerName,
+      })
+      .from(schema.bookings)
+      .where(eq(schema.bookings.id, bookingId))
+      .limit(1);
+
+    const bookingCode = bookingRow?.bookingCode ?? null;
+    const customerPhone = bookingRow?.customerPhone ?? null;
+    const customerName = bookingRow?.customerName ?? null;
+    const watchUrl = bookingCode
+      ? `https://looplic.com/track/${encodeURIComponent(bookingCode)}${customerPhone ? `?phone=${encodeURIComponent(customerPhone)}&watch=live` : "?watch=live"}`
+      : null;
+
     return NextResponse.json({
       data: {
         sessionId: result.session!.id,
         provider: result.session!.provider,
+        providerRef: result.session!.providerRef,
         expiresAt: result.session!.expiresAt.toISOString(),
         reused: Boolean(result.reused),
+        bookingCode,
+        customerPhone,
+        customerName,
+        watchUrl,
       },
     });
   }

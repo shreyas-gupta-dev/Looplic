@@ -1,0 +1,112 @@
+# MediaMTX — RTSP to HLS for repair bench cameras.
+#
+# This is the piece that was missing: the application's `hls` provider was
+# complete but had nothing to talk to. MediaMTX pulls RTSP from each bench camera
+# and republishes it as HLS, which is what /api/repair-stream/[bookingId]/hls
+# proxies.
+#
+# ── Network posture ───────────────────────────────────────────────────────────
+#
+# This server must NOT be reachable from the internet. The only thing that should
+# ever connect to it is the Looplic app, server-side. The customer's browser never
+# sees this address — it fetches the playlist and every segment from the app, which
+# re-checks authorization each time. Publishing this port publicly would hand out
+# unauthenticated access to a camera pointed at a repair bench.
+#
+# In the compose file the HLS port is bound to 127.0.0.1 for exactly that reason.
+# In production, put it on a private subnet or VPC and allow only the app's egress.
+
+logLevel: info
+
+# ── RTSP (ingest from cameras) ────────────────────────────────────────────────
+rtsp: yes
+rtspAddress: :8554
+# TCP only: UDP RTP needs a wide port range opened, which is the opposite of what
+# a camera network wants, and TCP is fine at bench-camera bitrates. Multicast off
+# for the same reason.
+# Key name note: this is `protocols` in MediaMTX 1.9.x; it was renamed to
+# `rtspTransports` in later versions, so it must change if the pin moves.
+protocols: [tcp]
+
+# ── HLS (what the Looplic app reads) ──────────────────────────────────────────
+hls: yes
+hlsAddress: :8888
+#
+# `mpegts` rather than `lowLatency`, chosen deliberately.
+#
+# Low-latency HLS gets the delay down to about a second, but it produces a much
+# more elaborate playlist: an fMP4 initialisation segment (EXT-X-MAP), partial
+# segments (EXT-X-PART), preload hints, a separate audio rendition playlist, and
+# blocking playlist reloads driven by _HLS_msn/_HLS_part query parameters. Every
+# one of those is another reference the app's proxy has to carry safely, and the
+# blocking-reload parameters do not survive a proxy that only accepts simple
+# relative segment names.
+#
+# `mpegts` gives one flat playlist of self-contained .ts segments with audio muxed
+# in — no init segment, no parts, no separate audio playlist. The cost is a few
+# seconds of latency, which does not matter for watching your own repair.
+hlsVariant: mpegts
+# ~20 seconds of history. Long enough that a slow client, or a cold server route
+# compiling on first request, cannot ask for a segment that has already rolled out
+# of the window — which shows up as sporadic 404s that look like an auth failure.
+hlsSegmentCount: 10
+hlsSegmentDuration: 2s
+# The app fetches this server-side, so no browser origin is involved. Leave CORS
+# closed rather than allowing '*'.
+hlsAllowOrigin: 'null'
+# Only remux paths that are actually being watched, so a probe cannot enumerate
+# configured benches and idle cameras cost nothing.
+hlsAlwaysRemux: no
+
+# Everything else off. Fewer listening ports, fewer ways in.
+rtmp: no
+webrtc: no
+srt: no
+api: no
+metrics: no
+pprof: no
+playback: no
+
+pathDefaults:
+  # Stop pulling from a camera when nobody is watching. Bench cameras are idle most
+  # of the day and this keeps both bandwidth and recording surface down.
+  sourceOnDemand: yes
+  sourceOnDemandStartTimeout: 10s
+  sourceOnDemandCloseAfter: 20s
+
+paths:
+  # ── Real bench cameras ──────────────────────────────────────────────────────
+  #
+  # One path per bench. The path name is what goes into the centre's playlistUrl
+  # in app_settings, e.g. http://mediamtx:8888/bench-1/index.m3u8
+  #
+  # Uncomment and set the camera's own RTSP URL. Keep credentials out of this file
+  # in production — use MEDIAMTX_ prefixed environment variables, which MediaMTX
+  # substitutes, so this file can be committed.
+  #
+  # bench-1:
+  #   source: rtsp://${MEDIAMTX_BENCH1_USER}:${MEDIAMTX_BENCH1_PASS}@10.0.0.12:554/stream1
+  #
+  # bench-2:
+  #   source: rtsp://${MEDIAMTX_BENCH2_USER}:${MEDIAMTX_BENCH2_PASS}@10.0.0.13:554/stream1
+
+  # ── Synthetic bench, for development and for proving the path end-to-end ────
+  #
+  # A generated test pattern without a camera on the desk. `testsrc` draws its own
+  # running frame counter and timer, which is what makes a frozen or lagging stream
+  # obvious at a glance — so no drawtext filter is needed. Avoiding it also avoids
+  # having to escape a filter expression through YAML folding and a shell, which is
+  # three layers of quoting for a cosmetic overlay.
+  #
+  # This is why the compose file uses the -ffmpeg image variant. Delete this path
+  # once real cameras are cabled.
+  bench-test:
+    runOnInit: >
+      ffmpeg -re -f lavfi -i testsrc=size=640x360:rate=15
+      -f lavfi -i sine=frequency=440:sample_rate=48000
+      -c:v libx264 -preset ultrafast -tune zerolatency -g 15 -pix_fmt yuv420p
+      -c:a aac -shortest
+      -f rtsp -rtsp_transport tcp rtsp://localhost:8554/bench-test
+    runOnInitRestart: yes
+    # Always running, unlike a real camera: there is no upstream to pull on demand.
+    sourceOnDemand: no

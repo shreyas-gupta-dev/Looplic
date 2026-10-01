@@ -182,7 +182,23 @@ export async function openSession(
   if (!bookingRows[0]) return { ok: false, status: 404, message: "Booking not found." };
 
   const existing = await getActiveSession(db, bookingId);
-  if (existing) return { ok: true, session: existing, reused: true };
+  if (existing) {
+    if (
+      (options.provider && options.provider !== existing.provider) ||
+      (options.providerRef !== undefined && options.providerRef !== existing.providerRef)
+    ) {
+      const updated = await db
+        .update(repairStreamSessions)
+        .set({
+          provider,
+          providerRef: options.providerRef !== undefined ? options.providerRef : existing.providerRef,
+        })
+        .where(eq(repairStreamSessions.id, existing.id))
+        .returning();
+      return { ok: true, session: toSession(updated[0]), reused: true };
+    }
+    return { ok: true, session: existing, reused: true };
+  }
 
   const expiresAt = new Date(Date.now() + requested * 60 * 1000);
   const inserted = await db
