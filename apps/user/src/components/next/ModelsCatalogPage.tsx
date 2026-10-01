@@ -48,8 +48,11 @@ export function ModelsCatalogPage({
   const [search, setSearch] = useState("");
   const [loadingHref, setLoadingHref] = useState("");
 
-  const heading = collapsedSeries ? `${brand.name} Models` : `${brand.name} ${series.name} Models`;
-  const searchScope = collapsedSeries ? brand.name : `${brand.name} ${series.name}`;
+  const cleanSeriesName = series.name.toLowerCase().startsWith(brand.name.toLowerCase())
+    ? series.name.slice(brand.name.length).trim()
+    : series.name;
+  const heading = collapsedSeries ? `${brand.name} Models` : `${brand.name} ${cleanSeriesName} Models`;
+  const searchScope = collapsedSeries ? brand.name : `${brand.name} ${cleanSeriesName}`;
 
   const filteredModels = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -122,7 +125,6 @@ export function ModelsCatalogPage({
           <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
             {filteredModels.map((model, index) => {
               const modelImage = renderableImageUrl(model.image_url);
-              const brandImage = renderableImageUrl(brand.image_url);
               return (
               <CatalogPrefetchLink
                 key={model.id}
@@ -142,10 +144,10 @@ export function ModelsCatalogPage({
                       loading="lazy"
                       decoding="async"
                     />
-                  ) : brandImage ? (
-                    <img src={brandImage} alt={brand.name} className="h-full w-full object-contain p-1" loading="lazy" />
                   ) : (
-                    <DeviceIcon className="size-7 text-primary" />
+                    <div className="flex size-full items-center justify-center rounded-xl bg-primary/5 text-primary">
+                      <DeviceIcon className="size-8 opacity-70" />
+                    </div>
                   )}
                 </div>
                 <div className="w-full">
