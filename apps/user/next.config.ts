@@ -28,8 +28,8 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/:path*",
-        has: [{ type: "host", value: "looplic.com" }],
-        destination: "https://www.looplic.com/:path*",
+        has: [{ type: "host", value: "www.looplic.com" }],
+        destination: "https://looplic.com/:path*",
         permanent: true,
       },
       {

@@ -1,8 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 const OAUTH_REDIRECT_COOKIE = "looplic-auth-redirect";
-const CANONICAL_HOST = "www.looplic.com";
-const APEX_HOST = "looplic.com";
+const CANONICAL_HOST = "looplic.com";
+const WWW_HOST = "www.looplic.com";
 
 function sanitizeRedirect(value: string | null | undefined) {
   if (!value || !value.startsWith("/")) {
@@ -21,7 +21,7 @@ function decodeRedirectCookie(value: string) {
 }
 
 function isLooplicHost(host: string) {
-  return host === APEX_HOST || host === CANONICAL_HOST;
+  return host === CANONICAL_HOST || host === WWW_HOST;
 }
 
 function isLocalHost(host: string) {
@@ -60,7 +60,7 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(canonicalUrl, 308);
     }
 
-    if (host === APEX_HOST || (host === CANONICAL_HOST && forwardedProto === "http")) {
+    if (host === WWW_HOST || (host === CANONICAL_HOST && forwardedProto === "http")) {
       const canonicalUrl = nextUrl.clone();
       canonicalUrl.protocol = "https:";
       canonicalUrl.host = CANONICAL_HOST;
