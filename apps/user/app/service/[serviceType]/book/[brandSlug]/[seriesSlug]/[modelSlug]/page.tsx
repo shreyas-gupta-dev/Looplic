@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { BookingPageShell } from "@/src/components/next/BookingPageShell";
 import { CrawlableInternalLinks } from "@/src/components/next/CrawlableInternalLinks";
@@ -73,11 +73,8 @@ export default async function ServiceBookingPage({ params }: PageProps) {
   if (!brand) {
     notFound();
   }
-  if (!series) {
-    notFound();
-  }
-  if (!model) {
-    notFound();
+  if (!series || !model) {
+    redirect(`/service/${serviceType}/brands/${brand.slug}`);
   }
   const [{ repairCategories, repairSubcategories }, siblingModels] = await Promise.all([
     getRepairCatalogData(config.listingType, model.id),

@@ -37,19 +37,14 @@ export async function POST(request: Request) {
     const isPhone = isPhoneIdentifier(rawIdentifier);
     const normalizedIdentifier = normalizeIdentifier(rawIdentifier);
 
-    if (!verificationToken || typeof verificationToken !== "string") {
-      return NextResponse.json(
-        { error: "OTP verification is required before signing up" },
-        { status: 400 },
-      );
-    }
-
-    const check = verifyVerificationToken(verificationToken, normalizedIdentifier);
-    if (!check.valid) {
-      return NextResponse.json(
-        { error: "OTP verification expired or invalid. Please verify again." },
-        { status: 400 },
-      );
+    if (verificationToken && typeof verificationToken === "string") {
+      const check = verifyVerificationToken(verificationToken, normalizedIdentifier);
+      if (!check.valid) {
+        return NextResponse.json(
+          { error: "OTP verification expired or invalid. Please verify again." },
+          { status: 400 },
+        );
+      }
     }
 
     const admin = getAdminSupabase();
@@ -67,6 +62,13 @@ export async function POST(request: Request) {
       const existingUser = await findAuthUserByEmail(admin, normalizedIdentifier);
 
       if (existingUser) {
+        if (!verificationToken) {
+          return NextResponse.json(
+            { error: "An account with this email already exists. Please sign in instead." },
+            { status: 409 },
+          );
+        }
+
         const { data, error } = await admin.auth.admin.updateUserById(existingUser.id, {
           password: trimmedPassword,
           email_confirm: true,

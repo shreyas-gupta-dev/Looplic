@@ -54,19 +54,35 @@ export function AuthPageClient() {
 
   useEffect(() => {
     let ignore = false;
-    async function checkSession() {
-      const { user } = await getClientSession();
-      if (ignore) return;
-      if (user) {
-        router.replace(redirect);
-        router.refresh();
-        return;
+    const safetyTimer = setTimeout(() => {
+      if (!ignore) {
+        setCheckingSession(false);
       }
-      setCheckingSession(false);
+    }, 1200);
+
+    async function checkSession() {
+      try {
+        const { user } = await getClientSession();
+        if (ignore) return;
+        if (user) {
+          clearTimeout(safetyTimer);
+          navigateAfterAuth(redirect);
+          return;
+        }
+      } catch (err) {
+        console.warn("Session check error:", err);
+      } finally {
+        if (!ignore) {
+          setCheckingSession(false);
+        }
+      }
     }
     checkSession();
-    return () => { ignore = true; };
-  }, [redirect, router]);
+    return () => {
+      ignore = true;
+      clearTimeout(safetyTimer);
+    };
+  }, [redirect]);
 
   useEffect(() => {
     setMode(initialMode);
@@ -177,7 +193,9 @@ export function AuthPageClient() {
       } catch (err: any) {
         const msg = err.message || "";
         if (msg.includes("Email not confirmed") || msg.includes("email_not_confirmed")) {
-          toast.error("Please verify your email. Click 'Sign in with OTP instead' below.");
+          toast.error("Please verify your email or click 'Sign in with OTP instead' below.");
+        } else if (msg.includes("Invalid login credentials") || msg.includes("invalid_grant")) {
+          toast.error("Invalid email/phone or password. Please check your credentials or register an account.");
         } else {
           toast.error(msg || "Failed to sign in. Please check your credentials.");
         }
@@ -187,16 +205,27 @@ export function AuthPageClient() {
       return;
     }
 
-    // Sign Up: send OTP to verify email/phone before account creation
+    // Sign Up: direct account creation with email/phone + password + name
     if (mode === "signup") {
       setSubmitting("email");
       try {
-        await sendOtp(identifier);
-        toast.success(`Verification code sent to your ${inputMethod === "email" ? "email" : "phone"}`);
-        setStep("otp");
-        setOtpResendCountdown(60);
+        if (inputMethod === "email") {
+          const result = await signUpWithEmail(email, password, name);
+          if (result.isSignUpComplete) {
+            toast.success("Account created successfully!");
+            navigateAfterAuth(redirect);
+            return;
+          }
+        } else {
+          const result = await signUpWithPhone(phone, password, name);
+          if (result.isSignUpComplete) {
+            toast.success("Account created successfully!");
+            navigateAfterAuth(redirect);
+            return;
+          }
+        }
       } catch (err: any) {
-        toast.error(err.message || "Failed to send verification code");
+        toast.error(err.message || "Failed to create account. Please try again.");
       } finally {
         setSubmitting(null);
       }
@@ -573,12 +602,12 @@ export function AuthPageClient() {
                 >
                   {submitting === "email" ? <Loader2 className="size-4 animate-spin" /> : null}
                   {submitting === "email"
-                    ? (mode === "login" ? "Signing in..." : "Sending verification code...")
+                    ? (mode === "login" ? "Signing in..." : "Creating account...")
                     : (mode === "login" ? "Sign In" : "Create Account")}
                 </button>
                 {mode === "signup" && (
                   <p className="text-center text-xs text-muted-foreground pt-1">
-                    We&apos;ll send a 6-digit verification code to your {inputMethod === "email" ? "email" : "phone"}.
+                    By signing up, you agree to our Terms of Service &amp; Privacy Policy.
                   </p>
                 )}
               </form>

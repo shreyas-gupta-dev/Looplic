@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { CatalogNavbar } from "@/src/components/next/CatalogNavbar";
 import { CatalogServiceTabs } from "@/src/components/next/CatalogServiceTabs";
@@ -84,7 +84,9 @@ export default async function ServiceSeriesPage({ params, searchParams }: PagePr
     notFound();
   }
   if (!series) {
-    notFound();
+    const { category } = (await searchParams) ?? {};
+    const repairCategoryId = typeof category === "string" ? category : null;
+    redirect(withRepairSelection(`${config.pathPrefix}/${brand.slug}`, repairCategoryId));
   }
 
   const { category } = (await searchParams) ?? {};
