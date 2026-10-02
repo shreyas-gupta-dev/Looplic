@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, CheckCircle2, Eye, EyeOff, Loader2, Lock, Mail, Phone, ShieldCheck, Sparkles, User } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, Eye, EyeOff, KeyRound, Loader2, Lock, Mail, Phone, ShieldCheck, Sparkles, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -9,11 +9,13 @@ import { toast } from "sonner";
 import logo from "@/assets/looplic-logo.webp";
 import { OAUTH_REDIRECT_COOKIE, sanitizeRedirect } from "@/src/lib/auth-redirect";
 import {
+  type CognitoUser,
   getClientSession,
   sendOtp,
   signInWithEmail,
   signInWithGoogle,
   signInWithPhone,
+  signOutClient,
   signUpWithEmail,
   signUpWithPhone,
   verifyOtp,
@@ -23,12 +25,20 @@ import { getBrowserSupabase } from "@/src/lib/supabase/browser";
 type Step = "credentials" | "otp";
 type InputMethod = "email" | "phone";
 
+type AuthNotice = {
+  type: "wrong_password" | "not_found" | "phone_detected";
+  email?: string;
+  name?: string | null;
+  providers?: string[];
+};
+
 export function AuthPageClient() {
   const searchParams = useSearchParams();
   const initialMode = searchParams.get("mode") === "signup" ? "signup" : "login";
   const [mode, setMode] = useState<"login" | "signup">(initialMode);
   const [step, setStep] = useState<Step>("credentials");
   const [inputMethod, setInputMethod] = useState<InputMethod>("email");
+  const [authNotice, setAuthNotice] = useState<AuthNotice | null>(null);
 
   // Credential fields
   const [email, setEmail] = useState("");
@@ -46,6 +56,7 @@ export function AuthPageClient() {
 
   const [submitting, setSubmitting] = useState<"email" | "google" | "otp" | null>(null);
   const [checkingSession, setCheckingSession] = useState(true);
+  const [existingUser, setExistingUser] = useState<CognitoUser | null>(null);
   const router = useRouter();
   const redirectParam = searchParams.get("redirect");
   const redirect = sanitizeRedirect(redirectParam);
@@ -66,7 +77,8 @@ export function AuthPageClient() {
         if (ignore) return;
         if (user) {
           clearTimeout(safetyTimer);
-          navigateAfterAuth(redirect);
+          setExistingUser(user);
+          setCheckingSession(false);
           return;
         }
       } catch (err) {
@@ -103,11 +115,12 @@ export function AuthPageClient() {
   }, [step]);
 
   function navigateAfterAuth(target: string) {
+    const destination = sanitizeRedirect(target);
     if (typeof window !== "undefined") {
-      window.location.assign(target);
+      window.location.assign(destination);
       return;
     }
-    router.replace(target);
+    router.replace(destination);
     router.refresh();
   }
 
@@ -115,6 +128,11 @@ export function AuthPageClient() {
     setMode(nextMode);
     setStep("credentials");
     setOtp("");
+    if (authNotice?.type === "wrong_password" && nextMode === "signup") {
+      setAuthNotice(null);
+    } else if (authNotice?.type === "not_found" && nextMode === "login") {
+      setAuthNotice(null);
+    }
     const nextQuery = new URLSearchParams(searchParams.toString());
     nextQuery.set("mode", nextMode);
     router.replace(`/auth?${nextQuery.toString()}`, { scroll: false });
@@ -142,8 +160,13 @@ export function AuthPageClient() {
   async function handleCredentialsSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
+    if (inputMethod === "phone") {
+      toast.info("Phone SMS authentication is currently unavailable. Please use Email or Google to sign in.");
+      setInputMethod("email");
+      return;
+    }
+
     if (inputMethod === "email" && !email.trim()) return;
-    if (inputMethod === "phone" && !phone.trim()) return;
     if (!password.trim()) return;
     if (mode === "signup" && !name.trim()) return;
 
@@ -157,37 +180,37 @@ export function AuthPageClient() {
       return;
     }
 
-    // Validate phone format
-    if (inputMethod === "phone") {
-      const cleaned = phone.trim();
-      if (!cleaned.startsWith("+")) {
-        toast.error("Phone number must start with country code (e.g. +91)");
-        return;
-      }
-      const digits = cleaned.replace(/[^0-9]/g, "");
-      if (digits.length < 10 || digits.length > 15) {
-        toast.error("Invalid phone number");
-        return;
-      }
-    }
-
     // Direct Sign In
     if (mode === "login") {
       setSubmitting("email");
       try {
         if (inputMethod === "email") {
+          const trimmedEmail = email.trim();
+          const isNumericPhone = /^\+?[0-9\s-]{10,15}$/.test(trimmedEmail.replace(/[\s()-]/g, ""));
+          if (isNumericPhone) {
+            try {
+              const checkRes = await fetch("/api/auth/check-account", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ identifier: trimmedEmail }),
+              });
+              const checkData = await checkRes.json();
+              setAuthNotice({
+                type: "phone_detected",
+                name: checkData.name,
+              });
+            } catch {}
+            toast.info("Phone SMS is currently unavailable. Please sign in with your email address or Google.");
+            return;
+          }
+
           const result = await signInWithEmail(email, password);
           if (result.isSignedIn) {
             toast.success("Welcome back!");
             navigateAfterAuth(redirect);
             return;
-          }
-        } else {
-          const result = await signInWithPhone(phone, password);
-          if (result.isSignedIn) {
-            toast.success("Welcome back!");
-            navigateAfterAuth(redirect);
-            return;
+          } else {
+            toast.error("Sign in incomplete. Please check your credentials.");
           }
         }
       } catch (err: any) {
@@ -195,7 +218,38 @@ export function AuthPageClient() {
         if (msg.includes("Email not confirmed") || msg.includes("email_not_confirmed")) {
           toast.error("Please verify your email or click 'Sign in with OTP instead' below.");
         } else if (msg.includes("Invalid login credentials") || msg.includes("invalid_grant")) {
-          toast.error("Invalid email/phone or password. Please check your credentials or register an account.");
+          try {
+            const checkRes = await fetch("/api/auth/check-account", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ identifier: email.trim() }),
+            });
+            const checkData = await checkRes.json();
+            if (checkData.exists) {
+              const providers: string[] = checkData.providers || [];
+              const googleOnly = providers.includes("google") && !providers.includes("email");
+              setAuthNotice({
+                type: "wrong_password",
+                email: email.trim(),
+                name: checkData.name,
+                providers,
+              });
+              if (googleOnly) {
+                toast.error("This account was created with Google. Please click 'Continue with Google'.");
+              } else {
+                toast.error("Incorrect password for this account. If you forgot your password, please click 'Reset Password' below.");
+              }
+            } else {
+              setAuthNotice({
+                type: "not_found",
+                email: email.trim(),
+              });
+              toast.info("No account found with this email. We've switched you to Create Account so you can register!");
+              setAuthMode("signup");
+            }
+          } catch {
+            toast.error("Incorrect email or password. Please verify your credentials or reset your password.");
+          }
         } else {
           toast.error(msg || "Failed to sign in. Please check your credentials.");
         }
@@ -205,27 +259,33 @@ export function AuthPageClient() {
       return;
     }
 
-    // Sign Up: direct account creation with email/phone + password + name
+    // Sign Up: direct account creation with email + password + name
     if (mode === "signup") {
       setSubmitting("email");
       try {
         if (inputMethod === "email") {
           const result = await signUpWithEmail(email, password, name);
           if (result.isSignUpComplete) {
-            toast.success("Account created successfully!");
+            toast.success("Account created successfully! Welcome to Looplic.");
             navigateAfterAuth(redirect);
             return;
-          }
-        } else {
-          const result = await signUpWithPhone(phone, password, name);
-          if (result.isSignUpComplete) {
-            toast.success("Account created successfully!");
-            navigateAfterAuth(redirect);
-            return;
+          } else {
+            toast.error("Account created, but sign-in is incomplete. Please sign in with your password.");
+            setMode("login");
           }
         }
       } catch (err: any) {
-        toast.error(err.message || "Failed to create account. Please try again.");
+        const msg = err.message || "";
+        if (msg.includes("already exists") || msg.includes("already been registered")) {
+          setAuthNotice({
+            type: "wrong_password",
+            email: email.trim(),
+          });
+          toast.error("An account with this email already exists. We've switched you to Sign In.");
+          setAuthMode("login");
+        } else {
+          toast.error(msg || "Failed to create account. Please try again.");
+        }
       } finally {
         setSubmitting(null);
       }
@@ -237,12 +297,13 @@ export function AuthPageClient() {
    * Optional OTP flow: send OTP to identifier
    */
   async function handleSendOtpFlow() {
-    if (inputMethod === "email" && !email.trim()) {
-      toast.error("Please enter your email address");
+    if (inputMethod === "phone") {
+      toast.info("Phone SMS OTP is currently unavailable. Please use Email to sign in.");
+      setInputMethod("email");
       return;
     }
-    if (inputMethod === "phone" && !phone.trim()) {
-      toast.error("Please enter your phone number");
+    if (inputMethod === "email" && !email.trim()) {
+      toast.error("Please enter your email address");
       return;
     }
 
@@ -398,6 +459,38 @@ export function AuthPageClient() {
         {/* Right panel - form */}
         <section className="p-5 sm:p-7">
           <div className="mx-auto w-full max-w-md">
+            {existingUser && (
+              <div className="mb-6 rounded-2xl border border-primary/20 bg-primary/[0.06] p-4 text-center">
+                <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-primary">
+                  <CheckCircle2 className="size-4" />
+                  Currently signed in
+                </div>
+                <p className="mt-1 text-sm font-bold text-foreground truncate">
+                  {existingUser.email || existingUser.name || "Customer"}
+                </p>
+                <div className="mt-3 flex items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => navigateAfterAuth(redirect)}
+                    className="rounded-xl gradient-brand px-4 py-2 text-xs font-bold text-primary-foreground shadow-sm hover:opacity-90 transition-opacity"
+                  >
+                    Go to My Account
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await signOutClient();
+                      setExistingUser(null);
+                      toast.info("Signed out. You can now create a new account.");
+                    }}
+                    className="rounded-xl border border-border bg-background px-4 py-2 text-xs font-bold text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+                  >
+                    Switch account
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Header */}
             <div className="mb-6 text-center lg:text-left">
               <Link href="/" className="inline-flex lg:hidden">
@@ -488,6 +581,44 @@ export function AuthPageClient() {
                   </button>
                 </div>
 
+                {inputMethod === "phone" && (
+                  <div className="rounded-2xl border border-amber-500/25 bg-amber-500/10 p-3.5 text-xs text-amber-800 dark:text-amber-200">
+                    <p className="font-bold">Phone SMS sign-in is temporarily unavailable</p>
+                    <p className="mt-1 leading-relaxed">
+                      Please use <button type="button" onClick={() => setInputMethod("email")} className="font-bold underline text-primary">Email</button> or Google to sign in or create your account. You can save your phone number directly in your account profile once signed in.
+                    </p>
+                  </div>
+                )}
+
+                {authNotice?.type === "phone_detected" && (
+                  <div className="rounded-2xl border border-amber-500/25 bg-amber-500/10 p-3.5 text-xs text-amber-800 dark:text-amber-200">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="size-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+                      <div>
+                        <p className="font-bold">Phone number detected</p>
+                        <p className="mt-1 leading-relaxed">
+                          {authNotice.name ? `Account found for ${authNotice.name}. ` : ""}
+                          SMS login is temporarily unavailable. Please sign in using your registered email address or Google.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {authNotice?.type === "not_found" && mode === "signup" && (
+                  <div className="rounded-2xl border border-primary/25 bg-primary/10 p-3.5 text-xs text-foreground">
+                    <div className="flex items-start gap-2.5">
+                      <CheckCircle2 className="size-4 shrink-0 mt-0.5 text-primary" />
+                      <div>
+                        <p className="font-bold text-foreground">No account found with this email</p>
+                        <p className="mt-0.5 text-muted-foreground">
+                          We&apos;ve switched you to Create Account so you can register <span className="font-semibold text-foreground">{authNotice.email}</span>. Just enter your name and choose a password to sign up.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Name (signup only) */}
                 {mode === "signup" && (
                   <div className="relative">
@@ -512,7 +643,10 @@ export function AuthPageClient() {
                       type="email"
                       placeholder="Email address"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (authNotice) setAuthNotice(null);
+                      }}
                       required
                       maxLength={255}
                       className="w-full rounded-2xl border border-border bg-card py-3 pl-10 pr-4 text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
@@ -525,7 +659,10 @@ export function AuthPageClient() {
                       type="tel"
                       placeholder="+91 9876543210"
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      onChange={(e) => {
+                        setPhone(e.target.value);
+                        if (authNotice) setAuthNotice(null);
+                      }}
                       required
                       maxLength={16}
                       className="w-full rounded-2xl border border-border bg-card py-3 pl-10 pr-4 text-sm font-medium text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
@@ -540,7 +677,10 @@ export function AuthPageClient() {
                     type={showPassword ? "text" : "password"}
                     placeholder="Password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (authNotice?.type === "wrong_password") setAuthNotice(null);
+                    }}
                     required
                     minLength={6}
                     maxLength={72}
@@ -592,6 +732,48 @@ export function AuthPageClient() {
                         Forgot your password?
                       </Link>
                     )}
+                  </div>
+                )}
+
+                {/* Wrong password contextual guidance */}
+                {authNotice?.type === "wrong_password" && mode === "login" && (
+                  <div className="rounded-2xl border border-destructive/30 bg-destructive/10 p-3.5 text-xs text-foreground">
+                    <div className="flex items-start gap-2.5">
+                      <AlertCircle className="size-4 shrink-0 mt-0.5 text-destructive" />
+                      <div className="flex-1 space-y-2">
+                        <div>
+                          <p className="font-bold text-destructive">Incorrect password</p>
+                          <p className="mt-0.5 text-muted-foreground">
+                            The password you entered does not match our records for <span className="font-semibold text-foreground">{authNotice.email}</span>.
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                          <Link
+                            href={`/auth/reset-password?email=${encodeURIComponent(authNotice.email || "")}`}
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3 py-1.5 font-bold text-primary-foreground shadow-sm hover:opacity-90 transition-opacity"
+                          >
+                            <KeyRound className="size-3" />
+                            Reset Password
+                          </Link>
+                          {authNotice.providers?.includes("google") && (
+                            <button
+                              type="button"
+                              onClick={handleGoogleAuth}
+                              className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-background px-3 py-1.5 font-bold text-foreground hover:bg-secondary transition-colors"
+                            >
+                              Sign in with Google
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={handleSendOtpFlow}
+                            className="rounded-xl border border-border bg-background px-3 py-1.5 font-bold text-foreground hover:bg-secondary transition-colors"
+                          >
+                            Sign in with OTP
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
 

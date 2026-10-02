@@ -34,6 +34,13 @@ export function CatalogNavbar() {
           <Link href="/service/mobile-repair" className="transition-colors hover:text-foreground">
             Repairs
           </Link>
+          <Link href="/live-repair" className="inline-flex items-center gap-1.5 font-bold text-red-600 hover:text-red-700 transition-colors">
+            <span className="relative flex size-2">
+              <span className="absolute inline-flex size-full animate-ping rounded-full bg-red-400 opacity-75" />
+              <span className="relative inline-flex size-2 rounded-full bg-red-600" />
+            </span>
+            Live Cam
+          </Link>
           <Link href="/track" className="transition-colors hover:text-foreground">
             Track Order
           </Link>
@@ -67,6 +74,13 @@ export function CatalogNavbar() {
             </Link>
             <Link href="/service/mobile-repair" className="py-2 text-sm font-medium text-foreground" onClick={() => setOpen(false)}>
               Repairs
+            </Link>
+            <Link href="/live-repair" className="inline-flex items-center gap-1.5 py-2 text-sm font-bold text-red-600" onClick={() => setOpen(false)}>
+              <span className="relative flex size-2">
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-red-400 opacity-75" />
+                <span className="relative inline-flex size-2 rounded-full bg-red-600" />
+              </span>
+              Live CCTV Cam
             </Link>
             <Link href="/track" className="py-2 text-sm font-medium text-foreground" onClick={() => setOpen(false)}>
               Track Order

@@ -154,6 +154,22 @@ export default async function TrackPage({ params, searchParams }: PageProps) {
               Watch Live ↓
             </a>
           </div>
+        ) : booking ? (
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="flex items-center gap-3">
+              <span className="flex size-2 rounded-full bg-red-500 animate-pulse" />
+              <div>
+                <p className="text-xs font-bold text-gray-900">Want to see our repair lab in action?</p>
+                <p className="text-[11px] text-gray-500">Watch our certified technicians live on CCTV while your device is being prepped.</p>
+              </div>
+            </div>
+            <Link
+              href="/live-repair"
+              className="shrink-0 rounded-full bg-slate-900 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-slate-800 transition-colors"
+            >
+              Watch Workshop Cam &rarr;
+            </Link>
+          </div>
         ) : null}
 
         {booking ? (

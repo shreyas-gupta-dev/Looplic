@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { findAuthUserByEmail, isPhoneIdentifier, normalizeIdentifier } from "@/src/lib/auth/admin-users";
 import { hasVerificationSecret, verifyVerificationToken } from "@/src/lib/auth/verification-token";
+import { customerProfiles, db } from "@/src/lib/db";
 import { guardRateLimit } from "@/src/lib/rate-limit";
 import { getAdminSupabase, hasServiceRole } from "@/src/lib/supabase/server";
 
@@ -79,6 +80,24 @@ export async function POST(request: Request) {
           return NextResponse.json({ error: error.message }, { status: 400 });
         }
 
+        try {
+          await db
+            .insert(customerProfiles)
+            .values({
+              userId: data.user.id,
+              fullName: fullName || null,
+            })
+            .onConflictDoUpdate({
+              target: customerProfiles.userId,
+              set: {
+                fullName: fullName || null,
+                updatedAt: new Date(),
+              },
+            });
+        } catch (dbErr) {
+          console.warn("[signup] Could not sync customer profile to RDS:", dbErr);
+        }
+
         return NextResponse.json({ success: true, userId: data.user.id });
       }
     }
@@ -106,6 +125,25 @@ export async function POST(request: Request) {
         );
       }
       return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    try {
+      await db
+        .insert(customerProfiles)
+        .values({
+          userId: data.user.id,
+          fullName: fullName || null,
+          phone: isPhone ? normalizedIdentifier : null,
+        })
+        .onConflictDoUpdate({
+          target: customerProfiles.userId,
+          set: {
+            fullName: fullName || null,
+            updatedAt: new Date(),
+          },
+        });
+    } catch (dbErr) {
+      console.warn("[signup] Could not sync customer profile to RDS:", dbErr);
     }
 
     return NextResponse.json({ success: true, userId: data.user.id });

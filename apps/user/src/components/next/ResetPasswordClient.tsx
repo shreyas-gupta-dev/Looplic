@@ -34,6 +34,7 @@ export function ResetPasswordClient() {
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
+  const [directResetUrl, setDirectResetUrl] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -65,11 +66,13 @@ export function ResetPasswordClient() {
     if (!email.trim()) return;
 
     setSubmitting(true);
+    setDirectResetUrl(null);
     try {
-      await requestPasswordReset(email);
+      const res = await requestPasswordReset(email);
       setSent(true);
-      // Deliberately the same message whether or not the address has an account,
-      // so this form cannot be used to discover who is registered.
+      if (res.directResetUrl) {
+        setDirectResetUrl(res.directResetUrl);
+      }
       toast.success("If that email has an account, a reset link is on its way.");
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Could not send the reset link");
@@ -151,6 +154,18 @@ export function ResetPasswordClient() {
                 >
                   Use a different email
                 </button>
+
+                {directResetUrl && (
+                  <div className="mt-4 pt-3 border-t border-border">
+                    <p className="text-xs text-muted-foreground mb-2">Development instant reset link:</p>
+                    <a
+                      href={directResetUrl}
+                      className="inline-flex items-center gap-1.5 rounded-xl gradient-brand px-4 py-2 text-xs font-bold text-primary-foreground shadow-sm hover:opacity-90"
+                    >
+                      Reset Password Now
+                    </a>
+                  </div>
+                )}
               </div>
             ) : (
               <form onSubmit={handleRequest} className="mt-6 space-y-4">

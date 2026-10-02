@@ -28,7 +28,11 @@ export const dynamic = "force-dynamic";
 const SETTINGS_KEY = "repair_stream_centres";
 
 type CentreConfig = { label: string; playlistUrl: string };
-type StoredConfig = { centres: Record<string, CentreConfig>; defaultCentre: string | null };
+type StoredConfig = {
+  centres: Record<string, CentreConfig>;
+  defaultCentre: string | null;
+  privacyActive?: boolean;
+};
 
 /**
  * Flat rather than a discriminated union on `ok`: these app tsconfigs disable
@@ -78,7 +82,7 @@ function normalize(raw: unknown): StoredConfig {
     return { centres: {}, defaultCentre: null };
   }
 
-  const source = parsed as { centres?: unknown; defaultCentre?: unknown };
+  const source = parsed as { centres?: unknown; defaultCentre?: unknown; privacyActive?: unknown };
   const centres: Record<string, CentreConfig> = {};
 
   if (source.centres && typeof source.centres === "object" && !Array.isArray(source.centres)) {
@@ -96,7 +100,9 @@ function normalize(raw: unknown): StoredConfig {
   const defaultCentre =
     typeof source.defaultCentre === "string" && centres[source.defaultCentre] ? source.defaultCentre : null;
 
-  return { centres, defaultCentre };
+  const privacyActive = Boolean(source.privacyActive);
+
+  return { centres, defaultCentre, privacyActive };
 }
 
 async function readConfig(): Promise<StoredConfig> {
@@ -197,6 +203,31 @@ export async function DELETE(request: Request) {
     // Never leave the default pointing at a centre that no longer exists: an
     // unknown key resolves to nothing, which looks like a broken feature.
     config.defaultCentre = Object.keys(config.centres)[0] ?? null;
+  }
+
+  await writeConfig(config);
+  return NextResponse.json(config);
+}
+
+export async function PATCH(request: Request) {
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
+
+  let body: { privacyActive?: boolean; defaultCentre?: string };
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const config = await readConfig();
+
+  if (typeof body.privacyActive === "boolean") {
+    config.privacyActive = body.privacyActive;
+  }
+
+  if (typeof body.defaultCentre === "string" && config.centres[body.defaultCentre]) {
+    config.defaultCentre = body.defaultCentre;
   }
 
   await writeConfig(config);

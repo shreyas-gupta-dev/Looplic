@@ -130,12 +130,12 @@ export async function requestPasswordReset(email: string) {
     body: JSON.stringify({ email: email.trim().toLowerCase() }),
   });
 
+  const result = await response.json().catch(() => null);
   if (!response.ok) {
-    const result = await response.json().catch(() => null);
     throw new Error(result?.error || "Could not send the reset link");
   }
 
-  return { sent: true };
+  return { sent: true, directResetUrl: result?.directResetUrl as string | undefined };
 }
 
 /**
@@ -202,7 +202,10 @@ export async function signUpWithEmail(
     password: password.trim(),
   });
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    console.error("[signUpWithEmail] signInWithPassword error after signup:", error);
+    throw new Error(error.message || "Account created, but sign in failed. Please sign in with your password.");
+  }
   return { isSignUpComplete: Boolean(data.session) };
 }
 

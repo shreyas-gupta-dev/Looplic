@@ -52,13 +52,29 @@ export async function POST(request: Request) {
     const admin = getAdminSupabase();
     const { error } = await admin.auth.resetPasswordForEmail(normalizedEmail, { redirectTo });
 
+    let directResetUrl: string | undefined;
+    if (process.env.NODE_ENV !== "production") {
+      try {
+        const linkRes = await admin.auth.admin.generateLink({
+          type: "recovery",
+          email: normalizedEmail,
+          options: {
+            redirectTo,
+          },
+        });
+        if (linkRes.data?.properties?.action_link) {
+          directResetUrl = linkRes.data.properties.action_link;
+        }
+      } catch (err) {
+        console.warn("[request-password-reset] Could not generate direct recovery link:", err);
+      }
+    }
+
     if (error) {
-      // Logged, never returned: "user not found" and "rate limited" are both
-      // account-existence signals.
       console.error("[auth] resetPasswordForEmail failed:", error.message);
     }
 
-    return uniformOk;
+    return NextResponse.json({ success: true, directResetUrl });
   } catch (err: unknown) {
     console.error("[auth] password reset request threw:", err);
     return uniformOk;

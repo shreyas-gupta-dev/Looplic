@@ -29,6 +29,14 @@ export type AuthUserLike = {
   id: string;
   email?: string | null;
   phone?: string | null;
+  app_metadata?: {
+    provider?: string;
+    providers?: string[];
+  };
+  user_metadata?: {
+    name?: string;
+    full_name?: string;
+  };
 };
 
 /**

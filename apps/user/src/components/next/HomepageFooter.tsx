@@ -46,6 +46,7 @@ const companyLinks = [
 const supportLinks = [
   { href: "/faq", label: "FAQ / Help Center" },
   { href: "/contact-us", label: "Contact Us" },
+  { href: "/live-repair", label: "Live Workshop CCTV Cam" },
   { href: "/track", label: "Track Repair Order" },
   { href: "/sell/track", label: "Track Buyback Order" },
   { href: "/terms-and-conditions", label: "Terms & Conditions" },

@@ -83,6 +83,14 @@ export function HomepageNavbar() {
             <span>🇮🇳 India&apos;s #1 Device Recommerce Platform</span>
           </div>
           <div className="flex items-center gap-4">
+            <Link href="/live-repair" className="inline-flex items-center gap-1.5 font-bold text-red-600 hover:text-red-700 transition-colors">
+              <span className="relative flex size-2">
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-red-400 opacity-75" />
+                <span className="relative inline-flex size-2 rounded-full bg-red-600" />
+              </span>
+              Live CCTV Cam
+            </Link>
+            <span className="text-gray-300">|</span>
             <Link href="/store-locator" className="hover:text-primary transition-colors">Store Locator</Link>
             <span className="text-gray-300">|</span>
             <Link href="/track" className="hover:text-primary transition-colors">Track Order</Link>
@@ -183,6 +191,13 @@ export function HomepageNavbar() {
           <Link href="/service/mobile" className="rounded-lg px-3 py-2.5 transition-colors hover:bg-gray-50 hover:text-primary">
             Repair
           </Link>
+          <Link href="/live-repair" className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2.5 font-bold text-red-600 transition-colors hover:bg-red-50 hover:text-red-700">
+            <span className="relative flex size-2">
+              <span className="absolute inline-flex size-full animate-ping rounded-full bg-red-400 opacity-75" />
+              <span className="relative inline-flex size-2 rounded-full bg-red-600" />
+            </span>
+            Live Cam
+          </Link>
           <Link href="/store-locator" className="rounded-lg px-3 py-2.5 transition-colors hover:bg-gray-50 hover:text-primary">
             Store Locator
           </Link>
@@ -273,6 +288,13 @@ export function HomepageNavbar() {
 
             <Link href="/service/mobile-repair" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
               Repair
+            </Link>
+            <Link href="/live-repair" onClick={() => setMobileOpen(false)} className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-bold text-red-600 hover:bg-red-50">
+              <span className="relative flex size-2">
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-red-400 opacity-75" />
+                <span className="relative inline-flex size-2 rounded-full bg-red-600" />
+              </span>
+              Live CCTV Cam
             </Link>
             <Link href="/track" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
               Track Order

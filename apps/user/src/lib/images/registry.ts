@@ -82,7 +82,7 @@ export const serviceImages = {
   "sell-phone": { src: "/images/services/sell-phone.webp", alt: "Sell your phone for cash" },
   "sell-laptop": { src: "/images/services/sell-laptop.webp", alt: "Sell your laptop for cash" },
   accessories: { src: "/images/services/accessories.webp", alt: "Phone and laptop accessories" },
-  "store-locator": { src: "/images/services/store-locator.webp", alt: "Find the Looplic store in Bengaluru" },
+  "store-locator": { src: "/images/services/store-locator.webp", alt: "Looplic Official Store & Workshop in Bengaluru" },
 } satisfies Record<string, ImageSlot>;
 
 /** "Sell Your Old Device" carousel. Keys match the category ids. */

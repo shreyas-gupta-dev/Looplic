@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Clock, ExternalLink, MapPin, Navigation, Phone, Star } from "lucide-react";
 
 import { HomepageNavbar } from "@/src/components/next/HomepageNavbar";
@@ -17,7 +18,7 @@ const STORE = {
   services: ["Sell Old Phone", "Buy Refurbished Phone", "Mobile Repair", "Laptop Repair", "Screen Guard", "CCTV Installation", "IT Support"],
   lat: 12.9632,
   lng: 77.5784,
-  googleMapsUrl: "https://maps.google.com/?q=1st+Floor+Shawkat+Building+SJP+Road+Nagarathpete+Bengaluru+560002",
+  googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=12.9632,77.5784",
   googleMapsEmbed: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.023!2d77.5762!3d12.9632!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sSJP+Road+Nagarathpete+Bengaluru!5e0!3m2!1sen!2sin!4v1690000000000!5m2!1sen!2sin",
   landmarks: ["Opposite Dasappa Hospital", "Near Town Hall", "SJP Road, Dodpete"],
 };
@@ -46,6 +47,41 @@ export function StoreLocatorView() {
 
           {/* Left: Store Details */}
           <div className="space-y-6">
+            {/* Storefront Showcase Photo Card */}
+            <div className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md">
+              <a
+                href={STORE.googleMapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative block aspect-[4/3] w-full overflow-hidden bg-gray-100"
+                title="Click to open Google Maps and locate Looplic Store"
+              >
+                <Image
+                  src="/images/services/store-locator.webp"
+                  alt="Looplic Official Flagship Store - SJP Road, Nagarathpete, Bengaluru"
+                  fill
+                  priority
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, 500px"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
+                <div className="absolute top-3 left-3 flex items-center gap-1.5 rounded-full bg-slate-900/85 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md">
+                  <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
+                  Official Flagship Store
+                </div>
+                <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white">
+                  <div>
+                    <p className="text-xs font-medium text-slate-300">SJP Road, Nagarathpete</p>
+                    <p className="text-sm font-bold">Locate Store on Map</p>
+                  </div>
+                  <span className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-3.5 py-2 text-xs font-bold text-white shadow-lg transition-transform group-hover:scale-105 group-hover:bg-blue-700">
+                    <Navigation className="size-3.5" />
+                    Open Map ↗
+                  </span>
+                </div>
+              </a>
+            </div>
+
             {/* Store Name Card */}
             <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
               <div className="flex items-center gap-3">
@@ -158,7 +194,7 @@ export function StoreLocatorView() {
           </div>
 
           {/* Right: Google Map */}
-          <div className="space-y-4">
+          <div id="store-map" className="space-y-4 scroll-mt-24">
             {/* Map Embed */}
             <div className="overflow-hidden rounded-2xl border border-gray-200 shadow-sm">
               <iframe

@@ -46,9 +46,10 @@ export type CentreConfig = {
 export type RepairStreamConfig = {
   centres: Record<string, CentreConfig>;
   defaultCentre: string | null;
+  privacyActive?: boolean;
 };
 
-const EMPTY: RepairStreamConfig = { centres: {}, defaultCentre: null };
+const EMPTY: RepairStreamConfig = { centres: {}, defaultCentre: null, privacyActive: false };
 
 /**
  * Normalises whatever the driver hands back into an object.
@@ -88,7 +89,7 @@ function asObject(raw: unknown): Record<string, unknown> | null {
 }
 
 function parseConfig(raw: unknown): RepairStreamConfig {
-  const source = asObject(raw) as { centres?: unknown; defaultCentre?: unknown } | null;
+  const source = asObject(raw) as { centres?: unknown; defaultCentre?: unknown; privacyActive?: unknown } | null;
   if (!source) return EMPTY;
 
   const centres: Record<string, CentreConfig> = {};
@@ -109,7 +110,9 @@ function parseConfig(raw: unknown): RepairStreamConfig {
   const defaultCentre =
     typeof source.defaultCentre === "string" && centres[source.defaultCentre] ? source.defaultCentre : null;
 
-  return { centres, defaultCentre };
+  const privacyActive = Boolean(source.privacyActive);
+
+  return { centres, defaultCentre, privacyActive };
 }
 
 export async function getRepairStreamConfig(): Promise<RepairStreamConfig> {

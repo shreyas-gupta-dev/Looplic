@@ -40,6 +40,8 @@ migration-capture/
 
 # Claude Code
 .claude/
+scratch/
+.devlog.txt
 
 # Editor directories and files
 .vscode/*

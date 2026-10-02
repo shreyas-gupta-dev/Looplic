@@ -1,7 +1,7 @@
 "use client";
 
-import { Loader2, Plus, RefreshCw, Trash2, Video, VideoOff } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { Camera, CheckCircle2, Eye, EyeOff, Loader2, Play, Plus, RefreshCw, Shield, Trash2, Video, VideoOff } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
@@ -21,7 +21,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/src/components/ui/ca
  */
 
 type Centre = { label: string; playlistUrl: string };
-type CentreConfig = { centres: Record<string, Centre>; defaultCentre: string | null };
+type CentreConfig = {
+  centres: Record<string, Centre>;
+  defaultCentre: string | null;
+  privacyActive?: boolean;
+};
 
 type LiveSession = {
   id: string;
@@ -73,6 +77,32 @@ export default function LiveViewTab() {
 
   const [sessionBooking, setSessionBooking] = useState("");
   const [sessionCentre, setSessionCentre] = useState("");
+
+  const [previewActive, setPreviewActive] = useState(false);
+  const [previewBench, setPreviewBench] = useState<string>("");
+  const previewVideoRef = useRef<HTMLVideoElement>(null);
+
+  async function togglePrivacyShutter() {
+    setBusy("privacy");
+    setError(null);
+    try {
+      const nextPrivacy = !config.privacyActive;
+      const res = await fetch("/api/repair-stream/centres", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ privacyActive: nextPrivacy }),
+      });
+      if (res.ok) {
+        setConfig(await res.json());
+      } else {
+        setError("Could not update privacy shutter status.");
+      }
+    } catch {
+      setError("Could not update privacy shutter status.");
+    } finally {
+      setBusy(null);
+    }
+  }
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -207,6 +237,123 @@ export default function LiveViewTab() {
         camera on the bench only. Customers give their own consent per session; this covers the
         other side of the lens.
       </div>
+
+      {/* ── Public CCTV Broadcast Controls & Privacy Shutter ───────────────── */}
+      <Card className="border-emerald-200/80 bg-gradient-to-br from-emerald-50/50 via-white to-sky-50/30">
+        <CardHeader className="flex flex-row items-center justify-between pb-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              <CardTitle className="text-base font-semibold text-slate-900">
+                Public Workshop CCTV Broadcast
+              </CardTitle>
+            </div>
+            <p className="mt-1 text-xs text-slate-600">
+              Streams active repair benches to customer showcase at <code className="rounded bg-slate-100 px-1 py-0.5 text-slate-800">/live-repair</code> for 100% transparency.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <a
+              href="/live-repair"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
+            >
+              Open Live Page ↗
+            </a>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4 pt-1">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500">
+                  <Shield className="size-3.5 text-slate-600" />
+                  Privacy Shutter Slate
+                </div>
+                <p className="text-sm font-semibold text-slate-900">
+                  {config.privacyActive ? "Privacy Shutter Active (Stream Paused)" : "Broadcasting Normal Feed"}
+                </p>
+                <p className="text-[11px] text-slate-500">
+                  When active, public stream replaces video with a privacy message.
+                </p>
+              </div>
+              <Button
+                variant={config.privacyActive ? "destructive" : "outline"}
+                size="sm"
+                disabled={busy === "privacy"}
+                onClick={() => void togglePrivacyShutter()}
+                className="gap-1.5 text-xs font-semibold shrink-0"
+              >
+                {busy === "privacy" ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : config.privacyActive ? (
+                  <>
+                    <Eye className="size-3.5" />
+                    Disable Shutter
+                  </>
+                ) : (
+                  <>
+                    <EyeOff className="size-3.5" />
+                    Engage Shutter
+                  </>
+                )}
+              </Button>
+            </div>
+
+            <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500">
+                  <Camera className="size-3.5 text-slate-600" />
+                  Broadcast Bench Feed
+                </div>
+                <p className="text-sm font-semibold text-slate-900">
+                  {config.defaultCentre && config.centres[config.defaultCentre]
+                    ? config.centres[config.defaultCentre].label
+                    : "Bench 1 (Main Diagnostics)"}
+                </p>
+                <p className="text-[11px] text-slate-500">
+                  {centreKeys.length} camera bench{centreKeys.length === 1 ? "" : "es"} connected
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPreviewActive(!previewActive)}
+                className="gap-1.5 text-xs font-semibold shrink-0"
+              >
+                <Video className="size-3.5" />
+                {previewActive ? "Hide Monitor" : "Live Monitor"}
+              </Button>
+            </div>
+          </div>
+
+          {previewActive && (
+            <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-950 p-3 shadow-inner">
+              <div className="mb-2 flex items-center justify-between text-xs text-slate-300">
+                <span className="flex items-center gap-1.5 font-mono text-emerald-400">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
+                  ADMIN CCTV BENCH MONITOR
+                </span>
+                <span className="font-mono text-slate-400 text-[11px]">
+                  RTSP PROXY / HLS STREAM
+                </span>
+              </div>
+              <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-black">
+                <video
+                  ref={previewVideoRef}
+                  controls
+                  autoPlay
+                  muted
+                  playsInline
+                  src="/api/live-camera/stream?centre=workshop-main"
+                  className="h-full w-full object-contain"
+                />
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* ── Service centres ────────────────────────────────────────────────── */}
       <Card>
