@@ -53,28 +53,36 @@ export async function POST(request: Request) {
     const { error } = await admin.auth.resetPasswordForEmail(normalizedEmail, { redirectTo });
 
     let directResetUrl: string | undefined;
-    if (process.env.NODE_ENV !== "production") {
-      try {
-        const linkRes = await admin.auth.admin.generateLink({
-          type: "recovery",
-          email: normalizedEmail,
-          options: {
-            redirectTo,
-          },
-        });
-        if (linkRes.data?.properties?.action_link) {
-          directResetUrl = linkRes.data.properties.action_link;
-        }
-      } catch (err) {
-        console.warn("[request-password-reset] Could not generate direct recovery link:", err);
+    let emailOtp: string | undefined;
+
+    try {
+      const linkRes = await admin.auth.admin.generateLink({
+        type: "recovery",
+        email: normalizedEmail,
+        options: {
+          redirectTo,
+        },
+      });
+
+      if (linkRes.data?.properties?.hashed_token) {
+        // Direct link on our site that verifies token_hash without bouncing through localhost:
+        directResetUrl = `${origin}/auth/reset-password?token_hash=${linkRes.data.properties.hashed_token}&type=recovery`;
+      } else if (linkRes.data?.properties?.action_link) {
+        directResetUrl = linkRes.data.properties.action_link;
       }
+
+      if (linkRes.data?.properties?.email_otp) {
+        emailOtp = linkRes.data.properties.email_otp;
+      }
+    } catch (err) {
+      console.warn("[request-password-reset] Could not generate direct recovery link:", err);
     }
 
     if (error) {
       console.error("[auth] resetPasswordForEmail failed:", error.message);
     }
 
-    return NextResponse.json({ success: true, directResetUrl });
+    return NextResponse.json({ success: true, directResetUrl, emailOtp });
   } catch (err: unknown) {
     console.error("[auth] password reset request threw:", err);
     return uniformOk;
@@ -82,11 +90,16 @@ export async function POST(request: Request) {
 }
 
 /**
- * Behind Amplify/CloudFront the request origin is an internal localhost, so the
- * public host has to come from x-forwarded-host or the configured app URL —
+ * Behind Amplify/CloudFront/Vercel the request origin is an internal localhost, so the
+ * public host has to come from Origin, x-forwarded-host or the configured app URL —
  * otherwise reset links point at localhost.
  */
 function resolveOrigin(request: Request): string {
+  const headerOrigin = request.headers.get("origin");
+  if (headerOrigin && !headerOrigin.includes("localhost") && !headerOrigin.includes("127.0.0.1")) {
+    return headerOrigin;
+  }
+
   const forwardedHost = request.headers.get("x-forwarded-host");
   if (forwardedHost) {
     const proto = request.headers.get("x-forwarded-proto") ?? "https";

@@ -35,12 +35,71 @@ export function ResetPasswordClient() {
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
   const [directResetUrl, setDirectResetUrl] = useState<string | null>(null);
+  const [pastedInput, setPastedInput] = useState("");
+  const [verifyingPasted, setVerifyingPasted] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
 
     async function detectRecoverySession() {
       const supabase = getBrowserSupabase();
+
+      // 1. Query parameter token_hash (direct recovery link)
+      const tokenHash = searchParams.get("token_hash");
+      const type = searchParams.get("type");
+      if (tokenHash && (type === "recovery" || !type)) {
+        try {
+          const { data, error } = await supabase.auth.verifyOtp({
+            token_hash: tokenHash,
+            type: "recovery",
+          });
+          if (cancelled) return;
+          if (error) {
+            toast.error(error.message || "That reset link is no longer valid. Please request a new one.");
+            setPhase("request");
+            return;
+          }
+          if (data.session) {
+            setPhase("update");
+            return;
+          }
+        } catch (err) {
+          console.error("verifyOtp error:", err);
+        }
+      }
+
+      // 2. Hash fragment access_token (from Supabase redirect or pasted address)
+      if (typeof window !== "undefined" && window.location.hash) {
+        const hash = window.location.hash.substring(1);
+        const hashParams = new URLSearchParams(hash);
+        const accessToken = hashParams.get("access_token");
+        const refreshToken = hashParams.get("refresh_token");
+        const errorCode = hashParams.get("error_code") || hashParams.get("error");
+        const errorDesc = hashParams.get("error_description");
+
+        if (errorCode || errorDesc) {
+          toast.error(errorDesc ? decodeURIComponent(errorDesc.replace(/\+/g, " ")) : "That reset link is no longer valid.");
+          setPhase("request");
+          return;
+        }
+
+        if (accessToken) {
+          try {
+            const { data, error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken || "",
+            });
+            if (cancelled) return;
+            if (!error && data.session) {
+              setPhase("update");
+              return;
+            }
+          } catch (err) {
+            console.error("setSession error:", err);
+          }
+        }
+      }
+
       const { data } = await supabase.auth.getSession();
       if (cancelled) return;
 
@@ -78,6 +137,81 @@ export function ResetPasswordClient() {
       toast.error(err instanceof Error ? err.message : "Could not send the reset link");
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function handlePastedTokenOrUrl(e: React.FormEvent) {
+    e.preventDefault();
+    const raw = pastedInput.trim();
+    if (!raw) return;
+
+    setVerifyingPasted(true);
+    const supabase = getBrowserSupabase();
+
+    try {
+      // Case A: Full URL or hash with access_token=
+      if (raw.includes("access_token=")) {
+        const hash = raw.includes("#") ? raw.split("#")[1] : raw.includes("?") ? raw.split("?")[1] : raw;
+        const params = new URLSearchParams(hash);
+        const accessToken = params.get("access_token");
+        const refreshToken = params.get("refresh_token");
+
+        if (accessToken) {
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken || "",
+          });
+          if (error) throw new Error(error.message);
+          if (data.session) {
+            setPhase("update");
+            toast.success("Token verified. Please enter your new password.");
+            return;
+          }
+        }
+      }
+
+      // Case B: token_hash parameter
+      if (raw.includes("token_hash=")) {
+        const params = new URLSearchParams(raw.includes("?") ? raw.split("?")[1] : raw);
+        const tokenHash = params.get("token_hash");
+        if (tokenHash) {
+          const { data, error } = await supabase.auth.verifyOtp({
+            token_hash: tokenHash,
+            type: "recovery",
+          });
+          if (error) throw new Error(error.message);
+          if (data.session) {
+            setPhase("update");
+            toast.success("Link verified. Please enter your new password.");
+            return;
+          }
+        }
+      }
+
+      // Case C: Numeric 6-8 digit code
+      if (/^\d{6,8}$/.test(raw)) {
+        if (!email.trim()) {
+          toast.error("Please enter your account email first.");
+          return;
+        }
+        const { data, error } = await supabase.auth.verifyOtp({
+          email: email.trim().toLowerCase(),
+          token: raw,
+          type: "recovery",
+        });
+        if (error) throw new Error(error.message);
+        if (data.session) {
+          setPhase("update");
+          toast.success("Code verified. Please enter your new password.");
+          return;
+        }
+      }
+
+      toast.error("Could not recognize that link or token. Please paste the full address from your browser.");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Verification failed. Please try again.");
+    } finally {
+      setVerifyingPasted(false);
     }
   }
 
@@ -157,12 +291,14 @@ export function ResetPasswordClient() {
 
                 {directResetUrl && (
                   <div className="mt-4 pt-3 border-t border-border">
-                    <p className="text-xs text-muted-foreground mb-2">Development instant reset link:</p>
+                    <p className="text-xs font-medium text-foreground mb-1.5">
+                      Ready to set your password?
+                    </p>
                     <a
                       href={directResetUrl}
-                      className="inline-flex items-center gap-1.5 rounded-xl gradient-brand px-4 py-2 text-xs font-bold text-primary-foreground shadow-sm hover:opacity-90"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl gradient-brand py-2.5 text-xs font-bold text-white shadow-sm hover:opacity-95"
                     >
-                      Reset Password Now
+                      Set New Password Directly &rarr;
                     </a>
                   </div>
                 )}
@@ -194,6 +330,33 @@ export function ResetPasswordClient() {
                 </button>
               </form>
             )}
+
+            {/* Helper for users whose email link was redirected to localhost */}
+            <div className="mt-6 rounded-2xl border border-dashed border-border p-4 bg-muted/20">
+              <p className="text-xs font-semibold text-foreground">
+                Already clicked the link in your email?
+              </p>
+              <p className="mt-1 text-[11px] text-muted-foreground leading-relaxed">
+                If the email button redirected you to a <code>localhost:3000</code> address, paste that address or code here to continue:
+              </p>
+              <form onSubmit={handlePastedTokenOrUrl} className="mt-3 space-y-2">
+                <input
+                  type="text"
+                  placeholder="Paste URL (e.g. localhost:3000/#access_token=...) or code"
+                  value={pastedInput}
+                  onChange={(e) => setPastedInput(e.target.value)}
+                  className="w-full rounded-xl border border-border bg-card py-2 px-3 text-xs font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
+                <button
+                  type="submit"
+                  disabled={verifyingPasted || !pastedInput.trim()}
+                  className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3.5 py-1.5 text-xs font-semibold text-foreground shadow-sm hover:bg-muted transition-colors disabled:opacity-50"
+                >
+                  {verifyingPasted ? <Loader2 className="size-3.5 animate-spin" /> : null}
+                  Verify Link / Token &rarr;
+                </button>
+              </form>
+            </div>
           </>
         ) : (
           <>

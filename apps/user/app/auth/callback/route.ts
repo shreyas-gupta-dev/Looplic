@@ -5,6 +5,8 @@ import { OAUTH_REDIRECT_COOKIE, sanitizeRedirect } from "@/src/lib/auth-redirect
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
+  const token_hash = requestUrl.searchParams.get("token_hash");
+  const type = requestUrl.searchParams.get("type");
   const next = requestUrl.searchParams.get("next");
   const cookieHeader = request.headers.get("cookie") ?? "";
 
@@ -30,6 +32,25 @@ export async function GET(request: Request) {
   const safeNext = sanitizeRedirect(
     next || (fallbackRedirect ? decodeURIComponent(fallbackRedirect) : null),
   );
+
+  // Exchange recovery or email OTP token_hash for a session
+  if (token_hash && type) {
+    const supabase = await getServerSupabase();
+    const { error } = await supabase.auth.verifyOtp({
+      token_hash,
+      type: type as any,
+    });
+
+    if (error) {
+      const errorResponse = NextResponse.redirect(
+        new URL(`/auth/reset-password?error=${encodeURIComponent(error.message)}`, origin),
+      );
+      return errorResponse;
+    }
+
+    const response = NextResponse.redirect(new URL(safeNext || "/auth/reset-password", origin));
+    return response;
+  }
 
   // Exchange the OAuth/PKCE code for a session. getServerSupabase writes the
   // session cookies via the cookie adapter, so the redirect response carries them.

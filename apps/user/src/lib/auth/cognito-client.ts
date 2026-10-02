@@ -135,7 +135,11 @@ export async function requestPasswordReset(email: string) {
     throw new Error(result?.error || "Could not send the reset link");
   }
 
-  return { sent: true, directResetUrl: result?.directResetUrl as string | undefined };
+  return {
+    sent: true,
+    directResetUrl: result?.directResetUrl as string | undefined,
+    emailOtp: result?.emailOtp as string | undefined,
+  };
 }
 
 /**

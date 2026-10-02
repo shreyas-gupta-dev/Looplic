@@ -36,6 +36,19 @@ function AuthRedirectHandler() {
   const router = useRouter();
 
   useEffect(() => {
+    // If the browser lands on any page with a recovery access_token in the hash
+    // (e.g. from a Supabase redirect or pasted URL), route directly to /auth/reset-password.
+    if (typeof window !== "undefined" && window.location.hash) {
+      const hash = window.location.hash.substring(1);
+      const hashParams = new URLSearchParams(hash);
+      const type = hashParams.get("type");
+      const accessToken = hashParams.get("access_token");
+      if (accessToken && type === "recovery" && !window.location.pathname.startsWith("/auth/reset-password")) {
+        router.replace(`/auth/reset-password${window.location.hash}`);
+        return;
+      }
+    }
+
     const match = document.cookie.match(new RegExp("(^| )looplic-auth-redirect=([^;]+)"));
     if (match) {
       const redirectUrl = decodeURIComponent(match[2]);
