@@ -140,7 +140,7 @@ export default async function TrackPage({ params, searchParams }: PageProps) {
               </span>
               <div>
                 <div className="text-[11px] font-extrabold uppercase tracking-wider text-red-600">
-                  🔴 Live CCTV Stream Active
+                  Live Workshop Stream Active
                 </div>
                 <div className="text-xs sm:text-sm font-bold text-gray-900">
                   Your phone is currently on the workbench being repaired.

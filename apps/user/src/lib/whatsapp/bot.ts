@@ -70,7 +70,7 @@ async function startHandoff(waId: string, profileName?: string | null): Promise<
   await setHandoff(waId, HANDOFF_MINUTES);
   await sendText(
     waId,
-    `Sure — I've passed this to our team 💬 Someone will reply here shortly. You can also call us on ${supportPhoneDisplay}.\n\nType *menu* anytime to go back to booking.`,
+    `Sure — I've passed this to our team. Someone will reply here shortly. You can also call us on ${supportPhoneDisplay}.\n\nType *menu* anytime to go back to booking.`,
     "handoff",
   );
   await notifyTeamHandoff(waId, profileName ?? null).catch((err) =>
@@ -114,7 +114,7 @@ export async function handleIncomingMessage(msg: IncomingMessage): Promise<void>
   if (conversation?.optedOut) {
     if (OPT_IN_RE.test(trimmed)) {
       await setOptOut(waId, false);
-      await showMainMenu(waId, "Welcome back! You're subscribed again ✅");
+      await showMainMenu(waId, "Welcome back! You're subscribed again.");
       return;
     }
     // Stay silent apart from telling them how to come back.
@@ -145,7 +145,7 @@ export async function handleIncomingMessage(msg: IncomingMessage): Promise<void>
   }
   if (CANCEL_RE.test(trimmed)) {
     await clearFlow(waId);
-    await sendText(waId, "Cancelled. Type *menu* whenever you'd like to start again 🙂", "cancel");
+    await sendText(waId, "Cancelled. Type *menu* whenever you'd like to start again.", "cancel");
     return;
   }
   if (TRACK_RE.test(trimmed)) {
@@ -189,7 +189,7 @@ export async function handleIncomingMessage(msg: IncomingMessage): Promise<void>
   if (!trimmed) {
     await sendButtons(
       waId,
-      "Thanks — got that! 📎 Tell me what you'd like to do, or tap below.",
+      "Thanks — got that! Tell me what you'd like to do, or tap below.",
       [
         { id: NAV.menu, title: "Book a service" },
         { id: NAV.agent, title: "Talk to our team" },

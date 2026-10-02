@@ -89,5 +89,5 @@ export const trustStats = [
   { value: "47,200+", label: "Devices Serviced" },
   { value: "23,800+", label: "Happy Customers" },
   { value: "Bangalore", label: "City Served" },
-  { value: "4.7★", label: "Google Rating" },
+  { value: "4.7 / 5", label: "Google Rating" },
 ];

@@ -20,7 +20,7 @@ const corePillars = [
   },
   {
     title: "Guaranteed Fair Valuations",
-    description: "Our proprietary AI pricing engine calculates transparent, fair market prices for used devices in 10 seconds, backed by instant doorstep UPI payouts.",
+    description: "Our automated pricing engine calculates transparent, fair market prices for used devices based on real-time market data, backed by instant doorstep UPI payouts.",
     icon: Zap,
   },
   {

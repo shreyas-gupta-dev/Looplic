@@ -3,6 +3,7 @@
 import {
   CheckCircle2,
   Loader2,
+  Lock,
   Maximize2,
   Minimize2,
   PictureInPicture2,
@@ -188,7 +189,8 @@ export function RepairLiveStream({
           </div>
           <div>
             <div className="inline-flex items-center gap-1.5 rounded-full bg-brand-100/80 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-brand-800">
-              🔴 Live Workbench Broadcast Available
+              <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+              Live Workbench Broadcast Available
             </div>
             <h3 className="mt-2 text-base font-bold text-gray-900 sm:text-lg">
               Watch Your Mobile Being Repaired Live
@@ -211,8 +213,9 @@ export function RepairLiveStream({
             {consenting ? <Loader2 className="size-4 animate-spin" /> : <Shield className="size-4" />}
             Agree &amp; Start Live Stream
           </button>
-          <span className="text-[11px] text-gray-400">
-            🔒 Private 1-to-1 stream · Workbench view only
+          <span className="inline-flex items-center gap-1 text-[11px] text-gray-500">
+            <Lock className="size-3 text-gray-400" />
+            Private 1-to-1 stream · Workbench view only
           </span>
         </div>
       </div>

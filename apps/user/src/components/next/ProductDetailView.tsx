@@ -270,7 +270,10 @@ export function ProductDetailView({ slug, initialProduct, initialImages }: Produ
             </div>
 
             {product.stock <= 5 && product.stock > 0 && (
-              <p className="mt-3 text-sm font-medium text-orange-600">⚡ Only {product.stock} left in stock!</p>
+              <p className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-amber-700">
+                <span className="size-2 rounded-full bg-amber-500 animate-pulse" />
+                Only {product.stock} left in stock
+              </p>
             )}
           </div>
         </div>

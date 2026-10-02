@@ -109,7 +109,7 @@ export function formatDate(iso: string | null | undefined): string {
 // The order review shown before the customer taps Confirm — the WhatsApp
 // equivalent of the website's schedule step summary.
 export function buildConfirmSummary(context: FlowContext): string {
-  const lines: string[] = ["*Please check your booking* 📋", ""];
+  const lines: string[] = ["*Please check your booking*", ""];
 
   const service = SERVICE_LABELS[context.dbServiceType || ""] || "Service";
   lines.push(`*Service:* ${service}`);

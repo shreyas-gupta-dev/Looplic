@@ -193,23 +193,23 @@ function getNextDays(count: number): { value: string; label: string }[] {
 
 function buildWhatsAppMessage(state: BookingState): string {
   const lines: string[] = [
-    `Hi Looplic, I want to book a service.`,
+    `Hi Looplic, I would like to book a service.`,
     ``,
-    `🔧 Service: ${state.serviceLabel}`,
+    `Service: ${state.serviceLabel}`,
   ];
 
-  if (state.deviceLabel) lines.push(`📱 Device/Type: ${state.deviceLabel}`);
-  if (state.issueLabel) lines.push(`⚙️ Issue: ${state.issueLabel}`);
-  if (state.name) lines.push(`👤 Name: ${state.name}`);
-  if (state.phone) lines.push(`📞 Phone: ${state.phone}`);
-  if (state.address) lines.push(`📍 Address: ${state.address}`);
+  if (state.deviceLabel) lines.push(`Device: ${state.deviceLabel}`);
+  if (state.issueLabel) lines.push(`Issue: ${state.issueLabel}`);
+  if (state.name) lines.push(`Name: ${state.name}`);
+  if (state.phone) lines.push(`Phone: ${state.phone}`);
+  if (state.address) lines.push(`Address: ${state.address}`);
   if (state.date) {
     const dateLabel = getNextDays(7).find((d) => d.value === state.date)?.label || state.date;
-    lines.push(`📅 Date: ${dateLabel}`);
+    lines.push(`Date: ${dateLabel}`);
   }
-  if (state.timeSlot) lines.push(`🕐 Time: ${state.timeSlot}`);
+  if (state.timeSlot) lines.push(`Time: ${state.timeSlot}`);
 
-  lines.push(``, `Please confirm my booking. Thank you!`);
+  lines.push(``, `Please confirm my booking. Thank you.`);
   return lines.join("\n");
 }
 

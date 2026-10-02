@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, Menu, Phone, Search, User, X } from "lucide-react";
+import { ChevronDown, Gamepad2, Laptop, Menu, Monitor, Phone, Search, Smartphone, Tablet, User, Watch, X } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Suspense, useEffect, useState } from "react";
@@ -24,12 +24,12 @@ function AuthHeaderFallback({ mobile = false }: { mobile?: boolean }) {
 }
 
 const sellCategories = [
-  { href: "/sell", label: "Sell Mobile Phone", icon: "📱" },
-  { href: "/sell/laptop", label: "Sell Laptop", icon: "💻" },
-  { href: "/sell/tablet", label: "Sell Tablet", icon: "📟" },
-  { href: "/sell/smartwatch", label: "Sell Smartwatch", icon: "⌚" },
-  { href: "/sell/gaming-console", label: "Sell Gaming Console", icon: "🎮" },
-  { href: "/sell/desktop", label: "Sell Desktop/iMac", icon: "🖥️" },
+  { href: "/sell", label: "Sell Mobile Phone", icon: Smartphone },
+  { href: "/sell/laptop", label: "Sell Laptop", icon: Laptop },
+  { href: "/sell/tablet", label: "Sell Tablet", icon: Tablet },
+  { href: "/sell/smartwatch", label: "Sell Smartwatch", icon: Watch },
+  { href: "/sell/gaming-console", label: "Sell Gaming Console", icon: Gamepad2 },
+  { href: "/sell/desktop", label: "Sell Desktop/iMac", icon: Monitor },
 ];
 
 const sellBrands = [
@@ -42,9 +42,9 @@ const sellBrands = [
 ];
 
 const buyCategories = [
-  { href: "/buy?category=phone", label: "Refurbished Phones", icon: "📱" },
-  { href: "/buy?category=laptop", label: "Refurbished Laptops", icon: "💻" },
-  { href: "/buy?category=tablet", label: "Refurbished Tablets", icon: "📟" },
+  { href: "/buy?category=phone", label: "Refurbished Phones", icon: Smartphone },
+  { href: "/buy?category=laptop", label: "Refurbished Laptops", icon: Laptop },
+  { href: "/buy?category=tablet", label: "Refurbished Tablets", icon: Tablet },
 ];
 
 const moreLinks = [
@@ -80,7 +80,7 @@ export function HomepageNavbar() {
       <div className="hidden border-b border-gray-100 bg-gray-50 lg:block">
         <div className="container mx-auto flex h-8 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 text-xs text-gray-500">
           <div className="flex items-center gap-4">
-            <span>🇮🇳 India&apos;s #1 Device Recommerce Platform</span>
+            <span>Doorstep Device Repair &amp; Buyback in Bengaluru</span>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/live-repair" className="inline-flex items-center gap-1.5 font-bold text-red-600 hover:text-red-700 transition-colors">
@@ -133,16 +133,19 @@ export function HomepageNavbar() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="mb-2 px-2 text-xs font-bold uppercase tracking-wider text-gray-400">By Category</p>
-                    {sellCategories.map((item) => (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        className="flex items-center gap-2.5 rounded-lg px-2 py-2 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-primary"
-                      >
-                        <span className="text-base">{item.icon}</span>
-                        {item.label}
-                      </Link>
-                    ))}
+                    {sellCategories.map((item) => {
+                      const ItemIcon = item.icon;
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className="flex items-center gap-2.5 rounded-lg px-2 py-2 text-sm text-gray-700 transition-colors hover:bg-brand-50 hover:text-primary"
+                        >
+                          <ItemIcon className="size-4 shrink-0 text-gray-400" />
+                          {item.label}
+                        </Link>
+                      );
+                    })}
                   </div>
                   <div>
                     <p className="mb-2 px-2 text-xs font-bold uppercase tracking-wider text-gray-400">By Brand</p>
@@ -173,16 +176,19 @@ export function HomepageNavbar() {
             </button>
             {activeDropdown === "buy" && (
               <div className="absolute left-0 top-full w-64 rounded-xl border border-gray-200 bg-white p-3 shadow-xl">
-                {buyCategories.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-gray-700 transition-colors hover:bg-blue-50 hover:text-blue-600"
-                  >
-                    <span className="text-base">{item.icon}</span>
-                    {item.label}
-                  </Link>
-                ))}
+                {buyCategories.map((item) => {
+                  const ItemIcon = item.icon;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-gray-700 transition-colors hover:bg-blue-50 hover:text-blue-600"
+                    >
+                      <ItemIcon className="size-4 shrink-0 text-gray-400" />
+                      {item.label}
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -257,32 +263,40 @@ export function HomepageNavbar() {
             <p className="px-3 py-2 text-xs font-bold uppercase tracking-wider text-gray-400">
               Sell Device
             </p>
-            {sellCategories.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-brand-50 hover:text-primary"
-              >
-                <span>{item.icon}</span> {item.label}
-              </Link>
-            ))}
+            {sellCategories.map((item) => {
+              const ItemIcon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-brand-50 hover:text-primary"
+                >
+                  <ItemIcon className="size-4 shrink-0 text-gray-400" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
 
             <div className="my-3 border-t border-gray-100" />
 
             <p className="px-3 py-2 text-xs font-bold uppercase tracking-wider text-gray-400">
               Buy Refurbished
             </p>
-            {buyCategories.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-blue-50"
-              >
-                <span>{item.icon}</span> {item.label}
-              </Link>
-            ))}
+            {buyCategories.map((item) => {
+              const ItemIcon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-blue-50"
+                >
+                  <ItemIcon className="size-4 shrink-0 text-gray-400" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
 
             <div className="my-3 border-t border-gray-100" />
 

@@ -247,64 +247,60 @@ export function NewHomepageView({
       </section>
 
 
-      {/* ─── Live Repair CCTV Workshop Transparency Showcase ────── */}
+      {/* ─── Live Repair Workshop Transparency Section ───────────── */}
       <section className="px-4 sm:px-6 lg:px-8 py-6">
         <div className="container mx-auto max-w-7xl">
-          <div className="relative overflow-hidden rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-950 via-slate-900 to-red-950/30 p-6 sm:p-10 shadow-2xl">
-            <div className="pointer-events-none absolute -right-20 -top-20 size-80 rounded-full bg-red-600/10 blur-3xl" />
-
+          <div className="relative overflow-hidden rounded-3xl border border-slate-800 bg-[#0B1528] p-6 sm:p-10 shadow-xl text-white">
             <div className="grid gap-8 lg:grid-cols-12 lg:items-center">
               <div className="lg:col-span-7">
-                <div className="inline-flex items-center gap-2 rounded-full border border-red-500/30 bg-red-600/20 px-3.5 py-1 text-xs font-bold text-red-400">
-                  <span className="relative flex size-2">
-                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-red-400 opacity-80" />
-                    <span className="relative inline-flex size-2 rounded-full bg-red-600" />
-                  </span>
-                  LIVE WORKBENCH CCTV CAM
+                <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-500/10 px-3.5 py-1 text-xs font-semibold text-blue-300">
+                  <span className="size-2 rounded-full bg-emerald-400 inline-block" />
+                  Live Workshop Camera
                 </div>
 
-                <h2 className="mt-4 text-2xl font-black tracking-tight text-white sm:text-3xl lg:text-4xl">
-                  100% Transparent Phone Repair.<br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-amber-300">
-                    Watch Us Fix It Live on Camera.
+                <h2 className="mt-4 text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl leading-tight">
+                  Transparent device repairs.<br />
+                  <span className="text-blue-400">
+                    Watch your service live on camera.
                   </span>
                 </h2>
 
-                <p className="mt-3 text-sm leading-relaxed text-slate-300 sm:text-base">
-                  Never worry about part-swapping or hidden charges. Looplic is India&apos;s first mobile repair service where you can watch our certified technicians repair your phone live on workbench CCTV.
+                <p className="mt-3 text-sm leading-relaxed text-slate-300 sm:text-base max-w-xl">
+                  Watch our technicians work on your device in real time through our secure workshop camera feed. From part inspection to final assembly, every step is completely visible.
                 </p>
 
-                <div className="mt-6 grid grid-cols-2 gap-3 text-xs sm:text-sm font-semibold text-slate-200">
+                <div className="mt-6 grid grid-cols-2 gap-3 text-xs sm:text-sm font-medium text-slate-200">
                   <div className="flex items-center gap-2">
-                    <ShieldCheck className="size-4 shrink-0 text-red-500" />
-                    Zero Part-Swapping Guarantee
+                    <CheckCircle2 className="size-4 shrink-0 text-emerald-400" />
+                    Genuine replacement parts
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="size-4 shrink-0 text-emerald-400" />
-                    100% Tested OEM Parts
+                    ESD-safe clean workbench
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="size-4 shrink-0 text-emerald-400" />
-                    ESD-Safe Clean Workbench
+                    Verified repair technicians
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="size-4 shrink-0 text-emerald-400" />
-                    Level-4 Master Engineers
+                    6-month repair warranty
                   </div>
                 </div>
 
                 <div className="mt-8 flex flex-wrap items-center gap-3">
                   <Link
                     href="/live-repair"
-                    className="inline-flex items-center gap-2 rounded-full gradient-brand px-6 py-3 text-sm font-bold text-white shadow-lg shadow-red-600/25 transition-all hover:opacity-95"
+                    className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
                   >
                     <Play className="size-4 fill-white" />
-                    Watch Workshop Live &rarr;
+                    Watch Workshop Live
+                    <ArrowRight className="size-4" />
                   </Link>
 
                   <Link
                     href="/track"
-                    className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900/80 px-5 py-3 text-sm font-bold text-slate-200 transition-colors hover:bg-slate-800 hover:text-white"
+                    className="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800/80 px-5 py-3 text-sm font-semibold text-slate-200 transition-colors hover:bg-slate-700 hover:text-white"
                   >
                     <Search className="size-4" />
                     Track My Repair
@@ -323,7 +319,7 @@ export function NewHomepageView({
                     autoPlay
                     muted
                     loop
-                    className="size-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                    className="size-full object-cover opacity-85 group-hover:opacity-100 transition-opacity"
                     poster="/looplic-logo.webp"
                   >
                     <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4" />
@@ -331,24 +327,24 @@ export function NewHomepageView({
 
                   {/* Overlay HUD */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/60 p-4 flex flex-col justify-between">
-                    <div className="flex items-center justify-between text-[11px] font-mono font-bold text-white">
-                      <span className="flex items-center gap-1.5 rounded bg-red-600 px-2 py-0.5 uppercase tracking-wide">
-                        <span className="size-1.5 rounded-full bg-white animate-pulse" />
-                        REC ● LIVE
+                    <div className="flex items-center justify-between text-[11px] font-medium text-white">
+                      <span className="flex items-center gap-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 px-2.5 py-0.5 text-emerald-300 text-xs font-semibold">
+                        <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        Live Stream
                       </span>
-                      <span className="rounded bg-black/60 px-2 py-0.5 text-slate-300 backdrop-blur-sm">
-                        BENCH 01 · 1080P
+                      <span className="rounded bg-black/60 px-2 py-0.5 text-slate-300 text-xs">
+                        Workbench 01
                       </span>
                     </div>
 
                     <div>
-                      <div className="flex items-center justify-between text-xs font-bold text-white">
+                      <div className="flex items-center justify-between text-xs font-semibold text-white">
                         <span className="flex items-center gap-1.5">
-                          <Camera className="size-3.5 text-red-400" />
+                          <Camera className="size-3.5 text-blue-400" />
                           Bengaluru Flagship Workshop
                         </span>
-                        <span className="text-red-400 group-hover:translate-x-1 transition-transform flex items-center gap-1">
-                          Click to Watch &rarr;
+                        <span className="text-blue-400 group-hover:translate-x-1 transition-transform flex items-center gap-1">
+                          Click to Watch <ArrowRight className="size-3.5" />
                         </span>
                       </div>
                     </div>

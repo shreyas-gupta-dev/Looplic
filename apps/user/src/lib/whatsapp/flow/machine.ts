@@ -63,8 +63,8 @@ import type { FlowContext, FlowStep } from "./types";
 //   2. A list holds ten rows total. Every picker paginates (8 options + nav).
 // ─────────────────────────────────────────────────────────────────────────────
 
-const BACK_ROW = (step: FlowStep): ListRow => ({ id: optionId(step, NAV.back), title: "⬅️ Back" });
-const MENU_ROW: ListRow = { id: NAV.menu, title: "🏠 Main menu" };
+const BACK_ROW = (step: FlowStep): ListRow => ({ id: optionId(step, NAV.back), title: "Back" });
+const MENU_ROW: ListRow = { id: NAV.menu, title: "Main menu" };
 
 // ─── Entry points ────────────────────────────────────────────────────────────
 
@@ -86,14 +86,14 @@ export async function showMainMenu(waId: string, note?: string, page = 0): Promi
     await sendList(
       waId,
       {
-        body: withNote(note, "Here's everything else we do 👇"),
+        body: withNote(note, "Here is everything else we do:"),
         buttonLabel: "Choose a service",
         header: "More services",
         sections: [
           {
             rows: [
               ...SERVICE_MENU.slice(PRIMARY_SERVICE_COUNT).map(toRow),
-              { id: NAV.menu, title: "⬅️ Back to main menu" },
+              { id: NAV.menu, title: "Back to main menu" },
             ],
           },
         ],
@@ -106,7 +106,7 @@ export async function showMainMenu(waId: string, note?: string, page = 0): Promi
   const body = [
     note,
     note ? "" : null,
-    `Hi! 👋 Welcome to *${companyName}* — doorstep repairs, screen guards, CCTV and device buyback in Bengaluru.`,
+    `Welcome to *${companyName}* — doorstep repairs, screen guards, CCTV and device buyback in Bengaluru.`,
     "",
     "Tap *Choose a service* below and I'll take you through it step by step.",
   ]
@@ -130,11 +130,11 @@ export async function showMainMenu(waId: string, note?: string, page = 0): Promi
           rows: [
             {
               id: optionId("service", NAV.more),
-              title: "🧰 Other services",
+              title: "Other services",
               description: "Desktop, managed IT, WiFi",
             },
-            { id: optionId("service", "track"), title: "📦 My orders", description: "Track, reschedule or cancel" },
-            { id: NAV.agent, title: "💬 Talk to our team", description: "Hand over to a human" },
+            { id: optionId("service", "track"), title: "My orders", description: "Track, reschedule or cancel" },
+            { id: NAV.agent, title: "Talk to our team", description: "Hand over to a human" },
           ],
         },
       ],
@@ -301,7 +301,7 @@ export async function renderStep(
         SELL_CATEGORIES.map((category) => ({ id: category.id, title: category.title })),
         context,
         {
-          body: withNote(note, "What would you like to sell? 💰"),
+          body: withNote(note, "What would you like to sell?"),
           buttonLabel: "Choose category",
           header: "Sell your device",
         },
@@ -311,7 +311,7 @@ export async function renderStep(
     case "brand": {
       const brands = await listBrands((context.catalogType || "mobile") as CatalogServiceType);
       await sendPicker(waId, "brand", brands, context, {
-        body: withNote(note, "Which *brand* is your device? 📱\n\nYou can also just type the model name (e.g. _iPhone 13_)."),
+        body: withNote(note, "Which *brand* is your device?\n\nYou can also just type the model name (e.g. _iPhone 13_)."),
         buttonLabel: "Choose brand",
         header: "Select brand",
       });
@@ -325,7 +325,7 @@ export async function renderStep(
         return;
       }
       await sendPicker(waId, "series", series, context, {
-        body: withNote(note, `Which *${context.brandName}* series? 📱`),
+        body: withNote(note, `Which *${context.brandName}* series?`),
         buttonLabel: "Choose series",
         header: context.brandName || "Select series",
       });
@@ -351,7 +351,7 @@ export async function renderStep(
         context.dbServiceType === "laptop_repair" ? "laptop" : "mobile",
       );
       await sendPicker(waId, "repair_category", categories, context, {
-        body: withNote(note, `What kind of problem does your *${device}* have? 🔧`),
+        body: withNote(note, `What kind of problem does your *${device}* have?`),
         buttonLabel: "Choose problem",
         header: "Repair category",
       });
@@ -395,7 +395,7 @@ export async function renderStep(
         return;
       }
       await sendPicker(waId, "guard", guards, context, {
-        body: withNote(note, `Which screen guard for your *${device}*? 🛡`),
+        body: withNote(note, `Which screen guard for your *${device}*?`),
         buttonLabel: "Choose guard",
         header: "Screen guards",
       });
@@ -404,7 +404,7 @@ export async function renderStep(
 
     case "laptop_ram":
       await sendChoices(waId, "laptop_ram", RAM_OPTIONS, context, {
-        body: withNote(note, "How much *RAM* does the laptop have? 💻\n\nThis helps us send the right parts."),
+        body: withNote(note, "How much *RAM* does the laptop have?\n\nThis helps us send the right parts."),
         buttonLabel: "Choose RAM",
         header: "Laptop specs",
       });
@@ -433,7 +433,7 @@ export async function renderStep(
         cctvServiceOptions.map((option) => ({ id: option.value, title: option.label })),
         context,
         {
-          body: withNote(note, "What do you need for CCTV? 🎥"),
+          body: withNote(note, "What do you need for CCTV?"),
           buttonLabel: "Choose service",
           header: "CCTV",
         },
@@ -514,10 +514,10 @@ export async function renderStep(
       // ten-row list limit.
       const rows: ListRow[] = question.options.slice(0, 8).map((option) => ({
         id: optionId("sell_question", option.id),
-        title: selected.includes(option.id) ? `✅ ${option.label}` : option.label,
+        title: selected.includes(option.id) ? `[Selected] ${option.label}` : option.label,
       }));
       if (question.type === "multi") {
-        rows.push({ id: optionId("sell_question", NAV.skip), title: "➡️ Done / none" });
+        rows.push({ id: optionId("sell_question", NAV.skip), title: "Done / none" });
       }
       rows.push(BACK_ROW("sell_question"));
 
@@ -547,7 +547,7 @@ export async function renderStep(
           : [
               `Here's your offer for the *${device}*${context.sellVariantLabel ? ` (${context.sellVariantLabel})` : ""}:`,
               "",
-              `💰 *${inr(quote)}*`,
+              `*${inr(quote)}*`,
               "",
               "_Final amount is confirmed when our executive inspects the device. Pickup is free._",
             ].join("\n");
@@ -568,16 +568,16 @@ export async function renderStep(
     case "notes": {
       const prompt =
         context.kind === "repair"
-          ? "Anything else we should know about the problem? 📝\n\nType it below, or tap *Skip*."
+          ? "Anything else we should know about the problem?\n\nType it below, or tap *Skip*."
           : context.kind === "sell"
             ? "Anything we should know about the device? Type it below, or tap *Skip*."
-            : "Tell us briefly what you need 📝\n\nType it below, or tap *Skip*.";
+            : "Tell us briefly what you need:\n\nType it below, or tap *Skip*.";
       await sendButtons(
         waId,
         withNote(note, prompt),
         [
           { id: optionId("notes", NAV.skip), title: "Skip" },
-          { id: optionId("notes", NAV.back), title: "⬅️ Back" },
+          { id: optionId("notes", NAV.back), title: "Back" },
         ],
         "flow-notes",
       );
@@ -596,7 +596,7 @@ export async function renderStep(
             withNote(
               note,
               [
-                "Welcome back! 👋 Shall I use the details from your last booking?",
+                "Welcome back! Shall I use the details from your last booking?",
                 "",
                 `*${saved.name}* · ${saved.phone}`,
                 `${[saved.address, saved.city, saved.pincode].filter(Boolean).join(", ")}`,
@@ -611,7 +611,7 @@ export async function renderStep(
           return;
         }
       }
-      await sendText(waId, withNote(note, "What's your *name*? 🙂"), "flow-name");
+      await sendText(waId, withNote(note, "What's your *name*?"), "flow-name");
       return;
     }
 
@@ -678,9 +678,9 @@ export async function renderStep(
         waId,
         withNote(note, body),
         [
-          { id: optionId("manage_booking", "reschedule"), title: "📅 Reschedule" },
-          { id: optionId("manage_booking", "cancel"), title: "❌ Cancel order" },
-          { id: NAV.menu, title: "🏠 Main menu" },
+          { id: optionId("manage_booking", "reschedule"), title: "Reschedule" },
+          { id: optionId("manage_booking", "cancel"), title: "Cancel order" },
+          { id: NAV.menu, title: "Main menu" },
         ],
         "flow-manage",
       );
@@ -689,7 +689,7 @@ export async function renderStep(
 
     case "reschedule_date":
       await sendPicker(waId, "reschedule_date", dateOptions(), context, {
-        body: withNote(note, `Pick a new date for *${context.bookingCode}* 📅`),
+        body: withNote(note, `Pick a new date for *${context.bookingCode}*`),
         buttonLabel: "Choose a day",
         header: "Reschedule",
       });
@@ -697,7 +697,7 @@ export async function renderStep(
 
     case "reschedule_slot":
       await sendChoices(waId, "reschedule_slot", TIME_SLOTS, context, {
-        body: withNote(note, `And the time slot for ${formatDate(context.scheduledDate)}? ⏰`),
+        body: withNote(note, `And the time slot for ${formatDate(context.scheduledDate)}?`),
         buttonLabel: "Choose a slot",
         header: "Reschedule",
       });
@@ -721,7 +721,7 @@ export async function renderStep(
         withNote(note, "What's the best *phone number* to reach you on?"),
         [
           { id: optionId("phone", NAV.skip), title: "Use this number" },
-          { id: optionId("phone", NAV.back), title: "⬅️ Back" },
+          { id: optionId("phone", NAV.back), title: "Back" },
         ],
         "flow-phone",
       );
@@ -730,7 +730,7 @@ export async function renderStep(
     case "address":
       await sendText(
         waId,
-        withNote(note, "What's your *address*? 🏠\n\nHouse/flat, street and landmark — we come to you."),
+        withNote(note, "What's your *address*?\n\nHouse/flat, street and landmark — we come to you."),
         "flow-address",
       );
       return;
@@ -740,14 +740,14 @@ export async function renderStep(
       return;
 
     case "pincode":
-      await sendText(waId, withNote(note, "And your 6-digit *pincode*? 📮"), "flow-pincode");
+      await sendText(waId, withNote(note, "And your 6-digit *pincode*?"), "flow-pincode");
       return;
 
     case "date":
       await sendPicker(waId, "date", dateOptions(), context, {
         body: withNote(
           note,
-          context.kind === "sell" ? "When should we pick it up? 📅" : "When would you like our technician to visit? 📅",
+          context.kind === "sell" ? "When should we pick it up?" : "When would you like our technician to visit?",
         ),
         buttonLabel: "Choose a day",
         header: "Pick a date",
@@ -757,7 +757,7 @@ export async function renderStep(
 
     case "slot":
       await sendChoices(waId, "slot", TIME_SLOTS, context, {
-        body: withNote(note, `Great — ${formatDate(context.scheduledDate)}. Which *time slot* suits you? ⏰`),
+        body: withNote(note, `Great — ${formatDate(context.scheduledDate)}. Which *time slot* suits you?`),
         buttonLabel: "Choose a slot",
         header: "Pick a time",
       });
@@ -768,9 +768,9 @@ export async function renderStep(
         waId,
         withNote(note, buildConfirmSummary(context)),
         [
-          { id: optionId("confirm", "yes"), title: "✅ Confirm" },
-          { id: optionId("confirm", "edit"), title: "✏️ Change something" },
-          { id: NAV.cancel, title: "❌ Cancel" },
+          { id: optionId("confirm", "yes"), title: "Confirm" },
+          { id: optionId("confirm", "edit"), title: "Change something" },
+          { id: NAV.cancel, title: "Cancel" },
         ],
         "flow-confirm",
       );
@@ -1045,7 +1045,7 @@ async function applyOption(
         };
         // Details are complete — jump straight to scheduling (or back to the
         // review screen if the customer is editing).
-        return { step: context.editing ? "confirm" : "date", context: seeded, note: "Great, using your saved details ✅" };
+        return { step: context.editing ? "confirm" : "date", context: seeded, note: "Great, using your saved details." };
       }
       return { step: "name", context, note: "No problem — what's your *name*?" };
     }
@@ -1093,7 +1093,7 @@ async function applyOption(
       return {
         step: "manage_booking",
         context: seeded,
-        note: `Done ✅ Rescheduled to *${formatDate(seeded.scheduledDate)} · ${value}*.`,
+        note: `Done. Rescheduled to *${formatDate(seeded.scheduledDate)} · ${value}*.`,
       };
     }
 
@@ -1247,7 +1247,7 @@ async function applyText(
         modelName: match.modelName,
       };
       const transition = await applyModel(seeded);
-      return { ...transition, note: transition.note ?? `Found it — *${match.label}* ✅` };
+      return { ...transition, note: transition.note ?? `Found it — *${match.label}*.` };
     }
 
     case "date": {
@@ -1263,20 +1263,20 @@ async function applyText(
 
     default:
       // Any other step is tap-only: re-render it rather than guessing.
-      return { step, context, note: "Please pick one of the options below 👇" };
+      return { step, context, note: "Please pick one of the options below:" };
   }
 }
 
 // ─── The step the customer can jump back to from the confirm screen ──────────
 
 const EDITABLE_FIELDS: Array<{ id: string; title: string; step: FlowStep }> = [
-  { id: "date", title: "📅 Date", step: "date" },
-  { id: "slot", title: "⏰ Time slot", step: "slot" },
-  { id: "address", title: "🏠 Address", step: "address" },
-  { id: "pincode", title: "📮 Pincode", step: "pincode" },
-  { id: "name", title: "🙂 Name", step: "name" },
-  { id: "phone", title: "📞 Phone", step: "phone" },
-  { id: "notes", title: "📝 Notes", step: "notes" },
+  { id: "date", title: "Date", step: "date" },
+  { id: "slot", title: "Time slot", step: "slot" },
+  { id: "address", title: "Address", step: "address" },
+  { id: "pincode", title: "Pincode", step: "pincode" },
+  { id: "name", title: "Name", step: "name" },
+  { id: "phone", title: "Phone", step: "phone" },
+  { id: "notes", title: "Notes", step: "notes" },
 ];
 
 async function sendEditMenu(waId: string, context: FlowContext): Promise<void> {
@@ -1284,8 +1284,8 @@ async function sendEditMenu(waId: string, context: FlowContext): Promise<void> {
     id: optionId("confirm", `edit:${field.id}`),
     title: field.title,
   }));
-  rows.push({ id: optionId("confirm", "review"), title: "⬅️ Back to review" });
-  rows.push({ id: NAV.restart, title: "🔄 Start over" });
+  rows.push({ id: optionId("confirm", "review"), title: "Back to review" });
+  rows.push({ id: NAV.restart, title: "Start over" });
 
   await sendList(
     waId,
@@ -1425,7 +1425,7 @@ async function handleConfirm(waId: string, value: string, context: FlowContext):
   await sendText(
     waId,
     [
-      "*Booking confirmed!* ✅",
+      "*Booking confirmed!*",
       "",
       result.bookingCode ? `Your booking ID is *${result.bookingCode}*.` : "",
       `We'll call you on ${context.phone} to confirm the visit.`,

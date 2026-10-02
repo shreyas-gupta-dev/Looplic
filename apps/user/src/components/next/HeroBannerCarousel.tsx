@@ -429,7 +429,7 @@ const SLIDES: BannerSlide[] = [
     features: [
       { icon: Wrench, text: "All Brands & Models" },
       { icon: Shield, text: "6 Mo Warranty" },
-      { icon: Star, text: "4.8★ Top Rated" },
+      { icon: Star, text: "4.8 / 5 Rated" },
       { icon: Clock, text: "30-Min Service" },
     ],
     renderVisual: () => <RepairPhoneVisual />,

@@ -32,7 +32,7 @@ export type ServiceMenuEntry = {
 export const SERVICE_MENU: ServiceMenuEntry[] = [
   {
     id: "mobile_repair",
-    title: "📱 Mobile repair",
+    title: "Mobile repair",
     description: "Doorstep phone repair with exact prices",
     kind: "repair",
     dbServiceType: "mobile_repair",
@@ -40,7 +40,7 @@ export const SERVICE_MENU: ServiceMenuEntry[] = [
   },
   {
     id: "laptop_repair",
-    title: "💻 Laptop repair",
+    title: "Laptop repair",
     description: "Doorstep laptop repair and diagnostics",
     kind: "repair",
     dbServiceType: "laptop_repair",
@@ -48,7 +48,7 @@ export const SERVICE_MENU: ServiceMenuEntry[] = [
   },
   {
     id: "screen_guard",
-    title: "🛡 Screen guard",
+    title: "Screen guard",
     description: "Premium guards fitted at your door",
     kind: "guard",
     dbServiceType: "screen_guard",
@@ -56,42 +56,42 @@ export const SERVICE_MENU: ServiceMenuEntry[] = [
   },
   {
     id: "sell",
-    title: "💰 Sell a device",
+    title: "Sell a device",
     description: "Instant quote and free pickup",
     kind: "sell",
     dbServiceType: "buyback",
   },
   {
     id: "cctv",
-    title: "🎥 CCTV",
+    title: "CCTV",
     description: "Installation, repair, AMC and upgrades",
     kind: "cctv",
     dbServiceType: "cctv",
   },
   {
     id: "it_support",
-    title: "🛠 IT support",
+    title: "IT support",
     description: "On-site IT help for home and office",
     kind: "simple",
     dbServiceType: "it_support",
   },
   {
     id: "desktop_assembly",
-    title: "🖥 Desktop assembly",
+    title: "Desktop assembly",
     description: "Custom PC build and setup",
     kind: "simple",
     dbServiceType: "desktop_assembly",
   },
   {
     id: "managed_it_services",
-    title: "🏢 Managed IT",
+    title: "Managed IT",
     description: "Ongoing IT management for business",
     kind: "simple",
     dbServiceType: "managed_it_services",
   },
   {
     id: "wifi_network_installation",
-    title: "📶 WiFi / networking",
+    title: "WiFi / networking",
     description: "WiFi and network installation",
     kind: "simple",
     dbServiceType: "wifi_network_installation",
@@ -100,11 +100,11 @@ export const SERVICE_MENU: ServiceMenuEntry[] = [
 
 // Categories that can be sold back (the website's Sell flow covers all five).
 export const SELL_CATEGORIES = [
-  { id: "mobile", title: "📱 Mobile phone" },
-  { id: "laptop", title: "💻 Laptop" },
-  { id: "tablet", title: "📲 Tablet" },
-  { id: "smartwatch", title: "⌚ Smartwatch" },
-  { id: "audio", title: "🎧 Audio" },
+  { id: "mobile", title: "Mobile phone" },
+  { id: "laptop", title: "Laptop" },
+  { id: "tablet", title: "Tablet" },
+  { id: "smartwatch", title: "Smartwatch" },
+  { id: "audio", title: "Audio" },
 ] as const;
 
 export const SERVICE_LABELS: Record<string, string> = {

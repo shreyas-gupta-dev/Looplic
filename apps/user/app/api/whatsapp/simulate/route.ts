@@ -20,7 +20,7 @@ export const dynamic = "force-dynamic";
 // The response lists every message the bot would have sent, with the tappable
 // option ids, so you can chain the next call.
 //
-// ⚠️  It writes to whatever database DATABASE_URL points at — including real
+// NOTE: It writes to whatever database DATABASE_URL points at — including real
 // bookings if you drive it all the way to Confirm. Point it at a scratch
 // database, or use a throwaway waId and clean up after.
 //

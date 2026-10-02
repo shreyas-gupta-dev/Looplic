@@ -59,7 +59,7 @@ export async function notifyCustomerBookingConfirmation(payload: LeadPayload): P
     );
   } else {
     const caption = [
-      `*Looplic* — booking received ✅`,
+      `*Looplic* — booking received`,
       "",
       `Hi ${name}, thanks for choosing Looplic!`,
       code ? `Booking ID: ${code}` : "",
@@ -91,7 +91,7 @@ export async function notifyTeamHandoff(waId: string, profileName: string | null
   if (team.length === 0) return;
 
   const body = [
-    "🙋 Customer asked for a human on WhatsApp",
+    "Customer asked for a human on WhatsApp",
     profileName ? `Name: ${profileName}` : "",
     `Number: +${waId}`,
     "The bot is paused on this chat for 2 hours — reply to them directly.",
@@ -163,7 +163,7 @@ export async function notifyCustomerLiveStreamStarted(input: {
   if (!to) return;
 
   const lines = [
-    `*Looplic* — Live Workbench CCTV Stream 🔴`,
+    `*Looplic* — Live Workbench Camera Stream`,
     "",
     `Your mobile device repair has begun!`,
     input.deviceLabel ? `Device: *${input.deviceLabel}*` : "",
@@ -183,16 +183,16 @@ export async function notifyCustomerLiveStreamStarted(input: {
 // Keys are canonical booking statuses (see packages/db/booking-status.ts) plus the
 // legacy "assigned" spelling, which older records and the bot still emit.
 const CUSTOMER_STATUS_TEXT: Record<string, string> = {
-  confirmed: "Confirmed ✅",
-  assigned: "Technician assigned 🧑‍🔧",
-  pickup_requested: "Pickup requested 🧑‍🔧",
-  picked_up: "Device picked up 📦",
-  in_progress: "In progress 🔧",
-  ready: "Ready ✨",
-  out_for_delivery: "Out for delivery 🚚",
-  delivered: "Delivered 📬",
-  on_hold: "On hold ⏸️",
-  completed: "Completed ✅",
+  confirmed: "Confirmed",
+  assigned: "Technician assigned",
+  pickup_requested: "Pickup requested",
+  picked_up: "Device picked up",
+  in_progress: "In progress",
+  ready: "Ready",
+  out_for_delivery: "Out for delivery",
+  delivered: "Delivered",
+  on_hold: "On hold",
+  completed: "Completed",
   cancelled: "Cancelled",
 };
 
@@ -214,7 +214,7 @@ export async function notifyTeamNewLead(payload: LeadPayload): Promise<void> {
     .join(", ");
 
   const lines = [
-    `🔔 New Looplic ${payload.source === "booking" ? "booking" : "lead"}`,
+    `New Looplic ${payload.source === "booking" ? "booking" : "lead"}`,
     payload.bookingCode ? `ID: ${payload.bookingCode}` : "",
     `Name: ${name}`,
     `Phone: ${phone}`,

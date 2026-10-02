@@ -49,7 +49,7 @@ export async function detectIntent(text: string): Promise<Intent> {
     return {
       step: "cctv_service",
       context: { kind: "cctv", dbServiceType: "cctv" },
-      note: "Happy to help with CCTV 🎥",
+      note: "Happy to help with CCTV",
     };
   }
 
@@ -65,17 +65,17 @@ export async function detectIntent(text: string): Promise<Intent> {
       return {
         step: transition.step,
         context: transition.context,
-        note: transition.note ?? `Let's get you a price for the *${match.label}* 💰`,
+        note: transition.note ?? `Let's get you a price for the *${match.label}*`,
       };
     }
-    return { step: "sell_category", context, note: "Let's get you a quote 💰" };
+    return { step: "sell_category", context, note: "Let's get you a quote" };
   }
 
   if (GUARD_RE.test(value)) {
     const context: FlowContext = { kind: "guard", dbServiceType: "screen_guard", catalogType: "mobile" };
     const match = await findDevice(value, "mobile");
-    if (match) return { step: "guard", context: { ...context, ...match.context }, note: `For your *${match.label}* 🛡` };
-    return { step: "brand", context, note: "Let's find the right screen guard 🛡" };
+    if (match) return { step: "guard", context: { ...context, ...match.context }, note: `For your *${match.label}*` };
+    return { step: "brand", context, note: "Let's find the right screen guard" };
   }
 
   if (REPAIR_RE.test(value)) {
@@ -90,10 +90,10 @@ export async function detectIntent(text: string): Promise<Intent> {
       return {
         step: "repair_category",
         context: { ...context, ...match.context },
-        note: `Got it — *${match.label}* 🔧`,
+        note: `Got it — *${match.label}*`,
       };
     }
-    return { step: "brand", context, note: "Let's get that sorted 🔧" };
+    return { step: "brand", context, note: "Let's get that sorted" };
   }
 
   if (IT_RE.test(value)) {

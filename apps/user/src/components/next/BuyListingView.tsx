@@ -1,6 +1,6 @@
 "use client";
 
-import { Grid3X3, List, ChevronLeft, ChevronRight, ShoppingCart, Shield, SlidersHorizontal, X, BadgeCheck } from "lucide-react";
+import { Grid3X3, List, ChevronLeft, ChevronRight, ShoppingCart, Shield, SlidersHorizontal, X, BadgeCheck, Leaf, Recycle } from "lucide-react";
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -452,11 +452,13 @@ export function BuyListingView({ products = [] }: { products?: ProductListing[] 
                 When you buy certified refurbished through Looplic, you actively divert hazardous electronic waste from landfills, reduce carbon emissions by over 75%, and save up to ₹40,000 to ₹70,000 on flagship models like the Apple iPhone 15 Pro, Samsung Galaxy S24 Ultra, and OnePlus 12.
               </p>
               <div className="flex items-center gap-4 pt-2 text-xs font-semibold text-emerald-700">
-                <span className="rounded-lg bg-emerald-50 px-3 py-1.5 border border-emerald-200">
-                  🌱 78% Carbon Emission Reduction
+                <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-1.5 border border-emerald-200">
+                  <Leaf className="size-3.5 text-emerald-600 shrink-0" />
+                  78% Carbon Emission Reduction
                 </span>
-                <span className="rounded-lg bg-emerald-50 px-3 py-1.5 border border-emerald-200">
-                  ♻️ Zero Toxic Landfill Disposal
+                <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-1.5 border border-emerald-200">
+                  <Recycle className="size-3.5 text-emerald-600 shrink-0" />
+                  Zero Toxic Landfill Disposal
                 </span>
               </div>
             </div>
