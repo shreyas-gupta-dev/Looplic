@@ -127,10 +127,10 @@ export default function AboutUsPage() {
             <div className="rounded-xl border border-gray-100 bg-gray-50/70 p-4">
               <h3 className="font-bold text-gray-900 text-sm flex items-center gap-2">
                 <Zap className="size-4 text-primary" />
-                B. Instant AI-Powered Device Buyback
+                B. Instant Market-Rate Device Buyback
               </h3>
               <p className="mt-1.5 text-xs text-gray-600 leading-relaxed">
-                Selling your old gadget takes less than 60 seconds on Looplic. Our algorithmic engine calculates true residual values based on market demand and physical condition. When our technician verifies your device, you receive immediate cash or UPI payment on the spot.
+                Selling your old gadget takes less than 60 seconds on Looplic. Our transparent pricing calculates true residual values based on market demand and physical condition. When our technician verifies your device, you receive immediate cash or UPI payment on the spot.
               </p>
             </div>
             <div className="rounded-xl border border-gray-100 bg-gray-50/70 p-4">

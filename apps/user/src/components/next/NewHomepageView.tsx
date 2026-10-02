@@ -772,7 +772,7 @@ export function NewHomepageView({
                 <IndianRupee className="size-7 text-brand-600" />
               </div>
               <h3 className="font-bold text-gray-900">Best Prices</h3>
-              <p className="mt-2 text-sm text-gray-500">AI-powered pricing ensures you get the maximum value for your device</p>
+              <p className="mt-2 text-sm text-gray-500">Upfront market pricing ensures you get the maximum value for your device</p>
             </div>
             <div className="rounded-2xl border border-gray-200 bg-white p-6 text-center">
               <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-xl bg-blue-50">

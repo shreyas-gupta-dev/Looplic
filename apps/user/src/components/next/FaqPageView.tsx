@@ -12,7 +12,7 @@ const FAQ_CATEGORIES = [
     title: "Sell",
     items: [
       { q: "How does the sell process work?", a: "It's simple — search your device, answer a few condition questions, get an instant quote, and book a free doorstep pickup. Our executive picks up the device, verifies it, and pays you instantly via UPI or bank transfer." },
-      { q: "How is the price determined?", a: "The price is based on your device's model, storage variant, and condition. Factors like screen condition, battery health, functional issues, and accessories affect the final price. Our algorithm gives you the best market rate." },
+      { q: "How is the price determined?", a: "The price is based on your device's model, storage variant, and condition. Factors like screen condition, battery health, functional issues, and accessories affect the final price. Our pricing system gives you the best market rate." },
       { q: "What if the final offer is different from the online quote?", a: "In rare cases, if our executive finds undisclosed issues during the physical inspection, the price may be revised. You can always decline the revised offer — there's no obligation to sell." },
       { q: "How quickly will I get paid?", a: "Payment is instant! Our executive transfers the money via UPI or IMPS before leaving your doorstep. No waiting, no delays." },
       { q: "Can I sell a damaged or non-working device?", a: "Yes! We buy devices in any condition — broken screen, dead battery, water damage, or completely dead. The price adjusts based on the condition, but you'll still get cash." },
