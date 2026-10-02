@@ -66,8 +66,28 @@ export default async function SellHomePage() {
     }));
   }
 
+  // Support Desktop category
+  if (brandsByCategory["laptop"]) {
+    brandsByCategory["desktop"] = brandsByCategory["laptop"].map((brand) => ({
+      ...brand,
+      category: "desktop",
+      href: `/sell/desktop/${brand.slug}`,
+    }));
+  }
+
   const searchBrands: SellSearchBrand[] = [];
   const searchModels: SellSearchModel[] = [];
+
+  if (brandsByCategory["desktop"]) {
+    for (const brand of brandsByCategory["desktop"]) {
+      searchBrands.push({
+        id: `desktop-${brand.id}`,
+        name: `${brand.name} Desktop`,
+        category: "desktop",
+        href: brand.href,
+      });
+    }
+  }
 
   for (const [i, serviceType] of serviceTypes.entries()) {
     const index = indexes[i];

@@ -11,6 +11,7 @@ const routes = [
   { path: "/service/mobile-repair/brands/apple", name: "Apple Series" },
   { path: "/service/mobile-repair/brands/apple/apple-iphone-16-series", name: "iPhone 16 Models" },
   { path: "/sell", name: "Sell Home" },
+  { path: "/sell/desktop", name: "Sell Desktop Brands" },
   { path: "/sell/phone", name: "Sell Phone Brands" },
   { path: "/sell/phone/apple", name: "Sell Apple Series" },
   { path: "/sell/phone/apple/apple-iphone-16-series", name: "Sell iPhone 16 Models" },

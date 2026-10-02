@@ -35,7 +35,7 @@ export const sellCategories = [
   { id: "smartwatch", label: "Sell Smartwatch", href: "/sell/smartwatch" },
   { id: "gaming", label: "Sell Console", href: "/sell" },
   { id: "earphones", label: "Sell Earphones", href: "/sell/audio" },
-  { id: "desktop", label: "Sell Desktop", href: "/sell/laptop" },
+  { id: "desktop", label: "Sell Desktop", href: "/sell/desktop" },
 ];
 
 // Buy Refurbished Devices

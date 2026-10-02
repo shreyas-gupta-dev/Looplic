@@ -28,6 +28,11 @@ export const SELL_CATEGORIES = {
     label: "Audio Device",
     noun: "earbuds or headphones",
   },
+  desktop: {
+    serviceType: "laptop" as BuybackServiceType,
+    label: "Desktop",
+    noun: "desktop or PC",
+  },
 } as const;
 
 export type SellCategory = keyof typeof SELL_CATEGORIES;

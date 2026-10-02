@@ -1,6 +1,7 @@
 "use client";
 
-import { ArrowRight, Banknote, IndianRupee, Laptop, Search, ShieldCheck, Smartphone, Tablet, Truck, Watch, Headphones } from "lucide-react";
+import { ArrowRight, Banknote, IndianRupee, Laptop, Monitor, Search, ShieldCheck, Smartphone, Tablet, Truck, Watch, Headphones } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -9,7 +10,7 @@ import { BrandLogo } from "@/src/components/next/BrandLogo";
 import { CatalogNavbar } from "@/src/components/next/CatalogNavbar";
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 
-export type SellSearchCategory = "phone" | "laptop" | "tablet" | "smartwatch" | "audio";
+export type SellSearchCategory = "phone" | "laptop" | "desktop" | "tablet" | "smartwatch" | "audio";
 
 export type SellSearchBrand = {
   id: string;
@@ -58,9 +59,19 @@ function scoreMatch(query: string, value: string) {
 const categoryTabs = [
   { id: "phone" as const, label: "Phone", icon: Smartphone },
   { id: "laptop" as const, label: "Laptop", icon: Laptop },
+  { id: "desktop" as const, label: "Desktop", icon: Monitor },
   { id: "tablet" as const, label: "Tablet", icon: Tablet },
   { id: "smartwatch" as const, label: "Smartwatch", icon: Watch },
   { id: "audio" as const, label: "Audio", icon: Headphones },
+];
+
+const sellCategoryCards = [
+  { id: "phone" as const, label: "Sell Phone", src: "/images/sell/mobile.webp" },
+  { id: "laptop" as const, label: "Sell Laptop", src: "/images/sell/laptop.webp" },
+  { id: "desktop" as const, label: "Sell Desktop", src: "/images/sell/desktop.webp" },
+  { id: "tablet" as const, label: "Sell Tablet", src: "/images/sell/tablet.webp" },
+  { id: "smartwatch" as const, label: "Sell Smartwatch", src: "/images/sell/smartwatch.webp" },
+  { id: "audio" as const, label: "Sell Earphones", src: "/images/sell/earphones.webp" },
 ];
 
 /* ---------- How It Works ---------- */
@@ -231,6 +242,57 @@ export function SellHomepageView({
 
       {/* Category Tabs + Brand Grid */}
       <section className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        {/* Device Category Cards */}
+        <div className="mb-10">
+          <div className="mb-4">
+            <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">
+              Choose Device Category
+            </h2>
+            <p className="mt-1 text-xs text-gray-500 sm:text-sm">
+              Select your device type to browse supported brands and models
+            </p>
+          </div>
+          <div className="grid grid-cols-3 gap-3 sm:grid-cols-6 sm:gap-4">
+            {sellCategoryCards.map((card) => {
+              const isSelected = activeCategory === card.id;
+              return (
+                <button
+                  key={card.id}
+                  type="button"
+                  onClick={() => {
+                    setActiveCategory(card.id);
+                    setBrandSearch("");
+                  }}
+                  className="group flex flex-col items-center gap-2.5 text-center focus:outline-none"
+                >
+                  <div
+                    className={`relative aspect-square w-full overflow-hidden rounded-2xl border bg-white p-3 shadow-sm transition-all duration-200 group-hover:-translate-y-1 group-hover:shadow-md ${
+                      isSelected
+                        ? "border-blue-600 ring-2 ring-blue-500/20 shadow-md"
+                        : "border-gray-200 hover:border-gray-300"
+                    }`}
+                  >
+                    <Image
+                      src={card.src}
+                      alt={card.label}
+                      fill
+                      className="object-contain p-2 transition-transform duration-200 group-hover:scale-105"
+                      sizes="(max-width: 640px) 33vw, 16vw"
+                    />
+                  </div>
+                  <span
+                    className={`text-center text-xs font-semibold sm:text-sm transition-colors ${
+                      isSelected ? "text-blue-600 font-bold" : "text-gray-800 group-hover:text-blue-600"
+                    }`}
+                  >
+                    {card.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <h2 className="mb-6 text-xl font-bold text-gray-900 sm:text-2xl">
           Select Your Brand
         </h2>
