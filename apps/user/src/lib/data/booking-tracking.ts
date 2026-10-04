@@ -249,3 +249,25 @@ export async function getTrackedBookingForUser(bookingId: string, userId: string
     throw error;
   }
 }
+
+/**
+ * Public summary lookup by booking code alone.
+ *
+ * Used for the post-booking confirmation ("Order Placed") screen.
+ * All sensitive PII (customer name, phone) is masked by toTrackedBooking().
+ */
+export async function getBookingSummaryByCode(code: string): Promise<TrackedBooking | null> {
+  const normalizedCode = code.trim().toUpperCase();
+  if (!normalizedCode) return null;
+
+  try {
+    const row = await selectBooking(eq(bookings.bookingCode, normalizedCode));
+    if (!row) return null;
+
+    return await toTrackedBooking(row);
+  } catch (error) {
+    if (isMissingTable(error)) return null;
+    throw error;
+  }
+}
+

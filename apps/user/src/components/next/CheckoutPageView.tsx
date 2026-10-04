@@ -202,22 +202,25 @@ export function CheckoutPageView() {
       <div className="min-h-screen bg-gray-50">
         <HomepageNavbar />
         <div className="container mx-auto max-w-lg px-4 py-16 text-center">
-          <div className="rounded-2xl border border-gray-200 bg-white p-8">
-            <CheckCircle className="mx-auto mb-4 size-16 text-brandteal-500" />
-            <h1 className="text-2xl font-bold text-gray-900">Order Placed Successfully!</h1>
-            <p className="mt-2 text-gray-500">Your order has been confirmed and will be shipped within 2-4 business days.</p>
-            <div className="mt-4 space-y-1">
+          <div className="rounded-3xl border border-gray-200 bg-white p-8 shadow-[0_20px_60px_-15px_rgba(5,150,105,0.12)]">
+            <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-brand-50 text-brand-600 ring-4 ring-brand-100">
+              <CheckCircle className="size-8" />
+            </div>
+            <h1 className="text-2xl font-black text-gray-900">Order Placed Successfully!</h1>
+            <p className="mt-2 text-sm text-gray-600">Your order has been confirmed and will be dispatched within 2–4 business days.</p>
+            <div className="mt-5 flex flex-wrap justify-center gap-2">
               {orderSuccess.map((code) => (
-                <p key={code} className="text-sm font-medium text-gray-700">
-                  Order ID: <span className="font-bold text-primary">{code}</span>
-                </p>
+                <div key={code} className="inline-flex items-center gap-2 rounded-xl bg-gray-50 border border-gray-200 px-4 py-2 text-xs font-mono font-bold text-gray-800">
+                  <span className="text-gray-500">Order ID:</span>
+                  <span className="text-brand-700">{code}</span>
+                </div>
               ))}
             </div>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-              <Link href="/account" className="rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-white">
+              <Link href="/account" className="rounded-2xl gradient-brand px-6 py-3 text-sm font-bold text-white shadow-sm">
                 View My Orders
               </Link>
-              <Link href="/buy" className="rounded-lg border border-gray-200 px-5 py-2.5 text-sm font-medium text-gray-700">
+              <Link href="/buy" className="rounded-2xl border border-gray-200 px-6 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50">
                 Continue Shopping
               </Link>
             </div>

@@ -73,6 +73,7 @@ export function BookingClientPage({
   const [pincode, setPincode] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [booked, setBooked] = useState(false);
+  const [bookedCode, setBookedCode] = useState<string | null>(null);
 
   const dataClient = createClient();
 
@@ -193,9 +194,23 @@ export function BookingClientPage({
       value: Number(selectedPrice || 0),
       currency: "INR",
     });
+    setBookedCode(bookingCode);
     setBooked(true);
     setSubmitting(false);
-    router.push(buildThankYouHref({ type: "booking", source: "model_booking_form", booking_code: bookingCode, service_type: isRepair ? `${repairServiceType}_repair` : "screen_guard" }));
+    router.push(
+      buildThankYouHref({
+        type: "booking",
+        source: "model_booking_form",
+        booking_code: bookingCode,
+        service_type: isRepair ? `${repairServiceType}_repair` : "screen_guard",
+        service_label: selectedItemLabel,
+        device: `${brand.name} ${model.name}`,
+        phone,
+        name,
+        price: selectedPrice || undefined,
+        address: [address, city, pincode].filter(Boolean).join(", "),
+      }),
+    );
   }
 
   if (booked) {
@@ -212,9 +227,19 @@ export function BookingClientPage({
           <p className="mb-6 text-xs text-muted-foreground">
             We'll contact you at <strong>{phone}</strong> to confirm your slot.
           </p>
-          <Link href="/" className="inline-block rounded-2xl gradient-brand px-6 py-3 text-sm font-bold text-primary-foreground">
-            Back to Home
-          </Link>
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:justify-center">
+            {bookedCode ? (
+              <Link
+                href={`/thank-you?type=booking&booking_code=${encodeURIComponent(bookedCode)}`}
+                className="inline-block rounded-2xl gradient-brand px-6 py-3 text-sm font-bold text-primary-foreground shadow-sm"
+              >
+                View Order Details
+              </Link>
+            ) : null}
+            <Link href="/" className="inline-block rounded-2xl border border-border px-6 py-3 text-sm font-bold text-foreground hover:bg-secondary">
+              Back to Home
+            </Link>
+          </div>
         </div>
       </main>
     );

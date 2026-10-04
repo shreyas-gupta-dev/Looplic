@@ -701,7 +701,22 @@ export function BookingStepFlow({
     setBookedCode(bookingCode);
     setBooked(true);
     setSubmitting(false);
-    router.push(buildThankYouHref({ type: "booking", source: "step_booking_form", booking_code: bookingCode, service_type: isRepair ? `${repairServiceType}_repair` : "screen_guard" }));
+    router.push(
+      buildThankYouHref({
+        type: "booking",
+        source: "step_booking_form",
+        booking_code: bookingCode,
+        service_type: isRepair ? `${repairServiceType}_repair` : "screen_guard",
+        service_label: selectedLabel,
+        device: `${brand.name} ${model.name}`,
+        scheduled_date: scheduledDate,
+        time_slot: timeSlot,
+        phone,
+        name,
+        price: selectedPrice || undefined,
+        address: [address, city, pincode].filter(Boolean).join(", "),
+      }),
+    );
   }
 
   const inspectPosition = getInspectPosition();
@@ -719,7 +734,22 @@ export function BookingStepFlow({
           <p className="mb-1 text-sm text-muted-foreground">{selectedLabel} for <strong>{model.name}</strong></p>
           <p className="mb-1 text-xs text-muted-foreground">{scheduledDate} | {timeSlot}</p>
           <p className="mb-6 text-xs text-muted-foreground">We&apos;ll contact you at <strong>{phone}</strong> to confirm your slot.</p>
-          <Link href={serviceHomeHref} className="inline-block rounded-2xl gradient-brand px-6 py-3 text-sm font-bold text-primary-foreground">Back to Home</Link>
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:justify-center">
+            {bookedCode ? (
+              <Link
+                href={`/thank-you?type=booking&booking_code=${encodeURIComponent(bookedCode)}`}
+                className="inline-block rounded-2xl gradient-brand px-6 py-3 text-sm font-bold text-primary-foreground shadow-sm"
+              >
+                View Order Details
+              </Link>
+            ) : null}
+            <Link
+              href={serviceHomeHref}
+              className="inline-block rounded-2xl border border-border px-6 py-3 text-sm font-bold text-foreground hover:bg-secondary"
+            >
+              Back to Home
+            </Link>
+          </div>
         </div>
       </main>
     );

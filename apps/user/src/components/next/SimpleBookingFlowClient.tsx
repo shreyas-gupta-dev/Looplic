@@ -320,7 +320,21 @@ export function SimpleBookingFlowClient({ serviceSlug }: { serviceSlug: string }
     setBookedCode(bookingCode);
     setBooked(true);
     setSubmitting(false);
-    router.push(buildThankYouHref({ type: "booking", source: "simple_service_booking_form", booking_code: bookingCode, service_type: serviceType }));
+    router.push(
+      buildThankYouHref({
+        type: "booking",
+        source: "simple_service_booking_form",
+        booking_code: bookingCode,
+        service_type: serviceType,
+        service_label: serviceLabel,
+        device: isCctv && selectedCctvBrand ? `${selectedCctvBrand} CCTV` : serviceLabel,
+        scheduled_date: scheduledDate,
+        time_slot: timeSlot,
+        phone,
+        name,
+        address: [address, city, pincode].filter(Boolean).join(", "),
+      }),
+    );
   }
 
   if (authLoading) {
@@ -387,7 +401,19 @@ export function SimpleBookingFlowClient({ serviceSlug }: { serviceSlug: string }
           <p className="mb-1 text-sm text-muted-foreground"><strong>{serviceLabel}</strong></p>
           <p className="mb-1 text-xs text-muted-foreground">{scheduledDate} | {timeSlot}</p>
           <p className="mb-6 text-xs text-muted-foreground">We&apos;ll contact you at <strong>{phone}</strong> to confirm your slot.</p>
-          <Link href="/" className="inline-block rounded-2xl bg-gradient-to-r from-[#056EF6] to-[#00D69A] px-6 py-3 text-sm font-bold text-white">Back to Home</Link>
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:justify-center">
+            {bookedCode ? (
+              <Link
+                href={`/thank-you?type=booking&booking_code=${encodeURIComponent(bookedCode)}`}
+                className="inline-block rounded-2xl bg-gradient-to-r from-[#056EF6] to-[#00D69A] px-6 py-3 text-sm font-bold text-white shadow-sm"
+              >
+                View Order Details
+              </Link>
+            ) : null}
+            <Link href="/" className="inline-block rounded-2xl border border-border px-6 py-3 text-sm font-bold text-foreground hover:bg-secondary">
+              Back to Home
+            </Link>
+          </div>
         </div>
       </main>
     );
