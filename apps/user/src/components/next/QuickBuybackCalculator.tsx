@@ -40,25 +40,25 @@ export function QuickBuybackCalculator({ brands, models }: QuickBuybackCalculato
         {/* Left Column: Heading and value propositions */}
         <div className="lg:col-span-7">
           <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 border border-blue-200/80 px-3 py-1 text-xs font-semibold text-blue-700 mb-3">
-            <span>Instant Device Valuation</span>
+            <span>Device Resale Valuation</span>
           </div>
 
           <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-gray-900 leading-tight">
-            Check your phone&apos;s resale price in seconds
+            Check Your Phone&apos;s Estimated Resale Value
           </h3>
 
           <p className="mt-2 text-sm text-gray-600 max-w-xl leading-relaxed">
-            Get an upfront price quote based on your device model and condition. Free doorstep inspection across Bengaluru with immediate UPI or bank payment.
+            Get an estimated resale value based on your device model, storage, condition and other relevant factors. Final offer determined after doorstep inspection.
           </p>
 
           <div className="mt-5 flex flex-wrap gap-4 text-xs font-medium text-gray-700">
             <span className="flex items-center gap-1.5">
               <CheckCircle2 className="size-4 text-emerald-600 shrink-0" />
-              <span>Instant UPI or cash payment</span>
+              <span>Payment via UPI/bank after acceptance</span>
             </span>
             <span className="flex items-center gap-1.5">
               <ShieldCheck className="size-4 text-blue-600 shrink-0" />
-              <span>Data wipe assistance</span>
+              <span>Secure data erasure process</span>
             </span>
             <span className="flex items-center gap-1.5">
               <Truck className="size-4 text-gray-600 shrink-0" />
@@ -121,7 +121,7 @@ export function QuickBuybackCalculator({ brands, models }: QuickBuybackCalculato
                 disabled={!selectedBrandSlug}
                 className="w-full mt-2 flex items-center justify-center gap-2 rounded-lg bg-brand-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700 disabled:opacity-50 disabled:pointer-events-none"
               >
-                <span>Get Exact Price Quote</span>
+                <span>Get Estimated Value</span>
                 <ArrowRight className="size-4" />
               </button>
             </div>

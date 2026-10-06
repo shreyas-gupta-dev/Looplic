@@ -12,13 +12,13 @@ export const ourServices = [
   { id: "repair-phone", label: "Repair Phones", href: "/service/mobile-repair" },
   { id: "repair-laptop", label: "Repair Laptop", href: "/service/laptop-repair" },
   { id: "data-recovery", label: "Hard Drive Data Recovery", href: "/service/it-support" },
-  { id: "apple-watch-repair", label: "Apple Watch Repair", href: "/service/mobile-repair" },
-  { id: "airpods-repair", label: "AirPods Repair", href: "/service/mobile-repair" },
+  { id: "sell-phone", label: "Sell Phone", href: "/sell" },
+  { id: "sell-laptop", label: "Sell Laptop", href: "/sell/laptop" },
   { id: "desktop", label: "Desktop Assembly", href: "/service/desktop-assembly" },
   { id: "it-support", label: "IT Support", href: "/service/it-support" },
   { id: "cctv", label: "CCTV Installation", href: "/service/cctv" },
-  { id: "sell-phone", label: "Sell Phone", href: "/sell" },
-  { id: "sell-laptop", label: "Sell Laptop", href: "/sell/laptop" },
+  { id: "apple-watch-repair", label: "Apple Watch Repair", href: "/service/mobile-repair" },
+  { id: "airpods-repair", label: "AirPods Repair", href: "/service/mobile-repair" },
   { id: "accessories", label: "Accessories", href: "/buy?category=accessories" },
   // "Our Store" points at the store locator page, which renders the real map for
   // 1st Floor, Shawkat Building, SJP Road, Nagarathpete, Bengaluru 560002
@@ -66,10 +66,10 @@ export const popularDevices = [
 // How It Works - uses string icon keys mapped to lucide icons in the component
 // Step accents walk the Looplic logo gradient: blue -> cyan -> teal -> navy
 export const howItWorks = [
-  { step: 1, title: "Select Your Device", description: "Choose brand, model & tell us the condition.", icon: "search" as const, color: "bg-brand-600" },
-  { step: 2, title: "Get Instant Quote", description: "Best price calculated instantly.", icon: "rupee" as const, color: "bg-brandcyan-500" },
-  { step: 3, title: "Free Doorstep Pickup", description: "We come to you at your convenience.", icon: "truck" as const, color: "bg-brandteal-500" },
-  { step: 4, title: "Get Paid Instantly", description: "Payment via UPI, bank transfer or cash.", icon: "credit-card" as const, color: "bg-brandnavy-800" },
+  { step: 1, title: "Select Your Device", description: "Choose brand, model & answer condition questions.", icon: "search" as const, color: "bg-brand-600" },
+  { step: 2, title: "Get an Estimated Value", description: "Receive an initial valuation based on your device details.", icon: "rupee" as const, color: "bg-brandcyan-500" },
+  { step: 3, title: "Doorstep Inspection", description: "Our representative checks the device's physical and functional condition.", icon: "truck" as const, color: "bg-brandteal-500" },
+  { step: 4, title: "Accept Final Offer & Get Paid", description: "If you agree with the inspected valuation, receive payment via UPI, bank transfer or cash.", icon: "credit-card" as const, color: "bg-brandnavy-800" },
 ];
 
 export type HowItWorksIconKey = (typeof howItWorks)[number]["icon"];

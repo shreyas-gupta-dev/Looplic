@@ -83,20 +83,20 @@ function SellPhoneVisual() {
         {/* Estimated Cash Value */}
         <div className="my-3 rounded-xl bg-gradient-to-r from-brand-500/10 via-brandteal-500/5 to-transparent p-3 sm:my-4 sm:p-3.5">
           <div className="flex items-baseline justify-between">
-            <span className="text-xs font-medium text-gray-600">Instant Cash Quote</span>
+            <span className="text-xs font-medium text-gray-600">Estimated Resale Value</span>
             <span className="rounded bg-brand-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
-              Guaranteed
+              After Inspection
             </span>
           </div>
           <div className="mt-1 flex items-baseline gap-1">
             <span className="text-2xl font-black tracking-tight text-brand-700 sm:text-3xl">
               ₹52,800
             </span>
-            <span className="text-[11px] text-gray-500 line-through">₹46,000</span>
+            <span className="text-[11px] text-gray-500">estimated</span>
           </div>
           <p className="mt-1 flex items-center gap-1 text-[11px] text-brand-800">
             <CheckCircle2 className="size-3 text-brand-600" />
-            Direct UPI / Bank Transfer at Pickup
+            Payment via UPI / Bank after inspection & acceptance
           </p>
         </div>
 
@@ -104,11 +104,11 @@ function SellPhoneVisual() {
         <div className="grid grid-cols-2 gap-2 text-[11px]">
           <div className="flex items-center gap-1.5 rounded-lg bg-gray-50 p-2 text-gray-700">
             <Truck className="size-3.5 text-brand-600" />
-            <span>30-Min Pickup</span>
+            <span>Free Doorstep Pickup</span>
           </div>
           <div className="flex items-center gap-1.5 rounded-lg bg-gray-50 p-2 text-gray-700">
             <ShieldCheck className="size-3.5 text-brand-600" />
-            <span>100% Data Safe</span>
+            <span>Secure Data Erasure</span>
           </div>
         </div>
       </div>
@@ -116,7 +116,7 @@ function SellPhoneVisual() {
       {/* Floating Price Match Pill */}
       <div className="absolute -bottom-2 -left-2 z-10 hidden items-center gap-1.5 rounded-full border border-brand-200 bg-brand-600 px-3 py-1 text-[11px] font-bold text-white shadow-lg sm:flex">
         <Sparkles className="size-3.5 text-brand-200" />
-        <span>Highest Price Guaranteed</span>
+        <span>Free Doorstep Pickup in Bangalore</span>
       </div>
     </div>
   );
@@ -170,11 +170,11 @@ function RepairPhoneVisual() {
         <div className="grid grid-cols-2 gap-2 text-[11px]">
           <div className="flex items-center gap-1.5 rounded-lg bg-gray-50 p-2 text-gray-700">
             <Clock className="size-3.5 text-blue-600" />
-            <span>30 Min Service</span>
+            <span>At Your Doorstep</span>
           </div>
           <div className="flex items-center gap-1.5 rounded-lg bg-gray-50 p-2 text-gray-700">
             <BadgeCheck className="size-3.5 text-blue-600" />
-            <span>Genuine Parts</span>
+            <span>Quality Parts</span>
           </div>
         </div>
       </div>
@@ -182,7 +182,7 @@ function RepairPhoneVisual() {
       {/* Floating Trust Pill */}
       <div className="absolute -bottom-2 -right-2 z-10 hidden items-center gap-1.5 rounded-full border border-blue-200 bg-slate-900 px-3 py-1 text-[11px] font-bold text-white shadow-lg sm:flex">
         <Star className="size-3.5 fill-amber-400 text-amber-400" />
-        <span>4.8/5 Rated by 50,000+ Users</span>
+        <span>Warranty on Eligible Repairs</span>
       </div>
     </div>
   );
@@ -234,11 +234,11 @@ function LaptopRepairVisual() {
         <div className="grid grid-cols-2 gap-2 text-[11px]">
           <div className="flex items-center gap-1.5 rounded-lg bg-gray-50 p-2 text-gray-700">
             <Shield className="size-3.5 text-indigo-600" />
-            <span>6 Mo Warranty</span>
+            <span>Warranty on Eligible Repairs</span>
           </div>
           <div className="flex items-center gap-1.5 rounded-lg bg-gray-50 p-2 text-gray-700">
             <BadgeCheck className="size-3.5 text-indigo-600" />
-            <span>Genuine Parts</span>
+            <span>Quality Parts</span>
           </div>
         </div>
       </div>
@@ -300,7 +300,7 @@ function RefurbishedPhoneVisual() {
         <div className="grid grid-cols-2 gap-2 text-[11px]">
           <div className="flex items-center gap-1.5 rounded-lg bg-gray-50 p-2 text-gray-700">
             <ShieldCheck className="size-3.5 text-amber-600" />
-            <span>12 Mo Warranty</span>
+            <span>6-Month Warranty</span>
           </div>
           <div className="flex items-center gap-1.5 rounded-lg bg-gray-50 p-2 text-gray-700">
             <RotateCcw className="size-3.5 text-amber-600" />
@@ -388,49 +388,49 @@ function CctvVisual() {
 const SLIDES: BannerSlide[] = [
   {
     id: "sell",
-    tagline: "INSTANT CASH AT DOORSTEP",
+    tagline: "DOORSTEP DEVICE RESALE IN BANGALORE",
     taglineIcon: Zap,
     taglineStyle: "bg-brand-100 text-brand-800 border-brand-200",
     headlinePrefix: "Sell Your Old Phone for ",
-    headlineHighlight: "Instant Cash",
+    headlineHighlight: "Instant Payment",
     headlineHighlightColor: "text-brand-600",
     description:
-      "Get the highest price quote in 60 seconds with free 30-minute doorstep pickup and instant UPI/bank payment.",
+      "Get an estimated resale value in as little as 60 seconds. Free doorstep pickup in Bangalore — payment after device inspection and acceptance.",
     ctaText: "Check Phone Value",
     ctaHref: "/sell",
     ctaBg: "bg-brand-600 hover:bg-brand-700 text-white shadow-brand-600/20",
     bgGradient: "bg-gradient-to-br from-[#EBF3FE] via-[#F8FAFC] to-[#E6FFF7]",
     borderColor: "border-brand-100",
-    trustNote: "Zero inspection fee • Instant payment on pickup",
+    trustNote: "Free doorstep pickup • Payment after inspection & acceptance",
     features: [
-      { icon: IndianRupee, text: "Top Market Price" },
-      { icon: Truck, text: "Free 30-Min Pickup" },
-      { icon: ShieldCheck, text: "100% Data Safe" },
-      { icon: Zap, text: "Instant UPI/Cash" },
+      { icon: IndianRupee, text: "Competitive Valuation" },
+      { icon: Truck, text: "Free Doorstep Pickup" },
+      { icon: ShieldCheck, text: "Secure Data Erasure" },
+      { icon: Zap, text: "UPI/Bank Payment" },
     ],
     renderVisual: () => <SellPhoneVisual />,
   },
   {
     id: "repair",
-    tagline: "CERTIFIED DOORSTEP REPAIR",
+    tagline: "DOORSTEP MOBILE REPAIR",
     taglineIcon: Wrench,
     taglineStyle: "bg-blue-100 text-blue-800 border-blue-200",
     headlinePrefix: "Doorstep Mobile Repair ",
     headlineHighlight: "Starting @ ₹499",
     headlineHighlightColor: "text-blue-600",
     description:
-      "Screen replacement, original battery & motherboard fixes in 30 mins at your home or office. 6-month warranty.",
+      "Screen replacement, battery replacement, connector and selected motherboard repairs at your home or office. Warranty available on eligible repairs.",
     ctaText: "Book Mobile Repair",
     ctaHref: "/service/mobile-repair",
     ctaBg: "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/20",
     bgGradient: "bg-gradient-to-br from-[#F8FAFC] via-[#EFF6FF]/60 to-[#F0F9FF]",
     borderColor: "border-blue-100",
-    trustNote: "Pay after repair • 6 months free replacement warranty",
+    trustNote: "Pay after repair • Warranty on eligible repairs",
     features: [
       { icon: Wrench, text: "All Brands & Models" },
-      { icon: Shield, text: "6 Mo Warranty" },
-      { icon: Star, text: "4.8 / 5 Rated" },
-      { icon: Clock, text: "30-Min Service" },
+      { icon: Shield, text: "Warranty on Eligible Repairs" },
+      { icon: CheckCircle2, text: "At Your Doorstep" },
+      { icon: Clock, text: "Quick Turnaround" },
     ],
     renderVisual: () => <RepairPhoneVisual />,
   },
@@ -463,22 +463,22 @@ const SLIDES: BannerSlide[] = [
     tagline: "LOOPLIC ASSURED REFURBISHED",
     taglineIcon: Sparkles,
     taglineStyle: "bg-amber-100 text-amber-800 border-amber-200",
-    headlinePrefix: "Certified Refurbished ",
-    headlineHighlight: "Up to 70% Off",
+    headlinePrefix: "Quality-Checked Refurbished ",
+    headlineHighlight: "Phones & Laptops",
     headlineHighlightColor: "text-amber-600",
     description:
-      "Tested on 32 quality parameters. Like-new flagship iPhones and smartphones with 12 months comprehensive warranty.",
+      "Quality-checked pre-owned smartphones tested across multiple functional and cosmetic parameters. 6-month warranty with 7-day replacement on eligible issues.",
     ctaText: "Explore Refurbished Phones",
     ctaHref: "/buy",
     ctaBg: "bg-amber-600 hover:bg-amber-700 text-white shadow-amber-600/20",
     bgGradient: "bg-gradient-to-br from-[#FFFBEB] via-[#FDF8F6] to-[#FEF3C7]/40",
     borderColor: "border-amber-100",
-    trustNote: "7-day replacement • 12 months comprehensive warranty",
+    trustNote: "7-day replacement on eligible issues • 6-month warranty",
     features: [
-      { icon: BadgePercent, text: "Up to 70% Off" },
-      { icon: ShieldCheck, text: "12 Mo Warranty" },
-      { icon: CreditCard, text: "Easy EMI ₹999/mo" },
-      { icon: Sparkles, text: "Like-New Condition" },
+      { icon: BadgePercent, text: "Multiple Condition Grades" },
+      { icon: ShieldCheck, text: "6-Month Warranty" },
+      { icon: CreditCard, text: "EMI Options Available" },
+      { icon: Sparkles, text: "Quality Inspected" },
     ],
     renderVisual: () => <RefurbishedPhoneVisual />,
   },

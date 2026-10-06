@@ -362,8 +362,8 @@ export function NewHomepageView({
           <div>
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">Buy Refurbished Devices</h2>
-                <p className="mt-1 text-sm text-gray-500">Certified pre-owned phones with 32-point inspection & 6-month warranty</p>
+                <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">Looplic Assured Refurbished Phones</h2>
+                <p className="mt-1 text-sm text-gray-500">Quality-checked pre-owned devices • 6-Month Warranty • 7-Day Replacement on Eligible Issues</p>
               </div>
               <Link href="/buy" className="flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
                 View All {featuredProducts.length > 0 ? `(${featuredProducts.length}+)` : ""} <ArrowRight className="size-4" />
@@ -575,8 +575,8 @@ export function NewHomepageView({
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div>
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">How It Works</h2>
-              <p className="mt-2 text-gray-500">Sell your device in 4 simple steps</p>
+              <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">How Selling Works</h2>
+              <p className="mt-2 text-gray-500">Sell your device in a few simple steps</p>
             </div>
 
             <div className="relative grid gap-8 overflow-hidden sm:grid-cols-2 lg:grid-cols-4">
@@ -614,6 +614,7 @@ export function NewHomepageView({
               </div>
             ))}
           </div>
+          <p className="mt-4 text-center text-xs text-gray-400">*Figures based on Looplic records. Google rating reflects the rating on our Google Business Profile and may change over time.</p>
         </div>
       </section>
 
@@ -771,8 +772,8 @@ export function NewHomepageView({
               <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-xl bg-brand-50">
                 <IndianRupee className="size-7 text-brand-600" />
               </div>
-              <h3 className="font-bold text-gray-900">Best Prices</h3>
-              <p className="mt-2 text-sm text-gray-500">Upfront market pricing ensures you get the maximum value for your device</p>
+              <h3 className="font-bold text-gray-900">Competitive Valuation</h3>
+              <p className="mt-2 text-sm text-gray-500">Our valuation considers your device model, condition and relevant market factors</p>
             </div>
             <div className="rounded-2xl border border-gray-200 bg-white p-6 text-center">
               <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-xl bg-blue-50">
@@ -799,8 +800,8 @@ export function NewHomepageView({
               <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-xl bg-red-50">
                 <Shield className="size-7 text-red-600" />
               </div>
-              <h3 className="font-bold text-gray-900">Factory Grade Data Wipe</h3>
-              <p className="mt-2 text-sm text-gray-500">100% certified data wipe. Your personal data is completely safe</p>
+              <h3 className="font-bold text-gray-900">Secure Data Erasure</h3>
+              <p className="mt-2 text-sm text-gray-500">We follow a secure device data-erasure process before eligible devices are prepared for resale or recycling</p>
             </div>
             <div className="rounded-2xl border border-gray-200 bg-white p-6 text-center">
               <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-xl bg-brandteal-50">
@@ -821,14 +822,14 @@ export function NewHomepageView({
           </h2>
           <div className="space-y-3">
             {[
-              { q: "How do I sell my old phone on Looplic?", a: "Simply select your phone's brand and model, answer a few condition-related questions, confirm the quote, and book a free doorstep pickup. Your phone will be picked up and payment will be made instantly." },
-              { q: "Is doorstep pickup really free?", a: "Yes! Looplic offers 100% free doorstep pickup in Bangalore. There are no hidden charges for pickup or inspection." },
-              { q: "How quickly will I get paid?", a: "You get paid instantly at the time of pickup via UPI, bank transfer, or cash. No delays, no waiting." },
-              { q: "Can I sell a phone with a broken screen or damage?", a: "Yes, we accept phones in all conditions — working, not working, broken screen, water damage, or any other issue. You'll still get a fair price based on the condition." },
-              { q: "Is my data safe when I sell my phone?", a: "Absolutely. We perform a factory-grade certified data wipe on every device. Your personal data is completely erased and cannot be recovered." },
-              { q: "What documents do I need to sell my phone?", a: "Just a valid government ID for verification. Original purchase bill is optional but may help you get a better price." },
+              { q: "How do I sell my old phone on Looplic?", a: "Select your phone's brand and model, answer a few condition-related questions to get an estimated resale value, and book a free doorstep pickup. Our representative will inspect the device and present a final offer. Payment is initiated after you accept the offer." },
+              { q: "Is doorstep pickup really free?", a: "Yes! Looplic offers free doorstep pickup in Bangalore. There are no charges for pickup or the initial inspection visit." },
+              { q: "How quickly will I get paid?", a: "After the device inspection is completed and you accept the final offer, payment is initiated through UPI, bank transfer, or cash." },
+              { q: "Can I sell a phone with a broken screen or damage?", a: "Yes, eligible damaged and non-working devices may be accepted. The final value depends on the device model, physical condition, functionality and inspection results." },
+              { q: "Is my data safe when I sell my phone?", a: "We follow a secure device data-erasure process for eligible devices. We recommend backing up your data and signing out of all accounts — including Apple ID/Find My iPhone or Google accounts — before handover." },
+              { q: "What documents do I need to sell my phone?", a: "Just a valid government ID for verification. Original purchase bill is optional but may help with the valuation." },
               { q: "Which brands and models do you accept?", a: "We accept all major brands — Apple, Samsung, OnePlus, Xiaomi, Vivo, Oppo, Realme, Google Pixel, and many more. Both old and new models are accepted." },
-              { q: "Do you also offer phone repair services?", a: "Yes! Looplic offers doorstep mobile repair, laptop repair, screen guard installation, CCTV installation, desktop assembly, and IT support services — all at your doorstep in Bangalore." },
+              { q: "Do you also offer phone repair services?", a: "Yes! Looplic offers doorstep mobile repair, laptop repair, CCTV installation, desktop assembly, and IT support services in Bangalore." },
             ].map((faq, i) => (
               <details key={i} className="group rounded-2xl border border-gray-200 bg-white">
                 <summary className="flex cursor-pointer items-center justify-between px-5 py-4 text-sm font-semibold text-gray-900 [&::-webkit-details-marker]:hidden">

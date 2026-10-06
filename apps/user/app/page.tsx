@@ -11,20 +11,20 @@ import { siteConfig } from "@/src/lib/site";
 export const revalidate = 300;
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Sell Old Phone & Laptop for Instant Cash | Buy Refurbished Devices",
+  title: "Sell Old Phones in Bangalore | Refurbished Phones – Looplic",
   description:
-    "India's most trusted platform to sell and buy refurbished phones, laptops, tablets & more. Instant price quotes, free doorstep pickup, and certified refurbished devices with warranty.",
+    "Sell old phones, laptops and other devices in Bangalore. Get an estimated resale value, doorstep pickup and payment after inspection. Shop quality-checked refurbished phones with warranty at Looplic.",
   pathname: "/",
   keywords: [
-    "sell old phone",
-    "sell old laptop",
-    "buy refurbished phone",
+    "sell old phone Bangalore",
+    "sell old laptop Bangalore",
+    "buy refurbished phone Bangalore",
     "buy refurbished laptop",
-    "phone buyback",
+    "phone buyback Bangalore",
     "laptop buyback",
-    "instant cash for phone",
-    "certified refurbished",
-    "sell used phone",
+    "sell used phone Bangalore",
+    "refurbished phones Bangalore",
+    "mobile repair Bangalore",
     "Looplic",
   ],
 });
@@ -69,7 +69,7 @@ export default async function HomePage() {
             "@type": "WebSite",
             name: siteConfig.name,
             url: siteConfig.url,
-            description: "India's most trusted platform to sell and buy refurbished phones, laptops, tablets & more.",
+            description: "Sell old phones and buy quality-checked refurbished devices in Bangalore. Doorstep pickup and payment after inspection.",
             potentialAction: {
               "@type": "SearchAction",
               target: `${siteConfig.url}/sell?q={search_term_string}`,

@@ -49,6 +49,8 @@ const supportLinks = [
   { href: "/live-repair", label: "Live Workshop CCTV Cam" },
   { href: "/track", label: "Track Repair Order" },
   { href: "/sell/track", label: "Track Buyback Order" },
+  { href: "/buyback-policy", label: "Buyback Policy" },
+  { href: "/warranty-policy", label: "Warranty Policy" },
   { href: "/terms-and-conditions", label: "Terms & Conditions" },
   { href: "/privacy-policy", label: "Privacy Policy" },
   { href: "/refund-policy", label: "Return & Refund Policy" },
@@ -80,8 +82,8 @@ export function HomepageFooter() {
               />
             </Link>
             <p className="mt-3 text-sm leading-relaxed text-gray-400">
-              India&apos;s most trusted platform to sell and buy refurbished devices.
-              Get instant price quotes, free doorstep pickup, and certified refurbished with warranty.
+              Sell old phones and buy quality-checked refurbished devices in Bangalore.
+              Doorstep pickup, device inspection and payment after acceptance.
             </p>
 
             <div className="mt-5 space-y-2.5">
@@ -206,11 +208,9 @@ export function HomepageFooter() {
             © {new Date().getFullYear()} {companyName}. All rights reserved.
           </p>
           <div className="flex items-center gap-3 text-xs text-gray-500">
-            <span>ISO 27001 Certified</span>
+            <Link href="/buyback-policy" className="hover:text-gray-400 transition-colors">Buyback Policy</Link>
             <span className="text-gray-700">•</span>
-            <span>Startup India Recognized</span>
-            <span className="text-gray-700">•</span>
-            <span>DIPP Registered</span>
+            <Link href="/warranty-policy" className="hover:text-gray-400 transition-colors">Warranty Policy</Link>
           </div>
         </div>
       </div>
