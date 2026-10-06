@@ -11,15 +11,9 @@ const WhatsAppBookingWizard = dynamic(
   { ssr: false },
 );
 
-const SplashScreen = dynamic(
-  () => import("@/src/components/next/SplashScreen").then((m) => m.SplashScreen),
-  { ssr: false },
-);
-
 export function LazyOverlays() {
   return (
     <>
-      <SplashScreen />
       <WhatsAppBookingWizard />
     </>
   );

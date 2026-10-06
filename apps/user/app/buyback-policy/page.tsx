@@ -56,17 +56,12 @@ const faqs = [
 
 export default function BuybackPolicyPage() {
   return (
-    <InfoPageLayout>
-      <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-10 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full bg-brand-50 px-4 py-1.5 text-sm font-semibold text-brand-700 mb-4">
-            <Smartphone className="size-4" />
-            Device Buyback
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">Buyback Policy</h1>
-          <p className="mt-3 text-gray-500">Last updated: October 2026</p>
-        </div>
+    <InfoPageLayout
+      eyebrow="Device Buyback"
+      title="Buyback Policy"
+      description="Understand how online valuations, doorstep inspection, and device payment work at Looplic in Bangalore."
+    >
+      <div className="mx-auto max-w-3xl">
 
         {/* Important notice */}
         <div className="mb-10 flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-5">

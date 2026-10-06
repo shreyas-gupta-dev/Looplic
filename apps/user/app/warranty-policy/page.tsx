@@ -62,17 +62,12 @@ const faqs = [
 
 export default function WarrantyPolicyPage() {
   return (
-    <InfoPageLayout>
-      <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-10 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-1.5 text-sm font-semibold text-emerald-700 mb-4">
-            <ShieldCheck className="size-4" />
-            Warranty & Support
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">Warranty Policy</h1>
-          <p className="mt-3 text-gray-500">Last updated: October 2026</p>
-        </div>
+    <InfoPageLayout
+      eyebrow="Warranty & Support"
+      title="Warranty Policy"
+      description="Understand warranty coverage, 7-day replacement, covered hardware issues, and claim process for Looplic devices and repairs."
+    >
+      <div className="mx-auto max-w-3xl">
 
         {/* Overview cards */}
         <div className="mb-10 grid gap-4 sm:grid-cols-2">

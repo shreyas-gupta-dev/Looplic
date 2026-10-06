@@ -6,7 +6,7 @@ import { getBrandsForListing, getSeriesForBrand } from "@/src/lib/data/catalog";
 import { buildPageMetadata } from "@/src/lib/metadata";
 import { siteConfig } from "@/src/lib/site";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Looplic Brand Page URLs",

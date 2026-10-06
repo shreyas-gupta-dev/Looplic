@@ -15,7 +15,6 @@ import { buildPageMetadata } from "@/src/lib/metadata";
 import { bangaloreAreas, getBangaloreAreaBySlug } from "@/src/lib/service-areas";
 
 export const revalidate = 300;
-export const dynamic = "force-dynamic";
 
 type PageProps = {
   params: Promise<{

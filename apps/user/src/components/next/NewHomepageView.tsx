@@ -316,7 +316,7 @@ export function NewHomepageView({
                 >
                   <video
                     playsInline
-                    autoPlay
+                    preload="none"
                     muted
                     loop
                     className="size-full object-cover opacity-85 group-hover:opacity-100 transition-opacity"
@@ -434,7 +434,7 @@ export function NewHomepageView({
                                 alt={product.name}
                                 width={140}
                                 height={140}
-                                unoptimized={true}
+                                loading="lazy"
                                 className="size-32 object-contain transition-transform duration-200 group-hover:scale-105"
                               />
                             ) : (

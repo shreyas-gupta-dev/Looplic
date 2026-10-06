@@ -7,7 +7,12 @@ import { buildPageMetadata } from "@/src/lib/metadata";
 import { bangaloreAreas, getBangaloreAreaBySlug } from "@/src/lib/service-areas";
 
 export const revalidate = 300;
-export const dynamic = "force-dynamic";
+
+export function generateStaticParams() {
+  return bangaloreAreas.slice(0, 30).map((area) => ({
+    areaSlug: area.slug,
+  }));
+}
 
 type PageProps = {
   params: Promise<{

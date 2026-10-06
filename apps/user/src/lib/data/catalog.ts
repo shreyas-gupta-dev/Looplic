@@ -228,7 +228,7 @@ export const getBrandsForListing = unstable_cache(async (serviceType: CatalogSer
 // A DB failure with no matching static fallback also returns null (logged) so
 // the page renders a clean 404 instead of a raw 500; ISR keeps serving the last
 // good page in the meantime.
-export async function getBrandBySlug(brandSlug: string, serviceType?: CatalogServiceType): Promise<CatalogBrand | null> {
+async function fetchBrandBySlug(brandSlug: string, serviceType?: CatalogServiceType): Promise<CatalogBrand | null> {
   const resolvedServiceType = serviceType ?? "mobile";
   const normalizedBrandSlug = normalizeBrandSlug(brandSlug);
   const databaseBrandSlug = normalizedBrandSlug === "mi" ? "xiaomi" : normalizedBrandSlug;
@@ -264,17 +264,28 @@ export async function getBrandBySlug(brandSlug: string, serviceType?: CatalogSer
   if (fallbackMatch) return fallbackMatch;
 
   if (dbFailed) {
-    // The DB was unreachable and no static fallback matched. Returning null lets
-    // the caller render a clean notFound() (404) instead of surfacing a raw 500.
     // eslint-disable-next-line no-console
     console.error(`Catalog DB unavailable while resolving brand "${brandSlug}"`);
   }
   return null;
 }
 
+const getCachedBrandBySlug = unstable_cache(
+  fetchBrandBySlug,
+  ["catalog-brand-by-slug"],
+  { revalidate: CATALOG_REVALIDATE_SECONDS, tags: ["catalog", "catalog-brands"] }
+);
+
+export const getBrandBySlug = (brandSlug: string, serviceType?: CatalogServiceType) =>
+  withRedisCache(
+    `${CATALOG_REDIS_PREFIX}:brand:${serviceType ?? "mobile"}:${normalizeBrandSlug(brandSlug)}`,
+    CATALOG_REVALIDATE_SECONDS,
+    () => getCachedBrandBySlug(brandSlug, serviceType)
+  );
+
 // Returns [] on DB failure (rather than throwing) so the brand page renders
 // gracefully and ISR can keep serving its last good HTML instead of a raw 500.
-export async function getSeriesForBrand(brandId: string): Promise<CatalogSeries[]> {
+async function fetchSeriesForBrand(brandId: string): Promise<CatalogSeries[]> {
   try {
     const dataClient = createPublicClient();
     const result = await dataClient
@@ -284,10 +295,6 @@ export async function getSeriesForBrand(brandId: string): Promise<CatalogSeries[
       .order("name");
 
     if (result.error) {
-      // A DB error here must not crash the brand page with a raw 500. Log and
-      // degrade to an empty series list so the page still renders (and ISR can
-      // keep serving the last good snapshot). The catalog is re-queried on the
-      // next revalidation window.
       // eslint-disable-next-line no-console
       console.error(`Catalog DB error while loading series for brand ${brandId}: ${result.error.message}`);
       return [];
@@ -327,10 +334,23 @@ export async function getSeriesForBrand(brandId: string): Promise<CatalogSeries[
   }
 }
 
+const getCachedSeriesForBrand = unstable_cache(
+  fetchSeriesForBrand,
+  ["catalog-series-for-brand"],
+  { revalidate: CATALOG_REVALIDATE_SECONDS, tags: ["catalog", "catalog-series"] }
+);
+
+export const getSeriesForBrand = (brandId: string) =>
+  withRedisCache(
+    `${CATALOG_REDIS_PREFIX}:series-for-brand:${brandId}`,
+    CATALOG_REVALIDATE_SECONDS,
+    () => getCachedSeriesForBrand(brandId)
+  );
+
 // null means "series genuinely absent". On a DB failure we also return null so
 // the caller renders a clean notFound() (404) instead of a raw 500; the error
 // is logged for observability.
-export async function getSeriesBySlug(brandId: string, seriesSlug: string): Promise<CatalogSeries | null> {
+async function fetchSeriesBySlug(brandId: string, seriesSlug: string): Promise<CatalogSeries | null> {
   const dataClient = createPublicClient();
   const directMatch = await dataClient
     .from("series")
@@ -359,9 +379,22 @@ export async function getSeriesBySlug(brandId: string, seriesSlug: string): Prom
   return null;
 }
 
+const getCachedSeriesBySlug = unstable_cache(
+  fetchSeriesBySlug,
+  ["catalog-series-by-slug"],
+  { revalidate: CATALOG_REVALIDATE_SECONDS, tags: ["catalog", "catalog-series"] }
+);
+
+export const getSeriesBySlug = (brandId: string, seriesSlug: string) =>
+  withRedisCache(
+    `${CATALOG_REDIS_PREFIX}:series-by-slug:${brandId}:${seriesSlug}`,
+    CATALOG_REVALIDATE_SECONDS,
+    () => getCachedSeriesBySlug(brandId, seriesSlug)
+  );
+
 // Returns [] on DB failure (rather than throwing) so the series page renders
 // gracefully and ISR can keep serving its last good HTML instead of a 500.
-export async function getModelsForSeries(seriesId: string): Promise<CatalogModel[]> {
+async function fetchModelsForSeries(seriesId: string): Promise<CatalogModel[]> {
   try {
     const dataClient = createPublicClient();
     const result = await dataClient
@@ -387,9 +420,22 @@ export async function getModelsForSeries(seriesId: string): Promise<CatalogModel
   }
 }
 
+const getCachedModelsForSeries = unstable_cache(
+  fetchModelsForSeries,
+  ["catalog-models-for-series"],
+  { revalidate: CATALOG_REVALIDATE_SECONDS, tags: ["catalog", "catalog-models"] }
+);
+
+export const getModelsForSeries = (seriesId: string) =>
+  withRedisCache(
+    `${CATALOG_REDIS_PREFIX}:models-for-series:${seriesId}`,
+    CATALOG_REVALIDATE_SECONDS,
+    () => getCachedModelsForSeries(seriesId)
+  );
+
 // null means "model genuinely absent". On a DB failure we also return null so
 // the caller renders a clean notFound() (404) instead of a raw 500.
-export async function getModelBySlug(seriesId: string, modelSlug: string): Promise<CatalogModel | null> {
+async function fetchModelBySlug(seriesId: string, modelSlug: string): Promise<CatalogModel | null> {
   const dataClient = createPublicClient();
   const directMatch = await dataClient
     .from("models")
@@ -421,6 +467,19 @@ export async function getModelBySlug(seriesId: string, modelSlug: string): Promi
   }
   return null;
 }
+
+const getCachedModelBySlug = unstable_cache(
+  fetchModelBySlug,
+  ["catalog-model-by-slug"],
+  { revalidate: CATALOG_REVALIDATE_SECONDS, tags: ["catalog", "catalog-models"] }
+);
+
+export const getModelBySlug = (seriesId: string, modelSlug: string) =>
+  withRedisCache(
+    `${CATALOG_REDIS_PREFIX}:model-by-slug:${seriesId}:${modelSlug}`,
+    CATALOG_REVALIDATE_SECONDS,
+    () => getCachedModelBySlug(seriesId, modelSlug)
+  );
 
 export const getModelScreenGuards = unstable_cache(async (modelId: string): Promise<ModelScreenGuard[]> => {
   return withRedisCache(`${CATALOG_REDIS_PREFIX}:screen-guards:${modelId}`, CATALOG_REVALIDATE_SECONDS, async () => {

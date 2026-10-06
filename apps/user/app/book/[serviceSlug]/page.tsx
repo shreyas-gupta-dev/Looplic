@@ -8,7 +8,16 @@ import { HomepageFooter } from "@/src/components/next/HomepageFooter";
 import { UniversalBookingFlow } from "@/src/components/next/UniversalBookingFlow";
 import { buildPageMetadata } from "@/src/lib/metadata";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
+
+export function generateStaticParams() {
+  return [
+    { serviceSlug: "desktop-assembly" },
+    { serviceSlug: "cctv" },
+    { serviceSlug: "it-support" },
+    { serviceSlug: "managed-it-services" },
+  ];
+}
 
 const SERVICE_LABELS: Record<string, string> = {
   "desktop-assembly": "Desktop Assembly",
