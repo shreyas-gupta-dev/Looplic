@@ -16,6 +16,18 @@ function getRedisClient() {
   return redisClient;
 }
 
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  let timer: NodeJS.Timeout | undefined;
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error(`Redis timed out after ${ms}ms`)), ms);
+    }),
+  ]).finally(() => {
+    if (timer) clearTimeout(timer);
+  });
+}
+
 export async function withRedisCache<T>(key: string, ttlSeconds: number, load: () => Promise<T>): Promise<T> {
   const redis = getRedisClient();
 
@@ -24,20 +36,21 @@ export async function withRedisCache<T>(key: string, ttlSeconds: number, load: (
   }
 
   try {
-    const cached = await redis.get<T>(key);
+    const cached = await withTimeout(redis.get<T>(key), 300);
     if (cached !== null && cached !== undefined) {
       return cached;
     }
   } catch {
-    // Redis must never block the booking or catalog flow.
+    // Redis must never block the booking or catalog flow if unavailable or slow.
   }
 
   const fresh = await load();
 
+  // Non-blocking fire-and-forget cache write: do not delay returning data to the client
   try {
-    await redis.set(key, fresh, { ex: ttlSeconds });
+    redis.set(key, fresh, { ex: ttlSeconds }).catch(() => {});
   } catch {
-    // Keep serving the fresh database result if Redis writes fail.
+    // Ignore cache write errors
   }
 
   return fresh;

@@ -14,6 +14,15 @@ const nextConfig: NextConfig = {
       { source: "/book/:path*", headers: [noStore] },
       { source: "/service/:serviceType/book/:path*", headers: [noStore] },
       {
+        source: "/:all*(svg|jpg|jpeg|png|webp|avif|ico|woff|woff2)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      {
         source: "/:swfile(sw.js|technician-alert-sw.js)",
         headers: [
           {
@@ -120,7 +129,7 @@ const nextConfig: NextConfig = {
   },
   images: {
     minimumCacheTTL: 86400,
-    formats: ["image/webp"],
+    formats: ["image/avif", "image/webp"],
     remotePatterns: [
       { protocol: "https", hostname: "looplic-assets.s3.ap-south-1.amazonaws.com" },
       { protocol: "https", hostname: "looplic-assets.s3.amazonaws.com" },
