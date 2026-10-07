@@ -25,8 +25,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!brand) return {};
 
   return buildPageMetadata({
-    title: `Sell Old ${brand.name} ${label} for Instant Cash in Bangalore`,
-    description: `Get an instant buyback quote for your ${brand.name} ${label.toLowerCase()} with free doorstep pickup and same-day payment in Bangalore.`,
+    title: `Sell Old ${brand.name} ${label} for Instant Payment in Bangalore`,
+    description: `Get an estimated resale value for your ${brand.name} ${label.toLowerCase()} with free doorstep pickup and payment after inspection in Bangalore.`,
     pathname: `/sell/${sellCategory}/${brand.slug}`,
   });
 }

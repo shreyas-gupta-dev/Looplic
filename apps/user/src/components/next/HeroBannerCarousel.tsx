@@ -38,7 +38,7 @@ type FeaturePoint = {
 type BannerSlide = {
   id: string;
   tagline: string;
-  taglineIcon: typeof Zap;
+  taglineIcon?: typeof Zap | null;
   taglineStyle: string;
   headlinePrefix: string;
   headlineHighlight: string;
@@ -388,25 +388,25 @@ function CctvVisual() {
 const SLIDES: BannerSlide[] = [
   {
     id: "sell",
-    tagline: "DOORSTEP DEVICE RESALE IN BANGALORE",
-    taglineIcon: Zap,
+    tagline: "🇮🇳 Device Resale & Refurbished Electronics Platform in Bangalore",
+    taglineIcon: null,
     taglineStyle: "bg-brand-100 text-brand-800 border-brand-200",
     headlinePrefix: "Sell Your Old Phone for ",
     headlineHighlight: "Instant Payment",
     headlineHighlightColor: "text-brand-600",
     description:
-      "Get an estimated resale value in as little as 60 seconds. Free doorstep pickup in Bangalore — payment after device inspection and acceptance.",
+      "Get an estimated resale value in as little as 60 seconds.",
     ctaText: "Check Phone Value",
     ctaHref: "/sell",
     ctaBg: "bg-brand-600 hover:bg-brand-700 text-white shadow-brand-600/20",
     bgGradient: "bg-gradient-to-br from-[#EBF3FE] via-[#F8FAFC] to-[#E6FFF7]",
     borderColor: "border-brand-100",
-    trustNote: "Free doorstep pickup • Payment after inspection & acceptance",
+    trustNote: "Free doorstep pickup in Bangalore • Device inspection before final offer • Instant UPI/Bank payment after acceptance",
     features: [
-      { icon: IndianRupee, text: "Competitive Valuation" },
+      { icon: IndianRupee, text: "Estimated Value in 60s" },
       { icon: Truck, text: "Free Doorstep Pickup" },
-      { icon: ShieldCheck, text: "Secure Data Erasure" },
-      { icon: Zap, text: "UPI/Bank Payment" },
+      { icon: ShieldCheck, text: "Inspection Before Offer" },
+      { icon: Zap, text: "Instant UPI/Bank Payment" },
     ],
     renderVisual: () => <SellPhoneVisual />,
   },
@@ -595,7 +595,7 @@ export function HeroBannerCarousel() {
                         <div
                           className={`mb-2.5 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-bold tracking-wide shadow-xs ${slide.taglineStyle}`}
                         >
-                          <TagIcon className="size-3.5" />
+                          {TagIcon && <TagIcon className="size-3.5 shrink-0" />}
                           <span>{slide.tagline}</span>
                         </div>
 

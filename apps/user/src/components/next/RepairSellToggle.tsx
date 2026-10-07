@@ -52,7 +52,7 @@ export function RepairSellToggle({ active }: { active: "repair" | "sell" }) {
         <span className="text-left leading-tight">
           <span className="block text-[13px] font-bold">Sell</span>
           <span className={`block text-[10px] ${active === "sell" ? "text-white/80" : "text-gray-500"}`}>
-            Get instant cash
+            Instant payment
           </span>
         </span>
       </Link>

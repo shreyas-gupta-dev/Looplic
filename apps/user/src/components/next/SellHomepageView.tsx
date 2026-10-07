@@ -79,20 +79,20 @@ const howItWorks = [
   {
     step: 1,
     icon: IndianRupee,
-    title: "Get Instant Price",
-    description: "Select your device, answer a few questions about its condition, and get an exact price instantly.",
+    title: "Get Estimated Valuation",
+    description: "Select your device, answer a few questions about its condition, and get an estimated resale value in 60 seconds.",
   },
   {
     step: 2,
     icon: Truck,
     title: "Schedule Free Pickup",
-    description: "Book a convenient time slot. Our executive comes to your doorstep — no packing or shipping needed.",
+    description: "Book a convenient time slot in Bangalore. Our executive comes to your doorstep — no packing or shipping needed.",
   },
   {
     step: 3,
     icon: Banknote,
-    title: "Get Paid Instantly",
-    description: "Device verified on the spot and payment transferred immediately via UPI or bank transfer.",
+    title: "Instant Payment After Acceptance",
+    description: "Device inspected before final offer. Payment transferred immediately via UPI or bank transfer upon acceptance.",
   },
 ];
 
@@ -231,7 +231,7 @@ export function SellHomepageView({
             Sell Your Old Device
           </h1>
           <p className="mx-auto mt-3 max-w-xl text-base text-gray-500 sm:text-lg">
-            Get instant price, free doorstep pickup, and same-day payment. Best price guaranteed.
+            Get an estimated resale value in as little as 60 seconds. Free doorstep pickup in Bangalore — device inspection before final offer and instant UPI/Bank payment after acceptance.
           </p>
 
           <div className="mt-8">

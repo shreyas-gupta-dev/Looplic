@@ -25,8 +25,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const oldLabel = label === "Phone" ? "Mobile Phone" : label;
   return buildPageMetadata({
-    title: `Sell Old ${oldLabel} in Bangalore for Instant Cash`,
-    description: `Sell your old ${noun} in Bangalore: instant online quote, free doorstep pickup, and same-day UPI or bank payment. Choose your brand to get started.`,
+    title: `Sell Old ${oldLabel} in Bangalore for Instant Payment`,
+    description: `Sell your old ${noun} in Bangalore: estimated resale value in 60s, free doorstep pickup, and instant UPI or bank payment after inspection. Choose your brand to get started.`,
     pathname: `/sell/${sellCategory}`,
   });
 }
@@ -107,7 +107,7 @@ export default async function SellBrandsPage({ params }: PageProps) {
             Sell Old {oldLabel}
           </h1>
           <p className="mt-2 text-sm text-gray-500 sm:text-base">
-            Select your {noun} brand to get an instant price quote. Free doorstep pickup & same-day payment.
+            Select your {noun} brand to get an estimated resale value. Free doorstep pickup & instant payment after inspection.
           </p>
         </div>
 

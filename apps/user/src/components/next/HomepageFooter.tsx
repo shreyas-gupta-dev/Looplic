@@ -7,12 +7,12 @@ import Image from "next/image";
 import { companyAddress, companyName, supportEmail, supportPhone, supportPhoneDisplay } from "@/src/lib/company";
 
 const sellLinks = [
-  { href: "/sell", label: "Sell Old Mobile Phone" },
-  { href: "/sell/laptop", label: "Sell Old Laptop" },
+  { href: "/sell-old-mobile-phone-bangalore", label: "Sell Old Phone" },
+  { href: "/sell-old-laptop-bangalore", label: "Sell Old Laptop" },
+  { href: "/sell-old-iphone-bangalore", label: "Sell Old iPhone" },
   { href: "/sell/tablet", label: "Sell Old Tablet" },
   { href: "/sell/smartwatch", label: "Sell Old Smartwatch" },
   { href: "/sell/desktop", label: "Sell Old Desktop/iMac" },
-  { href: "/sell/gaming-console", label: "Sell Gaming Console" },
 ];
 
 const sellBrandLinks = [
@@ -26,12 +26,20 @@ const sellBrandLinks = [
 ];
 
 const buyLinks = [
-  { href: "/buy?category=phone", label: "Refurbished Phones" },
+  { href: "/refurbished-phones-bangalore", label: "Refurbished Phones (Bangalore)" },
+  { href: "/refurbished-iphones-bangalore", label: "Refurbished iPhones (Bangalore)" },
   { href: "/buy?category=laptop", label: "Refurbished Laptops" },
   { href: "/buy?category=tablet", label: "Refurbished Tablets" },
-  { href: "/buy?brand=Apple", label: "Refurbished iPhones" },
   { href: "/buy?brand=Samsung", label: "Refurbished Samsung" },
   { href: "/buy?brand=OnePlus", label: "Refurbished OnePlus" },
+];
+
+const bangaloreServiceLinks = [
+  { href: "/mobile-repair-bangalore", label: "Mobile Repair Bangalore" },
+  { href: "/iphone-repair-bangalore", label: "iPhone Repair Bangalore" },
+  { href: "/samsung-repair-bangalore", label: "Samsung Repair Bangalore" },
+  { href: "/laptop-repair-bangalore", label: "Laptop Repair Bangalore" },
+  { href: "/cctv-installation-bangalore", label: "CCTV Installation Bangalore" },
 ];
 
 const companyLinks = [
@@ -119,7 +127,7 @@ export function HomepageFooter() {
             </div>
           </div>
 
-          {/* Column 2: Sell */}
+          {/* Column 2: Sell in Bangalore */}
           <div>
             <h4 className="mb-4 text-sm font-bold uppercase tracking-wider text-white">
               Sell Device
@@ -151,13 +159,13 @@ export function HomepageFooter() {
             </ul>
           </div>
 
-          {/* Column 4: Company */}
+          {/* Column 4: Bangalore Services */}
           <div>
             <h4 className="mb-4 text-sm font-bold uppercase tracking-wider text-white">
-              Company
+              Bangalore Services
             </h4>
             <ul className="space-y-2.5">
-              {companyLinks.map((link) => (
+              {bangaloreServiceLinks.map((link) => (
                 <li key={link.href}>
                   <Link href={link.href} className="text-sm text-gray-400 transition-colors hover:text-primary">
                     {link.label}
@@ -170,7 +178,7 @@ export function HomepageFooter() {
           {/* Column 5: Support */}
           <div>
             <h4 className="mb-4 text-sm font-bold uppercase tracking-wider text-white">
-              Support
+              Support & Legal
             </h4>
             <ul className="space-y-2.5">
               {supportLinks.map((link) => (

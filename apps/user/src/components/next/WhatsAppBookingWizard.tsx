@@ -64,7 +64,7 @@ const SERVICES: ServiceOption[] = [
   { id: "mobile_repair", label: "Mobile Repair", icon: Smartphone, description: "Doorstep phone repair" },
   { id: "laptop_repair", label: "Laptop Repair", icon: Laptop, description: "Laptop repair & diagnostics" },
   { id: "screen_guard", label: "Screen Guard", icon: Shield, description: "Premium screen protection" },
-  { id: "sell_device", label: "Sell Device", icon: Phone, description: "Sell for instant cash" },
+  { id: "sell_device", label: "Sell Device", icon: Phone, description: "Sell for instant payment" },
   { id: "cctv", label: "CCTV Installation", icon: Camera, description: "CCTV setup & repair" },
   { id: "desktop_assembly", label: "Desktop Assembly", icon: Monitor, description: "Custom PC build" },
   { id: "it_support", label: "IT Support", icon: Wrench, description: "On-site IT help" },

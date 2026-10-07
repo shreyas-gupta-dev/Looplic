@@ -41,8 +41,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const { sellCategory, brand, series, model } = data;
   return buildPageMetadata({
-    title: `Sell ${deviceDisplayName(brand.name, model.name)} for Instant Cash`,
-    description: `Get an instant buyback quote for your ${deviceDisplayName(brand.name, model.name)} — free doorstep pickup and same-day UPI or bank payment in Bangalore.`,
+    title: `Sell ${deviceDisplayName(brand.name, model.name)} for Instant Payment in Bangalore`,
+    description: `Get an estimated resale value for your ${deviceDisplayName(brand.name, model.name)} — free doorstep pickup and instant UPI or bank payment after inspection in Bangalore.`,
     pathname: `/sell/${sellCategory}/${brand.slug}/${series.slug}/${model.slug}`,
   });
 }

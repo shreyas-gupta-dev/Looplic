@@ -9,19 +9,19 @@ import { siteConfig } from "@/src/lib/site";
 export const revalidate = 300;
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Sell Your Old Phone or Laptop for Instant Cash",
+  title: "Sell Your Old Phone or Laptop for Instant Payment in Bangalore",
   description:
-    "Sell your old phone or laptop with Looplic. Get instant price quotes, free doorstep pickup, and same-day payment via UPI or bank transfer. Best price guaranteed across India.",
+    "Sell your old phone or laptop in Bangalore with Looplic. Get an estimated resale value in 60s, free doorstep pickup, device inspection before final offer, and instant UPI/Bank payment.",
   pathname: "/sell",
   keywords: [
-    "sell old phone",
-    "sell used phone",
-    "sell old laptop",
-    "sell used laptop",
-    "phone buyback",
-    "laptop buyback",
-    "instant cash for phone",
-    "doorstep phone pickup",
+    "sell old phone Bangalore",
+    "sell used phone Bangalore",
+    "sell old laptop Bangalore",
+    "sell used laptop Bangalore",
+    "phone buyback Bangalore",
+    "laptop buyback Bangalore",
+    "instant payment for phone",
+    "doorstep phone pickup Bangalore",
     "Looplic",
   ],
 });
