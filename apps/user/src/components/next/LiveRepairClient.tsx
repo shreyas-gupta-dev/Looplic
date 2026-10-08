@@ -180,12 +180,16 @@ export function LiveRepairClient() {
       try {
         await containerRef.current.requestFullscreen();
         setIsFullscreen(true);
-      } catch {}
+      } catch {
+        // Fullscreen request denied or not supported
+      }
     } else {
       try {
         await document.exitFullscreen();
         setIsFullscreen(false);
-      } catch {}
+      } catch {
+        // Exit fullscreen failed
+      }
     }
   }
 
@@ -197,7 +201,9 @@ export function LiveRepairClient() {
       } else if (document.pictureInPictureEnabled) {
         await videoRef.current.requestPictureInPicture();
       }
-    } catch {}
+    } catch {
+      // PiP not supported or rejected
+    }
   }
 
   function handleTrackSubmit(e: React.FormEvent) {

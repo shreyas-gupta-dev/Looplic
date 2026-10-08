@@ -47,6 +47,8 @@ export type TrackedBooking = {
   scheduledDate: string | null;
   timeSlot: string | null;
   location: string | null;
+  pincode?: string | null;
+  price?: string | null;
   createdAt: string;
   customerNameMasked: string;
   phoneMasked: string;
@@ -101,12 +103,17 @@ type BookingRow = {
   scheduledDate: string | null;
   timeSlot: string | null;
   location: string | null;
+  pincode: string | null;
+  cctvBrand: string | null;
+  cctvService: string | null;
+  guardType: string | null;
   createdAt: Date;
   brandName: string | null;
   seriesName: string | null;
   modelName: string | null;
   categoryName: string | null;
   subcategoryName: string | null;
+  subcategoryPrice: string | null;
 };
 
 async function selectBooking(where: ReturnType<typeof eq>): Promise<BookingRow | null> {
@@ -121,12 +128,17 @@ async function selectBooking(where: ReturnType<typeof eq>): Promise<BookingRow |
       scheduledDate: bookings.scheduledDate,
       timeSlot: bookings.timeSlot,
       location: bookings.location,
+      pincode: bookings.pincode,
+      cctvBrand: bookings.cctvBrand,
+      cctvService: bookings.cctvService,
+      guardType: bookings.guardType,
       createdAt: bookings.createdAt,
       brandName: brands.name,
       seriesName: series.name,
       modelName: models.name,
       categoryName: repairCategories.name,
       subcategoryName: repairSubcategories.name,
+      subcategoryPrice: repairSubcategories.price,
     })
     .from(bookings)
     .leftJoin(models, eq(bookings.modelId, models.id))
@@ -174,8 +186,17 @@ async function toTrackedBooking(row: BookingRow): Promise<TrackedBooking> {
     ];
   }
 
-  const deviceLabel = [row.brandName, row.modelName].filter(Boolean).join(" ") || null;
-  const repairLabel = row.subcategoryName || row.categoryName || null;
+  const deviceLabel =
+    [row.brandName, row.modelName].filter(Boolean).join(" ") ||
+    (row.cctvBrand ? `${row.cctvBrand} CCTV` : null) ||
+    null;
+  const repairLabel =
+    row.subcategoryName ||
+    row.categoryName ||
+    row.guardType ||
+    row.cctvService ||
+    null;
+  const price = row.subcategoryPrice ? String(row.subcategoryPrice) : null;
 
   return {
     bookingCode: row.bookingCode ?? "",
@@ -192,6 +213,8 @@ async function toTrackedBooking(row: BookingRow): Promise<TrackedBooking> {
     scheduledDate: row.scheduledDate,
     timeSlot: row.timeSlot,
     location: row.location,
+    pincode: row.pincode,
+    price,
     createdAt: row.createdAt.toISOString(),
     customerNameMasked: maskName(row.customerName),
     phoneMasked: maskPhone(row.customerPhone),

@@ -56,14 +56,44 @@ export async function POST(request: Request) {
     // Generate 6-digit numeric OTP and save to database
     const otpCode = await generateAndSaveEmailOtp(normalizedIdentifier);
 
-    // Send email via Resend directly from Looplic <support@looplic.com>
-    const emailRes = await sendOtpEmail({
-      to: normalizedIdentifier,
-      code: otpCode,
-    });
+    let sent = false;
 
-    if (!emailRes.ok) {
-      console.error("[send-otp] Failed to deliver OTP email via Resend:", emailRes.error);
+    // Send email via Resend directly from Looplic <support@looplic.com>
+    try {
+      const emailRes = await sendOtpEmail({
+        to: normalizedIdentifier,
+        code: otpCode,
+      });
+
+      if (emailRes.ok) {
+        sent = true;
+      } else {
+        console.warn("[send-otp] Resend delivery unavailable/unverified, falling back to Supabase:", emailRes.error);
+      }
+    } catch (err) {
+      console.warn("[send-otp] Resend threw error, falling back to Supabase:", err);
+    }
+
+    // Fall back to Supabase's built-in OTP mailer if Resend failed
+    if (!sent) {
+      try {
+        const admin = getAdminSupabase();
+        const { error: supaError } = await admin.auth.signInWithOtp({
+          email: normalizedIdentifier,
+          options: { shouldCreateUser: true },
+        });
+
+        if (!supaError) {
+          sent = true;
+        } else {
+          console.error("[send-otp] Supabase signInWithOtp fallback error:", supaError.message);
+        }
+      } catch (err) {
+        console.error("[send-otp] Supabase fallback exception:", err);
+      }
+    }
+
+    if (!sent) {
       return NextResponse.json(
         { error: "Failed to send verification email. Please check your email address or try again later." },
         { status: 500 },

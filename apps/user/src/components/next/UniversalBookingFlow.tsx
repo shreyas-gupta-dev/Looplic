@@ -778,6 +778,28 @@ export function UniversalBookingFlow({
     toast.success("Booking confirmed!");
     setBookedCode(bookingCode);
     setBooked(true);
+
+    try {
+      sessionStorage.setItem(
+        "looplic_last_booking",
+        JSON.stringify({
+          bookingCode,
+          phone,
+          name,
+          address: [address, city, pincode].filter(Boolean).join(", "),
+          city,
+          pincode,
+          device: isDeviceFlow && brand && series && model ? `${brand.name} ${model.name}` : undefined,
+          service: displayLabel,
+          price: isDeviceFlow ? selectedPrice : undefined,
+          scheduledDate,
+          timeSlot,
+        }),
+      );
+    } catch {
+      // Ignore sessionStorage errors
+    }
+
     const thankYouUrl = buildThankYouHref({
       type: "booking",
       source: "universal_booking_flow",
@@ -791,6 +813,8 @@ export function UniversalBookingFlow({
       name,
       price: isDeviceFlow ? selectedPrice : undefined,
       address: [address, city, pincode].filter(Boolean).join(", "),
+      city,
+      pincode,
     });
     router.push(thankYouUrl);
     } catch (err: any) {

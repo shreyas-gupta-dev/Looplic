@@ -320,6 +320,29 @@ export function SimpleBookingFlowClient({ serviceSlug }: { serviceSlug: string }
     setBookedCode(bookingCode);
     setBooked(true);
     setSubmitting(false);
+
+    const deviceName = isCctv && selectedCctvBrand ? `${selectedCctvBrand} CCTV` : serviceLabel;
+
+    try {
+      sessionStorage.setItem(
+        "looplic_last_booking",
+        JSON.stringify({
+          bookingCode,
+          phone,
+          name,
+          address: [address, city, pincode].filter(Boolean).join(", "),
+          city,
+          pincode,
+          device: deviceName,
+          service: serviceLabel,
+          scheduledDate,
+          timeSlot,
+        }),
+      );
+    } catch {
+      // Ignore sessionStorage errors
+    }
+
     router.push(
       buildThankYouHref({
         type: "booking",
@@ -327,12 +350,14 @@ export function SimpleBookingFlowClient({ serviceSlug }: { serviceSlug: string }
         booking_code: bookingCode,
         service_type: serviceType,
         service_label: serviceLabel,
-        device: isCctv && selectedCctvBrand ? `${selectedCctvBrand} CCTV` : serviceLabel,
+        device: deviceName,
         scheduled_date: scheduledDate,
         time_slot: timeSlot,
         phone,
         name,
         address: [address, city, pincode].filter(Boolean).join(", "),
+        city,
+        pincode,
       }),
     );
   }

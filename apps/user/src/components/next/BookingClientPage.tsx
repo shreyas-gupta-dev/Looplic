@@ -197,6 +197,26 @@ export function BookingClientPage({
     setBookedCode(bookingCode);
     setBooked(true);
     setSubmitting(false);
+
+    try {
+      sessionStorage.setItem(
+        "looplic_last_booking",
+        JSON.stringify({
+          bookingCode,
+          phone,
+          name,
+          address: [address, city, pincode].filter(Boolean).join(", "),
+          city,
+          pincode,
+          device: `${brand.name} ${model.name}`,
+          service: selectedItemLabel,
+          price: selectedPrice || undefined,
+        }),
+      );
+    } catch {
+      // Ignore sessionStorage errors
+    }
+
     router.push(
       buildThankYouHref({
         type: "booking",
@@ -209,6 +229,8 @@ export function BookingClientPage({
         name,
         price: selectedPrice || undefined,
         address: [address, city, pincode].filter(Boolean).join(", "),
+        city,
+        pincode,
       }),
     );
   }

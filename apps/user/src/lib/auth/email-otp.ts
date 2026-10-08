@@ -66,14 +66,18 @@ export async function verifyEmailOtp(
   if (new Date() > new Date(record.expiresAt)) {
     try {
       await db.delete(authEmailOtps).where(eq(authEmailOtps.id, record.id));
-    } catch {}
+    } catch {
+      // Best-effort cleanup
+    }
     return { valid: false, error: "Verification code has expired. Please request a new one." };
   }
 
   if (record.attempts >= MAX_ATTEMPTS) {
     try {
       await db.delete(authEmailOtps).where(eq(authEmailOtps.id, record.id));
-    } catch {}
+    } catch {
+      // Best-effort cleanup
+    }
     return { valid: false, error: "Too many incorrect attempts. Please request a new code." };
   }
 
@@ -83,14 +87,18 @@ export async function verifyEmailOtp(
         .update(authEmailOtps)
         .set({ attempts: record.attempts + 1 })
         .where(eq(authEmailOtps.id, record.id));
-    } catch {}
+    } catch {
+      // Best-effort update
+    }
     return { valid: false, error: "Incorrect verification code. Please check and try again." };
   }
 
   // Code matched! Delete consumed OTP
   try {
     await db.delete(authEmailOtps).where(eq(authEmailOtps.id, record.id));
-  } catch {}
+  } catch {
+    // Best-effort cleanup
+  }
 
   return { valid: true };
 }

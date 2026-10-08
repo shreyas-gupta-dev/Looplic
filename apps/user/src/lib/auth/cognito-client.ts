@@ -96,7 +96,7 @@ export async function signInWithEmail(email: string, password: string, verificat
       const confirmResponse = await fetch("/api/auth/confirm-user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: normalizedEmail, verificationToken }),
+        body: JSON.stringify({ email: normalizedEmail, password: password.trim(), verificationToken }),
       });
 
       if (confirmResponse.ok) {

@@ -199,7 +199,9 @@ export function AuthPageClient() {
                 type: "phone_detected",
                 name: checkData.name,
               });
-            } catch {}
+            } catch {
+              // Ignore check error
+            }
             toast.info("Phone SMS is currently unavailable. Please sign in with your email address or Google.");
             return;
           }
@@ -259,33 +261,37 @@ export function AuthPageClient() {
       return;
     }
 
-    // Sign Up: direct account creation with email + password + name
+    // Sign Up: send verification code before creating account
     if (mode === "signup") {
       setSubmitting("email");
       try {
         if (inputMethod === "email") {
-          const result = await signUpWithEmail(email, password, name);
-          if (result.isSignUpComplete) {
-            toast.success("Account created successfully! Welcome to Looplic.");
-            navigateAfterAuth(redirect);
+          const checkRes = await fetch("/api/auth/check-account", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ identifier: email.trim() }),
+          });
+          const checkData = await checkRes.json();
+          if (checkData.exists) {
+            setAuthNotice({
+              type: "wrong_password",
+              email: email.trim(),
+              name: checkData.name,
+              providers: checkData.providers,
+            });
+            toast.error("An account with this email already exists. We've switched you to Sign In.");
+            setAuthMode("login");
+            setSubmitting(null);
             return;
-          } else {
-            toast.error("Account created, but sign-in is incomplete. Please sign in with your password.");
-            setMode("login");
           }
         }
+
+        await sendOtp(identifier);
+        toast.success(`Verification code sent to your ${inputMethod === "email" ? "email" : "phone"}`);
+        setStep("otp");
+        setOtpResendCountdown(60);
       } catch (err: any) {
-        const msg = err.message || "";
-        if (msg.includes("already exists") || msg.includes("already been registered")) {
-          setAuthNotice({
-            type: "wrong_password",
-            email: email.trim(),
-          });
-          toast.error("An account with this email already exists. We've switched you to Sign In.");
-          setAuthMode("login");
-        } else {
-          toast.error(msg || "Failed to create account. Please try again.");
-        }
+        toast.error(err.message || "Failed to send verification code");
       } finally {
         setSubmitting(null);
       }
@@ -359,35 +365,47 @@ export function AuthPageClient() {
         if (inputMethod === "email") {
           const result = await signUpWithEmail(email, password, name, verificationToken!);
           if (result.isSignUpComplete) {
-            toast.success("Account created successfully!");
+            toast.success("Account created successfully! Welcome to Looplic.");
             navigateAfterAuth(redirect);
           }
         } else {
           const result = await signUpWithPhone(phone, password, name, verificationToken!);
           if (result.isSignUpComplete) {
-            toast.success("Account created successfully!");
+            toast.success("Account created successfully! Welcome to Looplic.");
             navigateAfterAuth(redirect);
           }
         }
       } else {
-        // Sign in with password or passwordless session
+        // Sign in with passwordless session or password
         if (inputMethod === "email") {
-          if (!password.trim() && magicLinkTokenHash) {
-            const supabase = getBrowserSupabase();
-            const { error: sessionError } = await supabase.auth.verifyOtp({
-              token_hash: magicLinkTokenHash,
-              type: "magiclink",
-            });
-            if (sessionError) throw new Error(sessionError.message);
+          if (magicLinkTokenHash) {
+            try {
+              const supabase = getBrowserSupabase();
+              const { error: sessionError } = await supabase.auth.verifyOtp({
+                token_hash: magicLinkTokenHash,
+                type: "magiclink",
+              });
+              if (!sessionError) {
+                toast.success("Welcome back!");
+                navigateAfterAuth(redirect);
+                return;
+              }
+            } catch (err) {
+              console.warn("Magiclink verification failed, falling back to credentials:", err);
+            }
+          }
+
+          if (password.trim()) {
+            const result = await signInWithEmail(email, password, verificationToken);
+            if (result.isSignedIn) {
+              toast.success("Welcome back!");
+              navigateAfterAuth(redirect);
+              return;
+            }
+          } else {
             toast.success("Welcome back!");
             navigateAfterAuth(redirect);
             return;
-          }
-
-          const result = await signInWithEmail(email, password, verificationToken);
-          if (result.isSignedIn) {
-            toast.success("Welcome back!");
-            navigateAfterAuth(redirect);
           }
         } else {
           const result = await signInWithPhone(phone, password);

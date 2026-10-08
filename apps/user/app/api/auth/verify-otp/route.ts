@@ -60,9 +60,47 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "OTP verification failed" }, { status: 400 });
       }
     } else {
+      let isOtpValid = false;
+      let checkError: string | undefined;
+
+      // 1. Check local DB OTP
       const check = await verifyEmailOtp(normalizedIdentifier, token.trim());
-      if (!check.valid) {
-        return NextResponse.json({ error: check.error || "Invalid OTP code" }, { status: 400 });
+      if (check.valid) {
+        isOtpValid = true;
+      } else {
+        // 2. Check Supabase OTP (for OTPs delivered via Supabase fallback)
+        try {
+          const supabase = createClient(supabaseUrl, serviceRoleKey, {
+            auth: { autoRefreshToken: false, persistSession: false },
+          });
+          const { data: supaData, error: supaError } = await supabase.auth.verifyOtp({
+            email: normalizedIdentifier,
+            token: token.trim(),
+            type: "email",
+          });
+
+          if (!supaError && (supaData?.session || supaData?.user)) {
+            isOtpValid = true;
+          } else {
+            // Also test signup type
+            const { data: supaSignup, error: supaSignupErr } = await supabase.auth.verifyOtp({
+              email: normalizedIdentifier,
+              token: token.trim(),
+              type: "signup",
+            });
+            if (!supaSignupErr && (supaSignup?.session || supaSignup?.user)) {
+              isOtpValid = true;
+            } else {
+              checkError = check.error || supaError?.message || "Invalid OTP code";
+            }
+          }
+        } catch {
+          checkError = check.error;
+        }
+      }
+
+      if (!isOtpValid) {
+        return NextResponse.json({ error: checkError || "Invalid OTP code" }, { status: 400 });
       }
 
       if (hasServiceRole) {

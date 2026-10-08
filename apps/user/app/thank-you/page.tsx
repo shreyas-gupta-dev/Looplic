@@ -33,6 +33,8 @@ type ThankYouPageProps = {
     name?: string;
     price?: string;
     address?: string;
+    city?: string;
+    pincode?: string;
     source?: string;
   }>;
 };
@@ -58,7 +60,9 @@ export default async function ThankYouPage({ searchParams }: ThankYouPageProps) 
   const resolvedName = dbBooking?.customerNameMasked || resolved?.name || "Customer";
   const resolvedPhone = resolved?.phone || dbBooking?.phoneMasked || undefined;
   const resolvedAddress = dbBooking?.location || resolved?.address || undefined;
-  const resolvedPrice = resolved?.price || undefined;
+  const resolvedCity = resolved?.city || undefined;
+  const resolvedPincode = dbBooking?.pincode || resolved?.pincode || undefined;
+  const resolvedPrice = resolved?.price || dbBooking?.price || undefined;
   const resolvedStatus = dbBooking?.status || "pending";
   const resolvedCreatedAt = dbBooking?.createdAt || undefined;
   const resolvedHistory = dbBooking?.history || undefined;
@@ -83,6 +87,8 @@ export default async function ThankYouPage({ searchParams }: ThankYouPageProps) 
             scheduledDate={resolvedDate}
             timeSlot={resolvedTimeSlot}
             address={resolvedAddress}
+            city={resolvedCity}
+            pincode={resolvedPincode}
             price={resolvedPrice}
             status={resolvedStatus}
             createdAt={resolvedCreatedAt}
