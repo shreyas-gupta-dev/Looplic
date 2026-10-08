@@ -63,22 +63,22 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/admin/:path*",
-        destination: process.env.NODE_ENV === "production" ? "https://admin.looplic.com/admin/:path*" : "http://localhost:3001/admin/:path*",
+        destination: process.env.NEXT_PUBLIC_ADMIN_URL || (process.env.NODE_ENV === "production" ? "https://looplic-admin-mu.vercel.app/admin/:path*" : "http://localhost:3001/admin/:path*"),
         permanent: false,
       },
       {
         source: "/operator/:path*",
-        destination: process.env.NODE_ENV === "production" ? "https://admin.looplic.com/operator/:path*" : "http://localhost:3003/operator/:path*",
+        destination: process.env.NEXT_PUBLIC_OPERATOR_URL || (process.env.NODE_ENV === "production" ? "https://looplic-operator-tan.vercel.app/operator/:path*" : "http://localhost:3003/operator/:path*"),
         permanent: false,
       },
       {
         source: "/operation/:path*",
-        destination: process.env.NODE_ENV === "production" ? "https://admin.looplic.com/operation/:path*" : "http://localhost:3003/operation/:path*",
+        destination: process.env.NEXT_PUBLIC_OPERATOR_URL || (process.env.NODE_ENV === "production" ? "https://looplic-operator-tan.vercel.app/operator/:path*" : "http://localhost:3003/operation/:path*"),
         permanent: false,
       },
       {
         source: "/technician/:path*",
-        destination: process.env.NODE_ENV === "production" ? "https://tech.looplic.com/technician/:path*" : "http://localhost:3002/technician/:path*",
+        destination: process.env.NEXT_PUBLIC_TECH_URL || (process.env.NODE_ENV === "production" ? "https://looplic-technician-seven.vercel.app/technician/:path*" : "http://localhost:3002/technician/:path*"),
         permanent: false,
       },
     ];

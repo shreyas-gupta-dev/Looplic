@@ -6,12 +6,12 @@ with no row in `user_roles` is a customer.
 
 ## Apps, ports and roles
 
-| App | Local port | Local URL | Production | Required role |
-| --- | --- | --- | --- | --- |
-| `apps/user` | 3000 | http://localhost:3000 | https://www.looplic.com | none (customers) |
-| `apps/admin` | 3001 | http://localhost:3001/admin | https://admin.looplic.com/admin | `admin` |
-| `apps/technician` | 3002 | http://localhost:3002/technician | https://tech.looplic.com/technician | `technician` |
-| `apps/operator` | 3003 | http://localhost:3003/operator | https://admin.looplic.com/operator | `operation` |
+| App | Local port | Local URL | Production Live URL | Canonical Subdomain | Required role |
+| --- | --- | --- | --- | --- | --- |
+| `apps/user` | 3000 | http://localhost:3000 | https://looplic.com | https://www.looplic.com | none (customers) |
+| `apps/admin` | 3001 | http://localhost:3001/admin | https://looplic-admin-mu.vercel.app/admin | https://admin.looplic.com/admin | `admin` |
+| `apps/technician` | 3002 | http://localhost:3002/technician | https://looplic-technician-seven.vercel.app/technician | https://tech.looplic.com/technician | `technician` |
+| `apps/operator` | 3003 | http://localhost:3003/operator | https://looplic-operator-tan.vercel.app/operator | https://admin.looplic.com/operator | `operation` |
 
 Note the role name for the operator portal is `operation`, not `operator`. The
 admin app also serves `/operation` for that role.

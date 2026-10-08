@@ -6,9 +6,14 @@ import { NextResponse, type NextRequest } from "next/server";
 // never "the operator site" on its own.
 const CANONICAL_HOST = "operator.looplic.com";
 
-function isLocalHost(host: string) {
+function isBypassedHost(host: string) {
   const hostname = host.split(":")[0];
-  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]";
+  return (
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname === "[::1]" ||
+    hostname.endsWith(".vercel.app")
+  );
 }
 
 export function middleware(request: NextRequest) {
@@ -16,7 +21,7 @@ export function middleware(request: NextRequest) {
   const host = request.headers.get("host")?.toLowerCase();
   const forwardedProto = request.headers.get("x-forwarded-proto");
 
-  if (host && !isLocalHost(host) && (host !== CANONICAL_HOST || forwardedProto === "http")) {
+  if (host && !isBypassedHost(host) && (host !== CANONICAL_HOST || forwardedProto === "http")) {
     const canonicalUrl = nextUrl.clone();
     canonicalUrl.protocol = "https:";
     canonicalUrl.host = CANONICAL_HOST;

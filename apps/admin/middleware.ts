@@ -12,9 +12,14 @@ const ADMIN_HOST = "admin.looplic.com";
 const OPERATOR_HOST = "operator.looplic.com";
 const CANONICAL_HOSTS = new Set([ADMIN_HOST, OPERATOR_HOST]);
 
-function isLocalHost(host: string) {
+function isBypassedHost(host: string) {
   const hostname = host.split(":")[0];
-  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]";
+  return (
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname === "[::1]" ||
+    hostname.endsWith(".vercel.app")
+  );
 }
 
 export async function middleware(request: NextRequest) {
@@ -23,7 +28,7 @@ export async function middleware(request: NextRequest) {
   const hostname = host?.split(":")[0];
   const forwardedProto = request.headers.get("x-forwarded-proto");
 
-  if (host && !isLocalHost(host)) {
+  if (host && !isBypassedHost(host)) {
     const isCanonical = hostname ? CANONICAL_HOSTS.has(hostname) : false;
 
     // Force HTTPS on the canonical hosts, and send any non-canonical host to the
