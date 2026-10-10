@@ -42,13 +42,20 @@ export async function GET(request: Request) {
     });
 
     if (error) {
+      const errorTarget = type === "recovery" ? "/auth/reset-password" : "/auth";
       const errorResponse = NextResponse.redirect(
-        new URL(`/auth/reset-password?error=${encodeURIComponent(error.message)}`, origin),
+        new URL(`${errorTarget}?error=${encodeURIComponent(error.message)}`, origin),
       );
       return errorResponse;
     }
 
-    const response = NextResponse.redirect(new URL(safeNext || "/auth/reset-password", origin));
+    const destination =
+      type === "recovery"
+        ? safeNext || "/auth/reset-password"
+        : safeNext || "/account";
+
+    const response = NextResponse.redirect(new URL(destination, origin));
+    response.cookies.set(OAUTH_REDIRECT_COOKIE, "", { path: "/", maxAge: 0 });
     return response;
   }
 

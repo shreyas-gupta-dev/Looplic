@@ -52,37 +52,11 @@ export async function POST(request: Request) {
     const admin = getAdminSupabase();
     const { error } = await admin.auth.resetPasswordForEmail(normalizedEmail, { redirectTo });
 
-    let directResetUrl: string | undefined;
-    let emailOtp: string | undefined;
-
-    try {
-      const linkRes = await admin.auth.admin.generateLink({
-        type: "recovery",
-        email: normalizedEmail,
-        options: {
-          redirectTo,
-        },
-      });
-
-      if (linkRes.data?.properties?.hashed_token) {
-        // Direct link on our site that verifies token_hash without bouncing through localhost:
-        directResetUrl = `${origin}/auth/reset-password?token_hash=${linkRes.data.properties.hashed_token}&type=recovery`;
-      } else if (linkRes.data?.properties?.action_link) {
-        directResetUrl = linkRes.data.properties.action_link;
-      }
-
-      if (linkRes.data?.properties?.email_otp) {
-        emailOtp = linkRes.data.properties.email_otp;
-      }
-    } catch (err) {
-      console.warn("[request-password-reset] Could not generate direct recovery link:", err);
-    }
-
     if (error) {
       console.error("[auth] resetPasswordForEmail failed:", error.message);
     }
 
-    return NextResponse.json({ success: true, directResetUrl, emailOtp });
+    return uniformOk;
   } catch (err: unknown) {
     console.error("[auth] password reset request threw:", err);
     return uniformOk;

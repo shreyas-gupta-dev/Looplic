@@ -114,6 +114,36 @@ export function AuthPageClient() {
     }
   }, [step]);
 
+  // Listen for session completion while on OTP step (e.g. user clicked email confirmation link)
+  useEffect(() => {
+    if (step !== "otp") return;
+    const supabase = getBrowserSupabase();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        toast.success("Email verified! Redirecting to your account...");
+        navigateAfterAuth(redirect);
+      }
+    });
+
+    const interval = setInterval(async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (data?.session?.user) {
+          toast.success("Email verified! Redirecting to your account...");
+          navigateAfterAuth(redirect);
+        }
+      } catch {
+        // Ignore background polling errors
+      }
+    }, 2500);
+
+    return () => {
+      authListener.subscription.unsubscribe();
+      clearInterval(interval);
+    };
+  }, [step, redirect]);
+
   function navigateAfterAuth(target: string) {
     const destination = sanitizeRedirect(target);
     if (typeof window !== "undefined") {
@@ -532,14 +562,16 @@ export function AuthPageClient() {
               </div>
               <h2 className="mt-4 text-2xl font-semibold tracking-tight text-foreground">
                 {step === "otp"
-                  ? "Verify OTP"
+                  ? (inputMethod === "email" ? "Check your email" : "Verify OTP")
                   : mode === "login"
                     ? "Welcome back"
                     : "Create your account"}
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 {step === "otp"
-                  ? `Enter the 6-digit code sent to your ${inputMethod === "email" ? "email" : "phone"}`
+                  ? (inputMethod === "email"
+                      ? "Click the confirmation link sent to your email to sign in instantly, or enter your 6-digit code below."
+                      : "Enter the 6-digit code sent to your phone.")
                   : mode === "login"
                     ? "Sign in with your credentials to access your account."
                     : "Create your account to start booking repairs and tracking devices."}
@@ -826,11 +858,19 @@ export function AuthPageClient() {
                 </button>
 
                 {/* OTP identifier display */}
-                <div className="rounded-2xl border border-primary/15 bg-primary/[0.04] p-3 text-center">
-                  <p className="text-xs text-muted-foreground">OTP sent to</p>
-                  <p className="mt-0.5 text-sm font-bold text-foreground">
+                <div className="rounded-2xl border border-primary/15 bg-primary/[0.04] p-3.5 text-center">
+                  <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-primary">
+                    <Mail className="size-3.5" />
+                    {inputMethod === "email" ? "Verification email sent" : "OTP sent to phone"}
+                  </div>
+                  <p className="mt-1 text-sm font-bold text-foreground">
                     {inputMethod === "email" ? email : phone}
                   </p>
+                  {inputMethod === "email" && (
+                    <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+                      Click the confirmation link in your email to sign in automatically, or enter your 6-digit code below.
+                    </p>
+                  )}
                 </div>
 
                 {/* OTP Input */}
@@ -855,7 +895,7 @@ export function AuthPageClient() {
                 <div className="text-center">
                   {otpResendCountdown > 0 ? (
                     <p className="text-xs text-muted-foreground">
-                      Resend OTP in <span className="font-bold text-foreground">{otpResendCountdown}s</span>
+                      Resend in <span className="font-bold text-foreground">{otpResendCountdown}s</span>
                     </p>
                   ) : (
                     <button
@@ -864,7 +904,7 @@ export function AuthPageClient() {
                       disabled={otpSending}
                       className="text-xs font-bold text-primary hover:underline disabled:opacity-60"
                     >
-                      {otpSending ? "Sending..." : "Resend OTP"}
+                      {otpSending ? "Sending..." : "Resend code/link"}
                     </button>
                   )}
                 </div>
@@ -882,6 +922,28 @@ export function AuthPageClient() {
                       ? "Verify & Sign In"
                       : "Verify & Create Account"}
                 </button>
+
+                {/* Manual session check helper */}
+                {inputMethod === "email" && (
+                  <div className="pt-1 text-center">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const supabase = getBrowserSupabase();
+                        const { data } = await supabase.auth.getSession();
+                        if (data?.session?.user) {
+                          toast.success("Email verified! Redirecting to your account...");
+                          navigateAfterAuth(redirect);
+                        } else {
+                          toast.info("No active session detected yet. Please click the link in your email or enter your code.");
+                        }
+                      }}
+                      className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      Already clicked the link in your email? Click here to continue &rarr;
+                    </button>
+                  </div>
+                )}
               </form>
             )}
 

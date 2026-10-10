@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { isPhoneIdentifier, normalizeIdentifier } from "@/src/lib/auth/admin-users";
+import { appUrl } from "@/src/lib/auth/config";
 import { generateAndSaveEmailOtp } from "@/src/lib/auth/email-otp";
 import { sendOtpEmail } from "@/src/lib/email/resend";
 import { guardRateLimit } from "@/src/lib/rate-limit";
@@ -57,6 +58,7 @@ export async function POST(request: Request) {
     const otpCode = await generateAndSaveEmailOtp(normalizedIdentifier);
 
     let sent = false;
+    let sentViaResend = false;
 
     // Send email via Resend directly from Looplic <support@looplic.com>
     try {
@@ -67,6 +69,7 @@ export async function POST(request: Request) {
 
       if (emailRes.ok) {
         sent = true;
+        sentViaResend = true;
       } else {
         console.warn("[send-otp] Resend delivery unavailable/unverified, falling back to Supabase:", emailRes.error);
       }
@@ -77,10 +80,15 @@ export async function POST(request: Request) {
     // Fall back to Supabase's built-in OTP mailer if Resend failed
     if (!sent) {
       try {
+        const origin = resolveOrigin(request);
+        const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent("/account")}`;
         const admin = getAdminSupabase();
         const { error: supaError } = await admin.auth.signInWithOtp({
           email: normalizedIdentifier,
-          options: { shouldCreateUser: true },
+          options: {
+            shouldCreateUser: true,
+            emailRedirectTo: redirectTo,
+          },
         });
 
         if (!supaError) {
@@ -100,7 +108,11 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json({ success: true, message: "OTP sent to email" });
+    return NextResponse.json({
+      success: true,
+      message: "Verification code/link sent to email",
+      deliveryMethod: sentViaResend ? "otp" : "link_and_otp",
+    });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Failed to send OTP";
     return NextResponse.json({ error: message }, { status: 500 });
@@ -115,5 +127,29 @@ function friendlyOtpError(message: string): string {
     return "Please wait a few seconds before requesting another code, then try again.";
   }
   return message;
+}
+
+/**
+ * Behind Amplify/CloudFront/Vercel the request origin is an internal localhost, so the
+ * public host has to come from Origin, x-forwarded-host or the configured app URL.
+ */
+function resolveOrigin(request: Request): string {
+  const headerOrigin = request.headers.get("origin");
+  if (headerOrigin && !headerOrigin.includes("localhost") && !headerOrigin.includes("127.0.0.1")) {
+    return headerOrigin;
+  }
+
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  if (forwardedHost) {
+    const proto = request.headers.get("x-forwarded-proto") ?? "https";
+    return `${proto}://${forwardedHost}`;
+  }
+
+  const url = new URL(request.url);
+  if (url.hostname === "localhost" || url.hostname === "127.0.0.1") {
+    return url.origin;
+  }
+
+  return appUrl;
 }
 
