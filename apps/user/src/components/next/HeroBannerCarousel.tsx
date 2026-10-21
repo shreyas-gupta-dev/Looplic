@@ -615,85 +615,7 @@ export function HeroBannerCarousel({ brands = [], models = [] }: HeroBannerCarou
           className="w-full overflow-hidden rounded-2xl border border-gray-200/70 bg-white shadow-sm"
         >
           <div className="flex">
-            {SLIDES.map((slide) => {
-              const TagIcon = slide.taglineIcon;
-              return (
-                <div key={slide.id} className="min-w-0 flex-[0_0_100%]">
-                  {/* The whole banner slide is an accessible, clickable Link */}
-                  <Link
-                    href={slide.ctaHref}
-                    className={`group relative block overflow-hidden ${slide.bgGradient} p-5 sm:p-7 md:p-9 lg:p-10 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20`}
-                  >
-                    {/* Subtle ambient light shapes */}
-                    <div className="pointer-events-none absolute -right-16 -top-16 size-72 rounded-full bg-white/60 blur-3xl" />
-                    <div className="pointer-events-none absolute -bottom-16 -left-16 size-72 rounded-full bg-white/60 blur-3xl" />
-
-                    {/* 2-Column Responsive Layout */}
-                    <div className="relative z-10 grid grid-cols-1 items-center gap-6 md:grid-cols-12 md:gap-8">
-                      {/* Left Column: Content */}
-                      <div className="flex flex-col items-start md:col-span-7 lg:col-span-7">
-                        {/* Tagline Badge */}
-                        <div
-                          className={`mb-2.5 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-bold tracking-wide shadow-xs ${slide.taglineStyle}`}
-                        >
-                          {TagIcon && <TagIcon className="size-3.5 shrink-0" />}
-                          <span>{slide.tagline}</span>
-                        </div>
-
-                        {/* Main Headline */}
-                        <h2 className="text-xl font-black tracking-tight text-slate-900 sm:text-2xl md:text-3xl lg:text-[2rem] lg:leading-tight">
-                          {slide.headlinePrefix}
-                          <span className={slide.headlineHighlightColor}>
-                            {slide.headlineHighlight}
-                          </span>
-                        </h2>
-
-                        {/* Description */}
-                        <p className="mt-2 text-xs leading-relaxed text-slate-600 sm:text-sm md:text-base">
-                          {slide.description}
-                        </p>
-
-                        {/* Feature Badges / Chips */}
-                        <div className="mt-3.5 flex flex-wrap items-center gap-1.5 sm:gap-2">
-                          {slide.features.map((feature) => {
-                            const Icon = feature.icon;
-                            return (
-                              <span
-                                key={feature.text}
-                                className="inline-flex items-center gap-1 rounded-lg border border-gray-200/80 bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-slate-700 shadow-2xs backdrop-blur-xs sm:text-xs"
-                              >
-                                <Icon className="size-3.5 text-slate-500" />
-                                {feature.text}
-                              </span>
-                            );
-                          })}
-                        </div>
-
-                        {/* CTA + Trust Note */}
-                        <div className="mt-4.5 flex flex-col items-start gap-2 sm:mt-5 sm:flex-row sm:items-center sm:gap-4">
-                          <span
-                            className={`inline-flex items-center gap-2 rounded-xl px-5 py-3 text-xs font-bold shadow-md transition-all duration-200 group-hover:scale-[1.03] active:scale-[0.98] sm:text-sm ${slide.ctaBg}`}
-                          >
-                            <span>{slide.ctaText}</span>
-                            <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-                          </span>
-
-                          <span className="text-[11px] font-medium text-slate-500 sm:text-xs">
-                            {slide.trustNote}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Right Column: Realistic Visual Mockup */}
-                      <div className="hidden md:col-span-5 md:flex md:items-center md:justify-center lg:col-span-5">
-                        {slide.renderVisual()}
-                      </div>
-                    </div>
-                  </Link>
-                </div>
-              );
-            })}
-            {/* Slide 6: Instant Mobile Buyback Valuation Calculator */}
+            {/* Slide 1: Instant Mobile Buyback Valuation Calculator */}
             <div key="valuation-calculator" className="min-w-0 flex-[0_0_100%]">
               <div className="relative overflow-hidden bg-gradient-to-br from-[#0c1838] via-[#102a5c] to-[#0a1931] p-5 sm:p-7 md:p-9 lg:p-10 text-white">
                 {/* Subtle ambient light glows */}
@@ -813,6 +735,84 @@ export function HeroBannerCarousel({ brands = [], models = [] }: HeroBannerCarou
                 </div>
               </div>
             </div>
+            {SLIDES.map((slide) => {
+              const TagIcon = slide.taglineIcon;
+              return (
+                <div key={slide.id} className="min-w-0 flex-[0_0_100%]">
+                  {/* The whole banner slide is an accessible, clickable Link */}
+                  <Link
+                    href={slide.ctaHref}
+                    className={`group relative block overflow-hidden ${slide.bgGradient} p-5 sm:p-7 md:p-9 lg:p-10 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20`}
+                  >
+                    {/* Subtle ambient light shapes */}
+                    <div className="pointer-events-none absolute -right-16 -top-16 size-72 rounded-full bg-white/60 blur-3xl" />
+                    <div className="pointer-events-none absolute -bottom-16 -left-16 size-72 rounded-full bg-white/60 blur-3xl" />
+
+                    {/* 2-Column Responsive Layout */}
+                    <div className="relative z-10 grid grid-cols-1 items-center gap-6 md:grid-cols-12 md:gap-8">
+                      {/* Left Column: Content */}
+                      <div className="flex flex-col items-start md:col-span-7 lg:col-span-7">
+                        {/* Tagline Badge */}
+                        <div
+                          className={`mb-2.5 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-bold tracking-wide shadow-xs ${slide.taglineStyle}`}
+                        >
+                          {TagIcon && <TagIcon className="size-3.5 shrink-0" />}
+                          <span>{slide.tagline}</span>
+                        </div>
+
+                        {/* Main Headline */}
+                        <h2 className="text-xl font-black tracking-tight text-slate-900 sm:text-2xl md:text-3xl lg:text-[2rem] lg:leading-tight">
+                          {slide.headlinePrefix}
+                          <span className={slide.headlineHighlightColor}>
+                            {slide.headlineHighlight}
+                          </span>
+                        </h2>
+
+                        {/* Description */}
+                        <p className="mt-2 text-xs leading-relaxed text-slate-600 sm:text-sm md:text-base">
+                          {slide.description}
+                        </p>
+
+                        {/* Feature Badges / Chips */}
+                        <div className="mt-3.5 flex flex-wrap items-center gap-1.5 sm:gap-2">
+                          {slide.features.map((feature) => {
+                            const Icon = feature.icon;
+                            return (
+                              <span
+                                key={feature.text}
+                                className="inline-flex items-center gap-1 rounded-lg border border-gray-200/80 bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-slate-700 shadow-2xs backdrop-blur-xs sm:text-xs"
+                              >
+                                <Icon className="size-3.5 text-slate-500" />
+                                {feature.text}
+                              </span>
+                            );
+                          })}
+                        </div>
+
+                        {/* CTA + Trust Note */}
+                        <div className="mt-4.5 flex flex-col items-start gap-2 sm:mt-5 sm:flex-row sm:items-center sm:gap-4">
+                          <span
+                            className={`inline-flex items-center gap-2 rounded-xl px-5 py-3 text-xs font-bold shadow-md transition-all duration-200 group-hover:scale-[1.03] active:scale-[0.98] sm:text-sm ${slide.ctaBg}`}
+                          >
+                            <span>{slide.ctaText}</span>
+                            <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+                          </span>
+
+                          <span className="text-[11px] font-medium text-slate-500 sm:text-xs">
+                            {slide.trustNote}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Right Column: Realistic Visual Mockup */}
+                      <div className="hidden md:col-span-5 md:flex md:items-center md:justify-center lg:col-span-5">
+                        {slide.renderVisual()}
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -845,10 +845,10 @@ export function HeroBannerCarousel({ brands = [], models = [] }: HeroBannerCarou
               aria-label={`Go to slide ${idx + 1}`}
               className={`rounded-full transition-all duration-300 ${
                 idx === selectedIndex
-                  ? selectedIndex === 5
+                  ? selectedIndex === 0
                     ? "h-2 w-6 bg-cyan-400 shadow-sm shadow-cyan-400/50"
                     : "h-2 w-6 bg-emerald-600 shadow-sm shadow-emerald-600/30"
-                  : selectedIndex === 5
+                  : selectedIndex === 0
                   ? "size-2 bg-white/40 hover:bg-white/60"
                   : "size-2 bg-slate-300 hover:bg-slate-400"
               }`}
