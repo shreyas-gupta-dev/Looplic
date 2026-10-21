@@ -108,6 +108,24 @@ export const productFallbackImage: Record<"mobile" | "laptop", ImageSlot> = {
   laptop: illustration("sell-category-laptop", "Refurbished laptop"),
 };
 
+/**
+ * Popular devices product photography stored locally in public/images/devices.
+ */
+export const popularDeviceImages = {
+  "iPhone 15 Pro Max": { src: "/images/devices/iphone-15-pro-max.png", alt: "iPhone 15 Pro Max" },
+  "iPhone 14": { src: "/images/devices/iphone-14.png", alt: "iPhone 14" },
+  "Samsung Galaxy S24": { src: "/images/devices/samsung-galaxy-s24.png", alt: "Samsung Galaxy S24" },
+  "OnePlus 12": { src: "/images/devices/oneplus-12.png", alt: "OnePlus 12" },
+  "MacBook Air M2": { src: "/images/devices/macbook-air-m2.png", alt: "MacBook Air M2" },
+  "iPhone 13": { src: "/images/devices/iphone-13.png", alt: "iPhone 13" },
+  "Samsung Galaxy S23": { src: "/images/devices/samsung-galaxy-s23.png", alt: "Samsung Galaxy S23" },
+  "Google Pixel 8": { src: "/images/devices/google-pixel-8.png", alt: "Google Pixel 8" },
+} satisfies Record<string, ImageSlot>;
+
+export function getPopularDeviceImage(name: string): ImageSlot | null {
+  return (popularDeviceImages as Record<string, ImageSlot>)[name] ?? null;
+}
+
 export type ServiceImageKey = keyof typeof serviceImages;
 export type SellCategoryImageKey = keyof typeof sellCategoryImages;
 
@@ -124,6 +142,7 @@ export const allImageSlots: ImageSlot[] = [
   ...Object.values(serviceImages),
   ...Object.values(sellCategoryImages),
   ...Object.values(productFallbackImage),
+  ...Object.values(popularDeviceImages),
 ];
 
 /**

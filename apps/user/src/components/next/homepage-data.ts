@@ -38,27 +38,25 @@ export const sellCategories = [
   { id: "desktop", label: "Sell Desktop", href: "/sell/desktop" },
 ];
 
-
-
 // Popular Devices to Sell
 export const popularDevices = [
-  { name: "iPhone 15 Pro Max", price: "₹62,000", href: "/sell", deviceType: "mobile" as const },
-  { name: "iPhone 14", price: "₹35,000", href: "/sell", deviceType: "mobile" as const },
-  { name: "Samsung Galaxy S24", price: "₹42,000", href: "/sell", deviceType: "mobile" as const },
-  { name: "OnePlus 12", price: "₹32,000", href: "/sell", deviceType: "mobile" as const },
-  { name: "MacBook Air M2", price: "₹58,000", href: "/sell/laptop", deviceType: "laptop" as const },
-  { name: "iPhone 13", price: "₹25,000", href: "/sell", deviceType: "mobile" as const },
-  { name: "Samsung Galaxy S23", price: "₹28,000", href: "/sell", deviceType: "mobile" as const },
-  { name: "Google Pixel 8", price: "₹28,000", href: "/sell", deviceType: "mobile" as const },
+  { name: "iPhone 15 Pro Max", price: "₹62,000", href: "/sell", deviceType: "mobile" as const, image: "/images/devices/iphone-15-pro-max.png" },
+  { name: "iPhone 14", price: "₹35,000", href: "/sell", deviceType: "mobile" as const, image: "/images/devices/iphone-14.png" },
+  { name: "Samsung Galaxy S24", price: "₹42,000", href: "/sell", deviceType: "mobile" as const, image: "/images/devices/samsung-galaxy-s24.png" },
+  { name: "OnePlus 12", price: "₹32,000", href: "/sell", deviceType: "mobile" as const, image: "/images/devices/oneplus-12.png" },
+  { name: "MacBook Air M2", price: "₹58,000", href: "/sell/laptop", deviceType: "laptop" as const, image: "/images/devices/macbook-air-m2.png" },
+  { name: "iPhone 13", price: "₹25,000", href: "/sell", deviceType: "mobile" as const, image: "/images/devices/iphone-13.png" },
+  { name: "Samsung Galaxy S23", price: "₹28,000", href: "/sell", deviceType: "mobile" as const, image: "/images/devices/samsung-galaxy-s23.png" },
+  { name: "Google Pixel 8", price: "₹28,000", href: "/sell", deviceType: "mobile" as const, image: "/images/devices/google-pixel-8.png" },
 ];
 
 // How It Works - uses string icon keys mapped to lucide icons in the component
 // Step accents walk the Looplic logo gradient: blue -> cyan -> teal -> navy
 export const howItWorks = [
-  { step: 1, title: "Select Your Device", description: "Choose brand, model & answer condition questions.", icon: "search" as const, color: "bg-brand-600" },
-  { step: 2, title: "Get an Estimated Value", description: "Receive an initial valuation based on your device details.", icon: "rupee" as const, color: "bg-brandcyan-500" },
-  { step: 3, title: "Doorstep Inspection", description: "Our representative checks the device's physical and functional condition.", icon: "truck" as const, color: "bg-brandteal-500" },
-  { step: 4, title: "Accept Final Offer & Get Paid", description: "If you agree with the inspected valuation, receive payment via UPI, bank transfer or cash.", icon: "credit-card" as const, color: "bg-brandnavy-800" },
+  { step: 1, title: "Select Your Device", description: "Choose brand, model & answer condition questions.", icon: "search" as const, color: "bg-brand-600", image: "/images/how-it-works/step-1.svg" },
+  { step: 2, title: "Get an Estimated Value", description: "Receive an initial valuation based on your device details.", icon: "rupee" as const, color: "bg-cyan-600", image: "/images/how-it-works/step-2.svg" },
+  { step: 3, title: "Doorstep Inspection", description: "Our representative checks the device's physical and functional condition.", icon: "truck" as const, color: "bg-brandteal-500", image: "/images/how-it-works/step-3.svg" },
+  { step: 4, title: "Accept Final Offer & Get Paid", description: "If you agree with the inspected valuation, receive payment via UPI, bank transfer or cash.", icon: "credit-card" as const, color: "bg-[#0c1838]", image: "/images/how-it-works/step-4.svg" },
 ];
 
 export type HowItWorksIconKey = (typeof howItWorks)[number]["icon"];

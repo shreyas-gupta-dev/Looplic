@@ -398,8 +398,21 @@ export function NewHomepageView({
                     {idx < howItWorks.length - 1 && (
                       <div className="absolute right-0 top-8 hidden h-0.5 w-[calc(100%-4rem)] translate-x-1/2 bg-gray-200 lg:block" />
                     )}
-                    <div className={`relative mx-auto mb-4 flex size-16 items-center justify-center rounded-2xl ${step.color} text-white shadow-lg`}>
-                      <Icon className="size-7" />
+                    <div className={`relative mx-auto mb-4 flex size-16 items-center justify-center rounded-2xl ${step.color} text-white shadow-lg transition-transform hover:scale-105`}>
+                      {(step as any).image ? (
+                        <div className="relative size-8 flex items-center justify-center">
+                          <Image
+                            src={(step as any).image}
+                            alt={step.title}
+                            width={32}
+                            height={32}
+                            className="size-8 object-contain"
+                            unoptimized
+                          />
+                        </div>
+                      ) : (
+                        <Icon className="size-7" />
+                      )}
                       <span className="absolute -right-1 -top-1 flex size-6 items-center justify-center rounded-full bg-white text-xs font-bold text-gray-900 shadow">
                         {step.step}
                       </span>
@@ -445,20 +458,20 @@ export function NewHomepageView({
 
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
               {popularDevices.map((device) => {
-                const image = productFallbackImage[device.deviceType];
+                const imgSrc = (device as any).image || productFallbackImage[device.deviceType].src;
                 return (
                   <div key={device.name}>
                     <Link
                       href={device.href}
                       className="group flex flex-col items-center rounded-2xl border border-gray-200 bg-white p-4 transition-all hover:-translate-y-1 hover:shadow-lg hover:border-primary/30"
                     >
-                      <div className="relative mb-3 h-24 w-full">
+                      <div className="relative mb-3 h-28 w-full flex items-center justify-center p-1">
                         <Image
-                          src={image.src}
+                          src={imgSrc}
                           alt={device.name}
                           fill
-                          unoptimized={image.unoptimized}
-                          className="object-contain transition-transform group-hover:scale-110"
+                          unoptimized
+                          className="object-contain p-1 transition-transform duration-200 group-hover:scale-110"
                           sizes="(max-width: 640px) 50vw, 25vw"
                         />
                       </div>
