@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
+import { useRouter } from "next/navigation";
 import {
   ArrowRight,
   BadgeCheck,
@@ -27,6 +28,7 @@ import {
   Zap,
 } from "lucide-react";
 import Link from "next/link";
+import type { CatalogBrand, SearchModel } from "@/src/lib/data/catalog";
 
 // ─── Slide Types ─────────────────────────────────────────────────────────────
 
@@ -388,25 +390,25 @@ function CctvVisual() {
 const SLIDES: BannerSlide[] = [
   {
     id: "sell",
-    tagline: "🇮🇳 Device Resale & Refurbished Electronics Platform in Bangalore",
-    taglineIcon: null,
-    taglineStyle: "bg-brand-100 text-brand-800 border-brand-200",
+    tagline: "INSTANT CASH AT DOORSTEP",
+    taglineIcon: Zap,
+    taglineStyle: "bg-emerald-50 text-emerald-800 border-emerald-200/80",
     headlinePrefix: "Sell Your Old Phone for ",
-    headlineHighlight: "Instant Payment",
-    headlineHighlightColor: "text-brand-600",
+    headlineHighlight: "Instant Cash",
+    headlineHighlightColor: "text-emerald-600",
     description:
-      "Get an estimated resale value in as little as 60 seconds.",
+      "Get the highest price quote in 60 seconds with free 30-minute doorstep pickup and instant UPI/bank payment.",
     ctaText: "Check Phone Value",
     ctaHref: "/sell",
-    ctaBg: "bg-brand-600 hover:bg-brand-700 text-white shadow-brand-600/20",
+    ctaBg: "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold shadow-md shadow-emerald-600/25",
     bgGradient: "bg-gradient-to-br from-[#EBF3FE] via-[#F8FAFC] to-[#E6FFF7]",
     borderColor: "border-brand-100",
-    trustNote: "Free doorstep pickup in Bangalore • Device inspection before final offer • Instant UPI/Bank payment after acceptance",
+    trustNote: "Zero inspection fee • Instant payment on pickup",
     features: [
-      { icon: IndianRupee, text: "Estimated Value in 60s" },
-      { icon: Truck, text: "Free Doorstep Pickup" },
-      { icon: ShieldCheck, text: "Inspection Before Offer" },
-      { icon: Zap, text: "Instant UPI/Bank Payment" },
+      { icon: IndianRupee, text: "Top Market Price" },
+      { icon: Truck, text: "Free 30-Min Pickup" },
+      { icon: ShieldCheck, text: "100% Data Safe" },
+      { icon: Zap, text: "Instant UPI/Cash" },
     ],
     renderVisual: () => <SellPhoneVisual />,
   },
@@ -510,9 +512,48 @@ const SLIDES: BannerSlide[] = [
 
 const AUTOPLAY_INTERVAL = 6000;
 
+const DEFAULT_BRANDS: Array<{ id: string; name: string; slug: string }> = [
+  { id: "apple", name: "Apple", slug: "apple" },
+  { id: "samsung", name: "Samsung", slug: "samsung" },
+  { id: "oneplus", name: "OnePlus", slug: "oneplus" },
+  { id: "xiaomi", name: "Xiaomi", slug: "xiaomi" },
+  { id: "vivo", name: "Vivo", slug: "vivo" },
+  { id: "oppo", name: "Oppo", slug: "oppo" },
+  { id: "google", name: "Google", slug: "google" },
+  { id: "realme", name: "Realme", slug: "realme" },
+];
+
+type HeroBannerCarouselProps = {
+  brands?: CatalogBrand[];
+  models?: SearchModel[];
+};
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function HeroBannerCarousel() {
+export function HeroBannerCarousel({ brands = [], models = [] }: HeroBannerCarouselProps) {
+  const router = useRouter();
+  const [calcBrand, setCalcBrand] = useState("");
+  const [calcModel, setCalcModel] = useState("");
+
+  const displayBrands: Array<{ id: string; name: string; slug: string }> = brands && brands.length > 0 ? brands : DEFAULT_BRANDS;
+
+  const availableModels = calcBrand
+    ? models.filter((m) => m.brand_slug.toLowerCase() === calcBrand.toLowerCase()).slice(0, 30)
+    : [];
+
+  const handleCalculate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!calcBrand) return;
+
+    if (calcModel) {
+      const foundModel = models.find((m) => m.slug === calcModel && m.brand_slug === calcBrand);
+      if (foundModel) {
+        router.push(`/sell/phone/${foundModel.brand_slug}/${foundModel.series_slug}/${foundModel.slug}`);
+        return;
+      }
+    }
+    router.push(`/sell/phone/${calcBrand}`);
+  };
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, duration: 25 });
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -652,6 +693,126 @@ export function HeroBannerCarousel() {
                 </div>
               );
             })}
+            {/* Slide 6: Instant Mobile Buyback Valuation Calculator */}
+            <div key="valuation-calculator" className="min-w-0 flex-[0_0_100%]">
+              <div className="relative overflow-hidden bg-gradient-to-br from-[#0c1838] via-[#102a5c] to-[#0a1931] p-5 sm:p-7 md:p-9 lg:p-10 text-white">
+                {/* Subtle ambient light glows */}
+                <div className="pointer-events-none absolute -right-16 -top-16 size-72 rounded-full bg-cyan-500/15 blur-3xl" />
+                <div className="pointer-events-none absolute -bottom-16 -left-16 size-72 rounded-full bg-emerald-500/15 blur-3xl" />
+
+                {/* 2-Column Responsive Layout */}
+                <div className="relative z-10 grid grid-cols-1 items-center gap-6 md:grid-cols-12 md:gap-8">
+                  {/* Left Column: Heading and Value Propositions */}
+                  <div className="flex flex-col items-start md:col-span-7 lg:col-span-7">
+                    {/* Tagline Badge */}
+                    <div className="mb-2.5 inline-flex items-center gap-1.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-[11px] font-bold tracking-wide text-cyan-300 shadow-xs">
+                      <Sparkles className="size-3.5 text-cyan-400" />
+                      <span>Instant Mobile Buyback Value</span>
+                    </div>
+
+                    {/* Main Headline */}
+                    <h2 className="text-xl font-black tracking-tight text-white sm:text-2xl md:text-3xl lg:text-[2rem] lg:leading-tight">
+                      Check Your Phone&apos;s Exact Resale Price in{" "}
+                      <span className="text-cyan-400 underline decoration-cyan-400/40 font-black">
+                        10 Seconds
+                      </span>
+                    </h2>
+
+                    {/* Description */}
+                    <p className="mt-2 text-xs leading-relaxed text-slate-300 sm:text-sm md:text-base max-w-xl">
+                      AI-powered algorithm gives you the highest valuation in India. Zero deduction at doorstep with free 30-minute pickup.
+                    </p>
+
+                    {/* Feature Points from Image 1 */}
+                    <div className="mt-4 flex flex-wrap items-center gap-3 text-xs sm:text-sm font-medium text-slate-200">
+                      <span className="inline-flex items-center gap-1.5">
+                        <CheckCircle2 className="size-4 text-emerald-400 shrink-0" />
+                        <span>Instant UPI / Cash Payment</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <ShieldCheck className="size-4 text-cyan-400 shrink-0" />
+                        <span>100% Data Wipe Guarantee</span>
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Zap className="size-4 text-amber-400 shrink-0" />
+                        <span>Free Doorstep Pickup</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Right Column: Interactive Dropdowns Form */}
+                  <div className="md:col-span-5 lg:col-span-5">
+                    <div
+                      className="relative w-full rounded-2xl border border-white/15 bg-white/10 p-4 sm:p-5 shadow-2xl backdrop-blur-md"
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onTouchStart={(e) => e.stopPropagation()}
+                    >
+                      <form onSubmit={handleCalculate} className="space-y-3.5">
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-200 mb-1">
+                            1. Select Brand
+                          </label>
+                          <select
+                            value={calcBrand}
+                            onChange={(e) => {
+                              setCalcBrand(e.target.value);
+                              setCalcModel("");
+                            }}
+                            onFocus={() => setIsPaused(true)}
+                            className="w-full rounded-xl bg-slate-900/90 border border-white/20 px-3.5 py-2.5 text-xs sm:text-sm text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400 transition-colors cursor-pointer"
+                            required
+                          >
+                            <option value="" disabled className="bg-slate-900 text-slate-400">
+                              -- Choose Phone Brand --
+                            </option>
+                            {displayBrands.slice(0, 20).map((b) => (
+                              <option key={b.id} value={b.slug} className="bg-slate-900 text-white">
+                                {b.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-200 mb-1">
+                            2. Select Model
+                          </label>
+                          <select
+                            value={calcModel}
+                            onChange={(e) => setCalcModel(e.target.value)}
+                            onFocus={() => setIsPaused(true)}
+                            disabled={!calcBrand}
+                            className="w-full rounded-xl bg-slate-900/90 border border-white/20 px-3.5 py-2.5 text-xs sm:text-sm text-white focus:border-cyan-400 focus:outline-none focus:ring-1 focus:ring-cyan-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                          >
+                            <option value="" className="bg-slate-900 text-slate-400">
+                              {calcBrand ? "-- Choose Exact Model --" : "First select a brand above"}
+                            </option>
+                            {availableModels.map((m) => (
+                              <option key={m.id} value={m.slug} className="bg-slate-900 text-white">
+                                {m.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <button
+                          type="submit"
+                          disabled={!calcBrand}
+                          className={`w-full mt-2 flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-xs sm:text-sm font-bold shadow-lg transition-all duration-200 cursor-pointer ${
+                            calcBrand
+                              ? "bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-600 hover:to-teal-600 text-white shadow-emerald-500/25 hover:scale-[1.01] active:scale-[0.99]"
+                              : "bg-white/10 text-slate-400 cursor-not-allowed border border-white/10"
+                          }`}
+                        >
+                          <span>Get Exact Price Quote</span>
+                          <ArrowRight className="size-4" />
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -672,8 +833,8 @@ export function HeroBannerCarousel() {
         </button>
 
         {/* Dot Indicators */}
-        <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2">
-          {SLIDES.map((slide, idx) => (
+        <div className="absolute bottom-3 sm:bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2">
+          {Array.from({ length: SLIDES.length + 1 }).map((_, idx) => (
             <button
               key={idx}
               onClick={(e) => {
@@ -681,10 +842,14 @@ export function HeroBannerCarousel() {
                 e.preventDefault();
                 scrollTo(idx);
               }}
-              aria-label={`Go to ${slide.id} slide`}
+              aria-label={`Go to slide ${idx + 1}`}
               className={`rounded-full transition-all duration-300 ${
                 idx === selectedIndex
-                  ? "h-2 w-6 bg-slate-900"
+                  ? selectedIndex === 5
+                    ? "h-2 w-6 bg-cyan-400 shadow-sm shadow-cyan-400/50"
+                    : "h-2 w-6 bg-emerald-600 shadow-sm shadow-emerald-600/30"
+                  : selectedIndex === 5
+                  ? "size-2 bg-white/40 hover:bg-white/60"
                   : "size-2 bg-slate-300 hover:bg-slate-400"
               }`}
             />

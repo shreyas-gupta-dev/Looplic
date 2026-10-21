@@ -104,21 +104,22 @@ export function DeviceSearchBox({
 
   return (
     <div className={`relative ${className ?? "mt-6 px-1"}`}>
-      <form onSubmit={handleSubmit} className="flex items-center rounded-2xl border-2 border-transparent bg-card shadow-card-brand transition-all duration-300 focus-within:border-primary/50 focus-within:shadow-search">
-        <Search className="ml-3.5 size-4 flex-shrink-0 text-muted-foreground" />
+      <form onSubmit={handleSubmit} className="flex items-center rounded-xl bg-transparent transition-all duration-200">
+        <Search className="ml-3.5 size-5 flex-shrink-0 text-slate-400" />
         <input
           type="text"
           placeholder={placeholder}
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          className="w-full bg-transparent p-3 sm:p-3.5 text-xs sm:text-sm font-semibold text-foreground outline-none placeholder:text-muted-foreground"
+          className="w-full bg-transparent px-3 py-2.5 sm:py-3.5 text-xs sm:text-sm font-semibold text-slate-900 outline-none placeholder:text-slate-400"
         />
         <button
           type="submit"
-          className="mr-1.5 flex-shrink-0 rounded-xl gradient-brand p-2.5 transition-transform active:scale-95"
+          className="mr-1.5 flex-shrink-0 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 p-2.5 sm:px-4 sm:py-2.5 text-white transition-all active:scale-95 shadow-md shadow-emerald-500/20 cursor-pointer"
           aria-label="Open search result"
         >
-          <ArrowRight className="size-4 text-primary-foreground" />
+          <span className="hidden sm:inline text-xs font-bold mr-1.5">Search</span>
+          <ArrowRight className="size-4 inline-block" />
         </button>
       </form>
 

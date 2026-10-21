@@ -38,18 +38,7 @@ export const sellCategories = [
   { id: "desktop", label: "Sell Desktop", href: "/sell/desktop" },
 ];
 
-// Buy Refurbished Devices
-// `deviceType` selects the placeholder silhouette; there is no `image` field
-// because Looplic does not own product photography for these yet and the previous
-// URLs were a competitor's.
-export const refurbishedProducts = [
-  { name: "Samsung Galaxy S21 Ultra 5G", discount: "₹34,201 OFF", brand: "samsung", href: "/buy", deviceType: "mobile" as const },
-  { name: "Samsung Galaxy S24 Ultra 5G", discount: "₹69,700 OFF", brand: "samsung", href: "/buy", deviceType: "mobile" as const },
-  { name: "Samsung Galaxy S20 FE 5G", discount: "₹2,900 OFF", brand: "samsung", href: "/buy", deviceType: "mobile" as const },
-  { name: "Samsung Galaxy S25 Edge", discount: "₹69,400 OFF", brand: "samsung", href: "/buy", deviceType: "mobile" as const },
-  { name: "OnePlus Nord 2 5G", discount: "₹12,800 OFF", brand: "oneplus", href: "/buy", deviceType: "mobile" as const },
-  { name: "OnePlus 12", discount: "₹28,500 OFF", brand: "oneplus", href: "/buy", deviceType: "mobile" as const },
-];
+
 
 // Popular Devices to Sell
 export const popularDevices = [

@@ -11,31 +11,26 @@ import { siteConfig } from "@/src/lib/site";
 export const revalidate = 300;
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Sell Old Phones in Bangalore | Refurbished Phones – Looplic",
+  title: "Sell Old Phones in Bangalore | Doorstep Mobile & Laptop Repair – Looplic",
   description:
-    "Sell old phones, laptops and other devices in Bangalore. Get an estimated resale value, doorstep pickup and payment after inspection. Shop quality-checked refurbished phones with warranty at Looplic.",
+    "Sell old phones, laptops and other devices in Bangalore. Get an estimated resale value, doorstep pickup and payment after inspection. Quick scheduling, doorstep repair, and live order tracking.",
   pathname: "/",
   keywords: [
     "sell old phone Bangalore",
     "sell old laptop Bangalore",
-    "buy refurbished phone Bangalore",
-    "buy refurbished laptop",
     "phone buyback Bangalore",
     "laptop buyback",
     "sell used phone Bangalore",
-    "refurbished phones Bangalore",
     "mobile repair Bangalore",
+    "laptop repair Bangalore",
     "Looplic",
   ],
 });
 
-import { getFeaturedProducts } from "@/src/lib/data/products";
-
 export default async function HomePage() {
-  const [brands, searchIndex, featuredProducts] = await Promise.all([
+  const [brands, searchIndex] = await Promise.all([
     getBrandsForListing("mobile"),
     getCatalogSearchIndex("mobile"),
-    getFeaturedProducts(),
   ]);
 
   // Curate top series and models per brand to avoid sending hundreds of rows down the wire
@@ -88,7 +83,6 @@ export default async function HomePage() {
         searchBrands={searchIndex.brands}
         searchSeries={curatedSeries}
         searchModels={curatedModels}
-        featuredProducts={featuredProducts}
       />
     </>
   );

@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef } from "react";
 
 import { HomepageNavbar } from "@/src/components/next/HomepageNavbar";
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
@@ -29,13 +29,11 @@ import type { FeaturedProduct } from "@/src/lib/data/products";
 
 import { HeroBannerCarousel } from "@/src/components/next/HeroBannerCarousel";
 import { DeviceSearchBox } from "@/src/components/next/DeviceSearchBox";
-import { QuickBuybackCalculator } from "@/src/components/next/QuickBuybackCalculator";
 
 // ─── Data (imported from separate module for better tree-shaking) ────────────
 import {
   ourServices,
   sellCategories,
-  refurbishedProducts,
   popularDevices,
   howItWorks,
   testimonials,
@@ -75,24 +73,7 @@ export function NewHomepageView({
   featuredProducts?: FeaturedProduct[];
 }) {
   const sellScrollRef = useRef<HTMLDivElement>(null);
-  const buyScrollRef = useRef<HTMLDivElement>(null);
   const testimonialScrollRef = useRef<HTMLDivElement>(null);
-  const [activeBrandTab, setActiveBrandTab] = useState<string>("all");
-
-  const brandTabs = [
-    { id: "all", label: "All Phones" },
-    { id: "apple", label: "Apple" },
-    { id: "samsung", label: "Samsung" },
-    { id: "oneplus", label: "OnePlus" },
-    { id: "google", label: "Google Pixel" },
-    { id: "xiaomi", label: "Xiaomi" },
-  ];
-
-  const displayedRefurbished = useMemo(() => {
-    if (!featuredProducts || featuredProducts.length === 0) return [];
-    if (activeBrandTab === "all") return featuredProducts;
-    return featuredProducts.filter((p) => p.brand.toLowerCase().includes(activeBrandTab));
-  }, [featuredProducts, activeBrandTab]);
 
   const scrollContainer = (ref: React.RefObject<HTMLDivElement | null>, direction: "left" | "right") => {
     if (ref.current) {
@@ -121,13 +102,13 @@ export function NewHomepageView({
     <div className="min-h-screen bg-white overflow-x-hidden">
       <HomepageNavbar />
 
-      {/* ─── Hero Banner Carousel ──────────────────────────────────── */}
-      <HeroBannerCarousel />
+      {/* ─── Hero Banner Carousel (with 6 Slides including Instant Buyback Calculator) ─ */}
+      <HeroBannerCarousel brands={brands} models={searchModels} />
 
-      {/* ─── Quick Search Bar ──────────────────────────────────────── */}
-      <section className="relative z-10 px-4 sm:px-6 lg:px-8 -mt-2 sm:-mt-3 mb-2 sm:mb-4">
+      {/* ─── Quick Search Bar (Crisp alignment with zero dead whitespace) ─ */}
+      <section className="relative z-20 px-4 sm:px-6 lg:px-8 mt-4 sm:mt-5 mb-6 sm:mb-8">
         <div className="container mx-auto max-w-4xl lg:max-w-5xl">
-          <div className="rounded-2xl border border-gray-200/90 bg-white/95 p-2 sm:p-2.5 shadow-lg backdrop-blur-md transition-shadow hover:shadow-xl">
+          <div className="rounded-2xl border border-slate-200/90 bg-white p-1.5 sm:p-2 shadow-xl backdrop-blur-md transition-all hover:shadow-2xl hover:border-brand-500/30">
             <DeviceSearchBox
               placeholder="Search your device e.g. iPhone 15, Galaxy S24, MacBook Air..."
               browseHref="/sell"
@@ -138,13 +119,6 @@ export function NewHomepageView({
               className="mt-0 px-0"
             />
           </div>
-        </div>
-      </section>
-
-      {/* ─── Instant Buyback Price Calculator (Cashify-style) ────────── */}
-      <section className="px-4 sm:px-6 lg:px-8 py-3 sm:py-5">
-        <div className="container mx-auto max-w-7xl">
-          <QuickBuybackCalculator brands={brands} models={searchModels} />
         </div>
       </section>
 
@@ -356,170 +330,7 @@ export function NewHomepageView({
         </div>
       </section>
 
-      {/* ─── Buy Refurbished Devices (Interactive Brand Carousel) ── */}
-      <section className="bg-gray-50 py-8 md:py-12">
-        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div>
-            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">Looplic Assured Refurbished Phones</h2>
-                <p className="mt-1 text-sm text-gray-500">Quality-checked pre-owned devices • 6-Month Warranty • 7-Day Replacement on Eligible Issues</p>
-              </div>
-              <Link href="/buy" className="flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
-                View All {featuredProducts.length > 0 ? `(${featuredProducts.length}+)` : ""} <ArrowRight className="size-4" />
-              </Link>
-            </div>
 
-            {/* Brand Filter Tabs */}
-            <div className="mb-6 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-              {brandTabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveBrandTab(tab.id)}
-                  className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
-                    activeBrandTab === tab.id
-                      ? "bg-brand-600 text-white shadow-sm"
-                      : "bg-white text-gray-600 border border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
-            <div className="relative">
-              {/* Scroll arrow Left */}
-              <button
-                onClick={() => scrollContainer(buyScrollRef, "left")}
-                className="absolute -left-3 top-1/2 z-10 hidden size-10 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white shadow-md transition-all hover:shadow-lg sm:flex"
-                aria-label="Scroll left"
-              >
-                <ArrowRight className="size-5 rotate-180 text-gray-600" />
-              </button>
-
-              <div
-                ref={buyScrollRef}
-                className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide"
-                style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-              >
-                {displayedRefurbished.length > 0 ? (
-                  displayedRefurbished.map((product) => {
-                    const discount = product.originalPrice > product.price
-                      ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
-                      : 0;
-
-                    return (
-                      <div key={product.id} className="w-[220px] shrink-0 sm:w-[240px]">
-                        <Link
-                          href={`/buy/${product.slug}`}
-                          className="group flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white transition-all hover:-translate-y-1 hover:shadow-lg"
-                        >
-                          {/* Badges */}
-                          <div className="flex items-center justify-between p-3 pb-0">
-                            <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
-                              <Shield className="size-3 text-emerald-600" /> ASSURED
-                            </span>
-                            {discount > 0 && (
-                              <span className="rounded bg-brand-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
-                                {discount}% OFF
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Product Image */}
-                          <div className="relative mx-auto flex h-40 w-full items-center justify-center p-3">
-                            {product.coverImageUrl ? (
-                              <Image
-                                src={product.coverImageUrl}
-                                alt={product.name}
-                                width={140}
-                                height={140}
-                                loading="lazy"
-                                className="size-32 object-contain transition-transform duration-200 group-hover:scale-105"
-                              />
-                            ) : (
-                              <div className="size-24 rounded-lg bg-gray-100 flex items-center justify-center text-xs text-gray-400">
-                                Phone
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Info */}
-                          <div className="mt-auto border-t border-gray-100 p-3.5">
-                            <h3 className="line-clamp-2 text-xs font-semibold text-gray-900 group-hover:text-brand-600">
-                              {product.name}
-                            </h3>
-                            <p className="mt-0.5 text-[11px] text-gray-500">
-                              {[product.storage, product.color].filter(Boolean).join(" • ")}
-                            </p>
-                            <div className="mt-2 flex items-baseline gap-2">
-                              <span className="text-base font-bold text-gray-900">
-                                ₹{product.price.toLocaleString("en-IN")}
-                              </span>
-                              {product.originalPrice > product.price && (
-                                <span className="text-xs text-gray-400 line-through">
-                                  ₹{product.originalPrice.toLocaleString("en-IN")}
-                                </span>
-                              )}
-                            </div>
-                            <div className="mt-2 flex items-center justify-between text-[10px] text-gray-500">
-                              <span className="capitalize font-medium text-emerald-600">{product.condition}</span>
-                              <span>{product.warrantyMonths}mo Warranty</span>
-                            </div>
-                          </div>
-                        </Link>
-                      </div>
-                    );
-                  })
-                ) : (
-                  refurbishedProducts.map((product) => {
-                    const image = productFallbackImage[product.deviceType];
-                    return (
-                      <div key={product.name} className="w-[200px] shrink-0 sm:w-[220px]">
-                        <Link
-                          href={product.href}
-                          className="group flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white transition-all hover:-translate-y-1 hover:shadow-lg"
-                        >
-                          <div className="relative px-3 pt-3">
-                            <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary">
-                              <Shield className="size-3" /> LOOPLIC ASSURED
-                            </span>
-                          </div>
-                          <div className="relative mx-auto h-40 w-full p-4">
-                            <Image
-                              src={image.src}
-                              alt={product.name}
-                              fill
-                              unoptimized={image.unoptimized}
-                              className="object-contain transition-transform group-hover:scale-110"
-                              sizes="240px"
-                            />
-                          </div>
-                          <div className="border-t border-gray-100 px-4 py-3">
-                            <p className="text-xs font-bold text-brand-600">{product.discount}</p>
-                            <h3 className="mt-1 line-clamp-2 text-sm font-semibold text-gray-900">
-                              {product.name} - Refurbished
-                            </h3>
-                          </div>
-                        </Link>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-
-              {/* Scroll arrow Right */}
-              <button
-                onClick={() => scrollContainer(buyScrollRef, "right")}
-                className="absolute -right-3 top-1/2 z-10 hidden size-10 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white shadow-md transition-all hover:shadow-lg sm:flex"
-                aria-label="Scroll right"
-              >
-                <ArrowRight className="size-5 text-gray-600" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ─── Top Brands (Using database brand images) ─────────────── */}
       <section className="py-8 md:py-12">
