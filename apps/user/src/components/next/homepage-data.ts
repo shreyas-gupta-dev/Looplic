@@ -11,7 +11,7 @@
 export const ourServices = [
   { id: "repair-phone", label: "Repair Phones", href: "/service/mobile-repair" },
   { id: "repair-laptop", label: "Repair Laptop", href: "/service/laptop-repair" },
-  { id: "data-recovery", label: "Hard Drive Data Recovery", href: "/service/it-support" },
+  { id: "data-recovery", label: "Hard Drive Data Recovery", href: "/data-recovery" },
   { id: "sell-phone", label: "Sell Phone", href: "/sell" },
   { id: "sell-laptop", label: "Sell Laptop", href: "/sell/laptop" },
   { id: "desktop", label: "Desktop Assembly", href: "/service/desktop-assembly" },
@@ -53,10 +53,10 @@ export const popularDevices = [
 // How It Works - uses string icon keys mapped to lucide icons in the component
 // Step accents walk the Looplic logo gradient: blue -> cyan -> teal -> navy
 export const howItWorks = [
-  { step: 1, title: "Select Your Device", description: "Choose brand, model & answer condition questions.", icon: "search" as const, color: "bg-brand-600", image: "/images/how-it-works/step-1.svg" },
-  { step: 2, title: "Get an Estimated Value", description: "Receive an initial valuation based on your device details.", icon: "rupee" as const, color: "bg-cyan-600", image: "/images/how-it-works/step-2.svg" },
-  { step: 3, title: "Doorstep Inspection", description: "Our representative checks the device's physical and functional condition.", icon: "truck" as const, color: "bg-brandteal-500", image: "/images/how-it-works/step-3.svg" },
-  { step: 4, title: "Accept Final Offer & Get Paid", description: "If you agree with the inspected valuation, receive payment via UPI, bank transfer or cash.", icon: "credit-card" as const, color: "bg-[#0c1838]", image: "/images/how-it-works/step-4.svg" },
+  { step: 1, title: "Select Your Device", description: "Choose your phone or laptop model and select the required repair or buyback service.", icon: "search" as const, color: "bg-brand-600", image: "/images/how-it-works/step-1.svg" },
+  { step: 2, title: "Instant Upfront Quote", description: "See the transparent price estimate before booking. No surprise fees at your door.", icon: "rupee" as const, color: "bg-cyan-600", image: "/images/how-it-works/step-2.svg" },
+  { step: 3, title: "Doorstep Technician Visit", description: "A verified technician arrives at your home or office with certified tools and OEM-grade parts.", icon: "truck" as const, color: "bg-brandteal-500", image: "/images/how-it-works/step-3.svg" },
+  { step: 4, title: "Pay Only After Inspection", description: "Test your repaired device or verify your buyback payment. Pay or get paid instantly.", icon: "credit-card" as const, color: "bg-[#0c1838]", image: "/images/how-it-works/step-4.svg" },
 ];
 
 export type HowItWorksIconKey = (typeof howItWorks)[number]["icon"];

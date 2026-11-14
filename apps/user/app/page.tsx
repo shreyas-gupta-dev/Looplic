@@ -4,6 +4,11 @@ import { NewHomepageView } from "@/src/components/next/NewHomepageView";
 import { getBrandsForListing, getCatalogSearchIndex } from "@/src/lib/data/catalog";
 import { buildPageMetadata } from "@/src/lib/metadata";
 import { siteConfig } from "@/src/lib/site";
+import {
+  buildBreadcrumbSchema,
+  buildLocalBusinessSchema,
+  buildWebSiteSchema,
+} from "@/src/lib/schema";
 
 // ISR (not force-dynamic) so the homepage is edge-cacheable. The OAuth `/?code=`
 // return is handled entirely in middleware.ts (redirect to /auth/callback), so
@@ -11,9 +16,9 @@ import { siteConfig } from "@/src/lib/site";
 export const revalidate = 300;
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Sell Old Phones in Bangalore | Doorstep Mobile & Laptop Repair – Looplic",
+  title: "Sell Old Phones & Doorstep Repair in Bangalore | Looplic",
   description:
-    "Sell old phones, laptops and other devices in Bangalore. Get an estimated resale value, doorstep pickup and payment after inspection. Quick scheduling, doorstep repair, and live order tracking.",
+    "Sell old phones and laptops with doorstep pickup in Bangalore. Fast model valuation, on-site inspection, instant payment, and 6-month warranty on repairs.",
   pathname: "/",
   keywords: [
     "sell old phone Bangalore",
@@ -61,20 +66,11 @@ export default async function HomePage() {
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "WebSite",
-            name: siteConfig.name,
-            url: siteConfig.url,
-            description: "Sell old phones and buy quality-checked refurbished devices in Bangalore. Doorstep pickup and payment after inspection.",
-            potentialAction: {
-              "@type": "SearchAction",
-              target: `${siteConfig.url}/sell?q={search_term_string}`,
-              "query-input": "required name=search_term_string",
-            },
-            publisher: {
-              "@type": "Organization",
-              name: siteConfig.name,
-              url: siteConfig.url,
-            },
+            "@graph": [
+              buildWebSiteSchema(),
+              buildLocalBusinessSchema(),
+              buildBreadcrumbSchema([{ name: "Home", path: "/" }]),
+            ],
           }),
         }}
       />

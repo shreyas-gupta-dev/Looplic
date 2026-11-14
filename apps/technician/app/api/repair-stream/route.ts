@@ -1,4 +1,4 @@
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+// S3 client removed — migrated to Supabase Storage
 import { randomBytes } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { and, eq, inArray } from "drizzle-orm";
@@ -18,6 +18,7 @@ import {
 import { db } from "@/src/lib/db";
 import * as schema from "@/src/lib/db/schema";
 import { getServerSession } from "@/src/lib/auth/cognito-server";
+import { getAdminSupabase } from "@/src/lib/supabase/server";
 
 /**
  * Staff endpoint for the repair live view.
@@ -45,13 +46,7 @@ const ALLOWED_MIME = new Map<string, { extension: string; mediaType: "image" | "
   ["video/webm", { extension: "webm", mediaType: "video" }],
 ]);
 
-const s3 = new S3Client({
-  region: REGION,
-  credentials: {
-    accessKeyId: process.env.APP_AWS_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID || "",
-    secretAccessKey: process.env.APP_AWS_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY || "",
-  },
-});
+
 
 async function requireStaff() {
   const session = await getServerSession();
@@ -304,17 +299,17 @@ async function handleCapture(request: NextRequest, userId: string, staffName: st
   });
 
   try {
-    await s3.send(
-      new PutObjectCommand({
-        Bucket: BUCKET,
-        Key: key,
-        Body: Buffer.from(await file.arrayBuffer()),
-        ContentType: file.type,
-        // Repair media is private to one customer, so it must not be cached by
-        // shared caches even though it is served through our own route.
-        CacheControl: "private, max-age=0, no-store",
-      }),
-    );
+    const supabase = getAdminSupabase();
+    const { error: uploadError } = await supabase.storage
+      .from(BUCKET)
+      .upload(key, Buffer.from(await file.arrayBuffer()), {
+        contentType: file.type,
+        upsert: true,
+      });
+    if (uploadError) {
+      console.error("[repair-stream] Supabase storage upload failed:", uploadError);
+      return NextResponse.json({ error: { message: "Upload failed. Please try again." } }, { status: 502 });
+    }
   } catch (error) {
     console.error("[repair-stream] S3 upload failed:", error);
     return NextResponse.json({ error: { message: "Upload failed. Please try again." } }, { status: 502 });

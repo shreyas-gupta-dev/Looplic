@@ -49,7 +49,7 @@ const PUBLIC_INSERT_TABLES = new Set(["bookings", "technician_applications"]);
  * Closed by default: an allowlist, so a settings key added later is private
  * unless someone deliberately makes it public.
  */
-const PUBLIC_APP_SETTING_KEYS = new Set(["repair_subcategory_prices"]);
+const PUBLIC_APP_SETTING_KEYS = new Set(["repair_subcategory_prices", "data_recovery_config"]);
 
 // technician_applications is insert-only from this app (the technician signup
 // form) — nothing in apps/user ever reads it back, so a select is rejected

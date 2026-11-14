@@ -1,6 +1,5 @@
 // Auth is handled by Supabase (login for customers, admin, technician, operation).
-// The application database stays on Amazon RDS (accessed via the /api/db-proxy
-// route and the Drizzle client) — only authentication lives in Supabase.
+// Application database and authentication run on Supabase.
 
 export const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 export const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";

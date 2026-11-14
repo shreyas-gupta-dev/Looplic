@@ -1,4 +1,5 @@
-import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+// S3 client removed — migrated to Supabase Storage
+import { getAdminSupabase } from "@/src/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 import { getActiveSession, getStageMediaItem } from "@looplic/db/repair-stream";
@@ -22,13 +23,7 @@ import { verifyGrant } from "@/src/lib/repair-stream/grant";
 const REGION = process.env.NEXT_PUBLIC_S3_REGION || process.env.AWS_REGION || "ap-south-1";
 const BUCKET = process.env.NEXT_PUBLIC_S3_BUCKET || "looplic-assets";
 
-const s3 = new S3Client({
-  region: REGION,
-  credentials: {
-    accessKeyId: process.env.APP_AWS_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID || "",
-    secretAccessKey: process.env.APP_AWS_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY || "",
-  },
-});
+
 
 const CONTENT_TYPES: Record<string, string> = {
   jpg: "image/jpeg",
@@ -75,10 +70,11 @@ export async function GET(
     const item = await getStageMediaItem(db as never, session.id, mediaId);
     if (!item) return denied;
 
-    const object = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: item.objectKey }));
-    if (!object.Body) return denied;
+    const supabase = getAdminSupabase();
+    const { data: fileBlob, error: downloadError } = await supabase.storage.from(BUCKET).download(item.objectKey);
+    if (downloadError || !fileBlob) return denied;
 
-    return new NextResponse(object.Body.transformToWebStream(), {
+    return new NextResponse(fileBlob.stream(), {
       headers: {
         "Content-Type": contentTypeFor(item.objectKey),
         // Private to one customer and only valid while the session is open.

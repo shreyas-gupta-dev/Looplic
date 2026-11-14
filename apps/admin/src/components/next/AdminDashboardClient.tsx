@@ -1,16 +1,19 @@
 "use client";
 
-import { BarChart3, CalendarCheck, CreditCard, Laptop, LogOut, Newspaper, Package, Recycle, Smartphone, UserRoundCheck, Video } from "lucide-react";
+import { BarChart3, CalendarCheck, CreditCard, Database, HardDrive, Laptop, LogOut, Newspaper, Package, Recycle, Smartphone, UserRoundCheck, Users, Video } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import BlogTab from "@/src/components/admin/BlogTab";
 import BookingsTab from "@/src/components/admin/BookingsTab";
 import BuybackTab from "@/src/components/admin/BuybackTab";
+import DatabaseTab from "@/src/components/admin/DatabaseTab";
+import DataRecoverySettingsTab from "@/src/components/admin/DataRecoverySettingsTab";
 import LiveViewTab from "@/src/components/admin/LiveViewTab";
 import PaymentsTab from "@/src/components/admin/PaymentsTab";
 import ProductsTab from "@/src/components/admin/ProductsTab";
 import TechniciansTab from "@/src/components/admin/TechniciansTab";
+import UsersTab from "@/src/components/admin/UsersTab";
 import { LaptopRepairServicesTab, MobileRepairServicesTab } from "@/src/components/admin/ServicesTab";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/components/ui/tabs";
 import { useAdminSession } from "@/src/hooks/useAdminSession";
@@ -302,11 +305,21 @@ export function AdminDashboardClient() {
 
       <div className="container py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="flex !h-auto w-full max-w-full !justify-start gap-1 overflow-x-auto rounded-2xl p-1 sm:grid sm:max-w-6xl sm:grid-cols-10 sm:overflow-visible">
+          <TabsList className="flex !h-auto w-full max-w-full !justify-start gap-1 overflow-x-auto rounded-2xl p-1 sm:grid sm:max-w-7xl sm:grid-cols-6 lg:grid-cols-12 sm:overflow-visible">
             <TabsTrigger value="analytics" className="min-w-[104px] flex-shrink-0 gap-1.5 px-3 py-2.5 text-xs sm:min-w-0">
               <BarChart3 className="size-3.5" />
               <span className="hidden sm:inline">Analytics</span>
               <span className="sm:hidden">Stats</span>
+            </TabsTrigger>
+            <TabsTrigger value="users" className="min-w-[104px] flex-shrink-0 gap-1.5 px-3 py-2.5 text-xs sm:min-w-0">
+              <Users className="size-3.5" />
+              <span className="hidden sm:inline">Users & Staff</span>
+              <span className="sm:hidden">Users</span>
+            </TabsTrigger>
+            <TabsTrigger value="database" className="min-w-[104px] flex-shrink-0 gap-1.5 px-3 py-2.5 text-xs sm:min-w-0">
+              <Database className="size-3.5" />
+              <span className="hidden sm:inline">Database</span>
+              <span className="sm:hidden">DB</span>
             </TabsTrigger>
             <TabsTrigger value="mobile-repair" className="min-w-[104px] flex-shrink-0 gap-1.5 px-3 py-2.5 text-xs sm:min-w-0">
               <Smartphone className="size-3.5" />
@@ -349,10 +362,23 @@ export function AdminDashboardClient() {
               <span className="hidden sm:inline">Live View</span>
               <span className="sm:hidden">Live</span>
             </TabsTrigger>
+            <TabsTrigger value="data-recovery" className="min-w-[104px] flex-shrink-0 gap-1.5 px-3 py-2.5 text-xs sm:min-w-0">
+              <HardDrive className="size-3.5" />
+              <span className="hidden sm:inline">Data Recovery</span>
+              <span className="sm:hidden">Recovery</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="analytics">
             {activeTab === "analytics" ? <AnalyticsTab /> : null}
+          </TabsContent>
+
+          <TabsContent value="users">
+            {activeTab === "users" ? <UsersTab /> : null}
+          </TabsContent>
+
+          <TabsContent value="database">
+            {activeTab === "database" ? <DatabaseTab /> : null}
           </TabsContent>
 
           <TabsContent value="mobile-repair">
@@ -389,6 +415,10 @@ export function AdminDashboardClient() {
 
           <TabsContent value="live-view">
             {activeTab === "live-view" ? <LiveViewTab /> : null}
+          </TabsContent>
+
+          <TabsContent value="data-recovery">
+            {activeTab === "data-recovery" ? <DataRecoverySettingsTab /> : null}
           </TabsContent>
         </Tabs>
       </div>

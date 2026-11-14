@@ -8,6 +8,7 @@ import { ServiceLandingPage } from "@/src/components/next/ServiceLandingPage";
 import { getBrandsForListing, getCatalogSearchIndex, getRepairCategories } from "@/src/lib/data/catalog";
 import { buildPageMetadata } from "@/src/lib/metadata";
 import { seoServicePages } from "@/src/lib/seo-service-pages";
+import { buildBreadcrumbSchema, buildServiceSchema } from "@/src/lib/schema";
 
 export const revalidate = 300;
 
@@ -69,7 +70,28 @@ export default async function ServicePage({ params }: PageProps) {
   ]);
 
   return (
-    <div className="min-h-screen bg-white">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": [
+              buildServiceSchema({
+                name: `${config.label} at Your Doorstep in Bangalore`,
+                description: `Fast doorstep ${config.label.toLowerCase()} across Bangalore. Screen and battery replacement, hardware diagnostics, and 6-month warranty.`,
+                path: config.pathname,
+                serviceType: config.label,
+              }),
+              buildBreadcrumbSchema([
+                { name: "Home", path: "/" },
+                { name: config.label, path: config.pathname },
+              ]),
+            ],
+          }),
+        }}
+      />
+      <div className="min-h-screen bg-white">
       <CatalogNavbar />
       <ServiceLandingPage
         serviceType={serviceType as "mobile-repair" | "laptop-repair"}
@@ -108,5 +130,6 @@ export default async function ServicePage({ params }: PageProps) {
       />
       <HomepageFooter />
     </div>
+    </>
   );
 }

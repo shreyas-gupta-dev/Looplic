@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 
 import { HomepageNavbar } from "@/src/components/next/HomepageNavbar";
 import { HomepageFooter } from "@/src/components/next/HomepageFooter";
+import { buildBreadcrumbSchema } from "@/src/lib/schema";
 
 type ProductData = {
   id: string;
@@ -594,30 +595,46 @@ export function ProductDetailView({ slug, initialProduct, initialImages }: Produ
         </div>
       </section>
 
-      {/* Structured Schema.org Product data */}
+      {/* Structured Schema.org Product data + Breadcrumbs */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "Product",
-            name: product.name,
-            image: allImages[0] || product.cover_image_url,
-            description: product.description,
-            sku: product.slug,
-            offers: {
-              "@type": "Offer",
-              url: `https://www.looplic.com/buy/${product.slug}`,
-              priceCurrency: "INR",
-              price: price,
-              priceValidUntil: "2027-12-31",
-              itemCondition: "https://schema.org/RefurbishedCondition",
-              availability: product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-              seller: {
-                "@type": "Organization",
-                name: "Looplic",
+            "@graph": [
+              {
+                "@type": "Product",
+                name: product.name,
+                image: allImages[0] || product.cover_image_url,
+                description: product.description,
+                sku: product.slug,
+                brand: {
+                  "@type": "Brand",
+                  name: product.name.split(" ")[0] || "Refurbished",
+                },
+                offers: {
+                  "@type": "Offer",
+                  url: `https://www.looplic.com/buy/${product.slug}`,
+                  priceCurrency: "INR",
+                  price: price,
+                  priceValidUntil: "2027-12-31",
+                  itemCondition: "https://schema.org/RefurbishedCondition",
+                  availability:
+                    product.stock > 0
+                      ? "https://schema.org/InStock"
+                      : "https://schema.org/OutOfStock",
+                  seller: {
+                    "@type": "Organization",
+                    name: "Looplic",
+                  },
+                },
               },
-            },
+              buildBreadcrumbSchema([
+                { name: "Home", path: "/" },
+                { name: "Buy Refurbished", path: "/buy" },
+                { name: product.name, path: `/buy/${product.slug}` },
+              ]),
+            ],
           }),
         }}
       />

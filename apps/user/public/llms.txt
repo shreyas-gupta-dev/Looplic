@@ -1,0 +1,27 @@
+# Looplic
+
+> Fast, trusted doorstep mobile and laptop repairs, certified refurbished electronics, and device buyback across Bengaluru (Bangalore), India. Devices are repaired right in front of the customer in 30–60 minutes, ensuring 100% personal data privacy and backed by a 6-month warranty.
+
+## Core Services
+
+- [Doorstep Mobile Phone Repair](https://looplic.com/service/mobile-repair): On-site screen replacement, battery swap, charging port fix, and camera repair performed in front of you. 6-month warranty, genuine OEM-grade parts.
+- [Doorstep Laptop & Mac Repair](https://looplic.com/service/laptop-repair): Screen replacements, battery fixes, keyboard repairs, SSD upgrades, and motherboard chip-level repair for Apple MacBook, Dell, HP, Lenovo, and Asus.
+- [Sell Used Phones & Laptops](https://looplic.com/sell): Instant doorstep valuation and payment via UPI or bank transfer. Certified NIST-standard data wipe on the spot with zero pickup charges.
+- [Buy Certified Refurbished Devices](https://looplic.com/buy): Pre-owned smartphones and laptops tested through 32 hardware checks, with 6-month warranty and 7-day replacement window.
+- [CCTV Installation & Smart Security](https://looplic.com/service/cctv): HD camera installation, DVR/NVR configuration, and remote mobile viewing setup for homes, apartments, and offices.
+
+## Bangalore Localities Served
+
+- [Bengaluru Repair Hub](https://looplic.com/bangalore): Full citywide coverage across all major tech hubs and neighborhoods.
+- [Koramangala Doorstep Service](https://looplic.com/bangalore/koramangala): 30-minute doorstep service for Koramangala 1st to 8th Blocks.
+- [Indiranagar Doorstep Service](https://looplic.com/bangalore/indiranagar): 100% data-private repair and buyback in Indiranagar, CMH Road, and 100 Feet Road.
+- [HSR Layout Doorstep Service](https://looplic.com/bangalore/hsr-layout): Technicians serving HSR Sectors 1 through 7.
+- [Whitefield Doorstep Service](https://looplic.com/bangalore/whitefield): Doorstep repair and buyback across ITPL, Hope Farm, and Brookefield.
+- [Electronic City Doorstep Service](https://looplic.com/bangalore/electronic-city): On-site repairs for Electronic City Phase 1 and Phase 2.
+
+## Company & Support
+
+- [About Looplic](https://looplic.com/about-us): Company story, mission, and certified technician standards.
+- [Warranty Policy](https://looplic.com/warranty-policy): Comprehensive 6-month replacement warranty on repairs and refurbished electronics.
+- [Return & Refund Policy](https://looplic.com/refund-policy): Official 7-day replacement window for refurbished devices.
+- [Contact Support](https://looplic.com/contact-us): Customer support phone: +91 88844 45924, email: support@looplic.com. Office: SJP Road, Bengaluru 560002.

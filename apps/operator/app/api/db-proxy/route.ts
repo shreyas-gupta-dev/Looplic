@@ -47,7 +47,7 @@ const PUBLIC_INSERT_TABLES = new Set(["bookings", "technician_applications"]);
  * price-visibility switch, but it also holds service-centre camera URLs, so it is
  * an allowlist rather than a denylist.
  */
-const PUBLIC_APP_SETTING_KEYS = new Set(["repair_subcategory_prices"]);
+const PUBLIC_APP_SETTING_KEYS = new Set(["repair_subcategory_prices", "data_recovery_config"]);
 
 // Deleting records is an admin-only action. Operators (and the operation desk)
 // share the "operation" role and get full create/edit access but must never

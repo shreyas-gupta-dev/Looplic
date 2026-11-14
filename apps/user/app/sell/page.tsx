@@ -5,13 +5,17 @@ import { getBrandsForListing } from "@/src/lib/data/catalog";
 import { getCatalogSearchIndex } from "@/src/lib/data/catalog";
 import { buildPageMetadata } from "@/src/lib/metadata";
 import { siteConfig } from "@/src/lib/site";
+import {
+  buildBreadcrumbSchema,
+  buildServiceSchema,
+} from "@/src/lib/schema";
 
 export const revalidate = 300;
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Sell Your Old Phone or Laptop for Instant Payment in Bangalore",
+  title: "Sell Old Phone or Laptop for Cash in Bangalore",
   description:
-    "Sell your old phone or laptop in Bangalore with Looplic. Get an estimated resale value in 60s, free doorstep pickup, device inspection before final offer, and instant UPI/Bank payment.",
+    "Sell your used phone or laptop in Bangalore. Get an upfront valuation in 60s, free doorstep pickup, on-spot inspection, and instant UPI or bank transfer.",
   pathname: "/sell",
   keywords: [
     "sell old phone Bangalore",
@@ -119,16 +123,19 @@ export default async function SellHomePage() {
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "Service",
-            name: "Device Buyback",
-            provider: {
-              "@type": "LocalBusiness",
-              name: siteConfig.name,
-              url: siteConfig.url,
-            },
-            description:
-              "Sell used phones and laptops with doorstep pickup, instant quotes, and same-day payment in Bangalore.",
-            areaServed: { "@type": "City", name: "Bangalore" },
+            "@graph": [
+              buildServiceSchema({
+                name: "Device Buyback & Old Phone Resale in Bangalore",
+                description:
+                  "Sell used phones and laptops with doorstep pickup, instant quotes, and same-day payment in Bangalore.",
+                path: "/sell",
+                serviceType: "Electronics Buyback",
+              }),
+              buildBreadcrumbSchema([
+                { name: "Home", path: "/" },
+                { name: "Sell Old Devices", path: "/sell" },
+              ]),
+            ],
           }),
         }}
       />

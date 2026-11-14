@@ -848,6 +848,19 @@ export function AccountPageClient({ buybackOrders }: { buybackOrders?: React.Rea
             </section>
 
             <section className="rounded-[24px] border border-border/70 bg-card p-4 shadow-sm sm:p-5">
+              <h2 className="text-sm font-semibold tracking-tight text-foreground">Account & Privacy</h2>
+              <p className="mt-1 text-xs text-muted-foreground">Manage your personal data and account settings.</p>
+              <div className="mt-3">
+                <Link
+                  href="/account/delete"
+                  className="inline-flex items-center text-xs font-medium text-destructive hover:underline"
+                >
+                  Delete account & personal data →
+                </Link>
+              </div>
+            </section>
+
+            <section className="rounded-[24px] border border-border/70 bg-card p-4 shadow-sm sm:p-5">
               <h2 className="text-lg font-semibold tracking-tight text-foreground">Quick snapshot</h2>
               <div className="mt-4 space-y-3">
                 <div className="rounded-2xl border border-border/70 bg-background p-4">

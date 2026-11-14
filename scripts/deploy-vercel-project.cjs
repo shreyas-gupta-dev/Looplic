@@ -47,9 +47,11 @@ try {
 
   // Write target project config
   fs.writeFileSync(projectJsonPath, JSON.stringify(config, null, 2), 'utf8');
-  console.log(`\n=== Deploying ${targetProject} (${config.projectId}) ===`);
+  const isPreview = process.argv.includes('--preview');
+  const deployCmd = isPreview ? 'npx vercel deploy --yes' : 'npx vercel deploy --prod --yes';
+  console.log(`\n=== Deploying ${targetProject} (${config.projectId}) [${isPreview ? 'PREVIEW' : 'PRODUCTION'}] ===`);
 
-  const output = execSync('npx vercel deploy --prod --yes', {
+  const output = execSync(deployCmd, {
     stdio: 'inherit',
     env: { ...process.env, CI: '1' }
   });

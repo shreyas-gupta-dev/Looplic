@@ -142,6 +142,7 @@ export function formatBookingServiceType(serviceType: string) {
   if (serviceType === "cctv") return "CCTV Installation";
   if (serviceType === "it_support") return "IT Support";
   if (serviceType === "managed_it_services") return "Managed IT Services";
+  if (serviceType === "data_recovery") return "Data Recovery";
   return serviceType.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
 }
 

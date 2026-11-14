@@ -1,4 +1,4 @@
-const WEBP_QUALITY = 0.86;
+const WEBP_QUALITY = 0.80;  // 80% quality for WebP conversion
 const MAX_DIMENSION = 1600;
 
 const RASTER_IMAGE_TYPES = new Set([

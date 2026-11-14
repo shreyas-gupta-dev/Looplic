@@ -41,7 +41,7 @@ const PUBLIC_INSERT_TABLES = new Set(["bookings", "technician_applications"]);
  * price-visibility switch, but it also holds service-centre camera URLs, so it is
  * an allowlist rather than a denylist.
  */
-const PUBLIC_APP_SETTING_KEYS = new Set(["repair_subcategory_prices"]);
+const PUBLIC_APP_SETTING_KEYS = new Set(["repair_subcategory_prices", "data_recovery_config"]);
 
 function snakeToCamel(s: string) {
   return s.replace(/_([a-z])/g, (_, l) => l.toUpperCase());

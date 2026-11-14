@@ -12,6 +12,30 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
+# AI Search Engine Crawlers (Answer Citations & Grounding)
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /api/
+
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /api/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /api/
+
+User-agent: Applebot
+Allow: /
+Disallow: /api/
+
+# Block aggressive non-commercial training scrapers
+User-agent: Bytespider
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
 User-agent: *
 Allow: /
 # Block server/API routes from crawling. Private pages (account, auth, thank-you)
@@ -19,4 +43,8 @@ Allow: /
 # can crawl them and honor the noindex directive.
 Disallow: /api/
 
-Sitemap: https://www.looplic.com/sitemap.xml
+Sitemap: https://looplic.com/sitemap.xml
+
+# LLM & AI Agent Discoverability Files
+# llms.txt: https://looplic.com/llms.txt
+# llms-full.txt: https://looplic.com/llms-full.txt

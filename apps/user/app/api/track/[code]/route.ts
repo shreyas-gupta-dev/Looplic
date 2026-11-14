@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { serviceLabelFor, trackBooking } from "@/src/lib/data/booking-tracking";
 import { guardRateLimit } from "@/src/lib/rate-limit";
+import { getPreviewBooking } from "@/src/lib/data/preview-recovery-store";
 
 /**
  * GET /api/track/[code]?phone=...
@@ -29,8 +30,46 @@ export async function GET(request: Request, context: { params: Promise<{ code: s
 
     if (!code || !phone) return notFound;
 
-    const booking = await trackBooking(code, phone);
-    if (!booking) return notFound;
+    let booking: any = null;
+    try {
+      booking = await trackBooking(code, phone);
+    } catch {
+      booking = null;
+    }
+
+    if (!booking) {
+      const preview = getPreviewBooking(code, phone);
+      if (preview) {
+        return NextResponse.json(
+          {
+            bookingCode: preview.bookingCode,
+            status: "pending",
+            statusLabel: "Request Received",
+            statusDescription: "We have your recovery request and our lab is preparing your intake assessment.",
+            timelineIndex: 0,
+            nextStatus: "picked_up",
+            nextStatusLabel: "Device In Transit",
+            serviceLabel: "Data Recovery",
+            deviceLabel: preview.deviceType,
+            repairLabel: preview.failureType,
+            scheduledDate: null,
+            timeSlot: null,
+            createdAt: preview.createdAt,
+            history: [
+              {
+                status: "pending",
+                label: "Request Received",
+                description: "Recovery request registered in lab intake.",
+                note: "Initial evaluation registered. Awaiting device collection or courier drop-off.",
+                at: preview.createdAt,
+              },
+            ],
+          },
+          { headers: { "Cache-Control": "no-store" } },
+        );
+      }
+      return notFound;
+    }
 
     return NextResponse.json(
       {

@@ -13,6 +13,11 @@ import { getCctvAreaPageContent } from "@/src/lib/cctv-area-pages";
 import { getBrandsForListing, getCatalogSearchIndex } from "@/src/lib/data/catalog";
 import { buildPageMetadata } from "@/src/lib/metadata";
 import { bangaloreAreas, getBangaloreAreaBySlug } from "@/src/lib/service-areas";
+import {
+  buildBreadcrumbSchema,
+  buildLocalBusinessSchema,
+  buildServiceSchema,
+} from "@/src/lib/schema";
 
 export const revalidate = 300;
 
@@ -53,7 +58,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   return buildPageMetadata({
-    title: `${config.label} in ${area.name}, Bangalore at Your Doorstep`,
+    title: `${config.label} in ${area.name}, Bangalore`,
     description:
       serviceType === "cctv"
         ? `Book CCTV installation in ${area.name}, Bangalore with camera placement planning, DVR/NVR setup, mobile viewing, and site handover checks.`
@@ -83,7 +88,31 @@ export default async function BangaloreAreaServicePage({ params }: PageProps) {
   const [brands, searchIndex] = await Promise.all([getBrandsForListing(config.listingType), getCatalogSearchIndex(config.listingType)]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": [
+              buildLocalBusinessSchema(),
+              buildServiceSchema({
+                name: `${config.label} in ${area.name}, Bangalore`,
+                description: `Fast doorstep ${config.label.toLowerCase()} in ${area.name}, Bangalore. Fixed on-site in front of you with 6-month warranty and genuine parts.`,
+                path: `/bangalore/${area.slug}/service/${serviceType}`,
+                serviceType: config.label,
+              }),
+              buildBreadcrumbSchema([
+                { name: "Home", path: "/" },
+                { name: "Bangalore", path: "/bangalore" },
+                { name: area.name, path: `/bangalore/${area.slug}` },
+                { name: config.label, path: `/bangalore/${area.slug}/service/${serviceType}` },
+              ]),
+            ],
+          }),
+        }}
+      />
+      <div className="min-h-screen bg-background">
       <CatalogNavbar />
       <CatalogServiceTabs active={config.activeTab} currentAreaSlug={area.slug} />
       <ServiceLandingPage
@@ -101,5 +130,6 @@ export default async function BangaloreAreaServicePage({ params }: PageProps) {
       <HomepageFooter />
       <ServiceAreasSection currentAreaSlug={area.slug} currentRepairServiceType={serviceType as "mobile-repair" | "laptop-repair"} />
     </div>
+    </>
   );
 }

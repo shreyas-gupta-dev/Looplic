@@ -30,6 +30,12 @@ const TABLE_MAP: Record<string, any> = {
   buyback_questions: schema.buybackQuestions,
   buyback_question_options: schema.buybackQuestionOptions,
   blog_posts: schema.blogPosts,
+  products: schema.products,
+  product_images: schema.productImages,
+  buy_orders: schema.buyOrders,
+  cart_items: schema.cartItems,
+  whatsapp_conversations: schema.whatsappConversations,
+  whatsapp_messages: schema.whatsappMessages,
 };
 
 const PUBLIC_READ_TABLES = new Set([
@@ -38,6 +44,7 @@ const PUBLIC_READ_TABLES = new Set([
   "screen_guard_categories", "app_settings", "model_repair_subcategory_prices",
   "user_roles",
   "buyback_model_prices", "buyback_model_variants", "buyback_questions", "buyback_question_options",
+  "products", "product_images",
 ]);
 
 const PUBLIC_INSERT_TABLES = new Set(["bookings", "technician_applications"]);
@@ -55,7 +62,7 @@ const PUBLIC_INSERT_TABLES = new Set(["bookings", "technician_applications"]);
  * this proxy did. Closed by default now: an allowlist, so a settings key added
  * later stays private unless someone deliberately publishes it.
  */
-const PUBLIC_APP_SETTING_KEYS = new Set(["repair_subcategory_prices"]);
+const PUBLIC_APP_SETTING_KEYS = new Set(["repair_subcategory_prices", "data_recovery_config"]);
 
 // Deleting records is an admin-only action. Operators (and the operation desk)
 // share the "operation" role and get full create/edit access but must never

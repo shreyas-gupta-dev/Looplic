@@ -1,0 +1,12 @@
+{
+  "clickThrough": true,
+  "regression": true,
+  "desktopScreenshots": true,
+  "mobileScreenshots": true,
+  "formSubmission": true,
+  "trackingView": true,
+  "honeypotDefense": true,
+  "rateLimiting": false,
+  "trackingProtection": true,
+  "testBookingCode": "REC-261114-KV498C"
+}

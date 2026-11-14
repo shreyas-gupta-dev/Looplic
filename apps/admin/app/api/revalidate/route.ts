@@ -39,6 +39,18 @@ export async function POST(request: Request) {
       ? await deleteRedisKeysByPrefix(["looplic:catalog:v1:", "looplic:home:v1:"])
       : 0;
 
+    // Forward revalidation to customer storefront (https://looplic.com) so website & app update instantly
+    const customerUrl = process.env.CUSTOMER_APP_URL || "https://looplic.com";
+    try {
+      await fetch(`${customerUrl}/api/revalidate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paths, pagePaths, tags }),
+      });
+    } catch (forwardErr) {
+      console.warn("Failed to forward revalidate to storefront:", forwardErr);
+    }
+
     return NextResponse.json({ revalidated: true, paths, pagePaths, tags, redisKeysDeleted });
   } catch {
     return NextResponse.json({ revalidated: false }, { status: 400 });

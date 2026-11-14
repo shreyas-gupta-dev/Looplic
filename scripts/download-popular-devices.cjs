@@ -44,3 +44,4 @@ function download(item) {
   }
   console.log("All 8 devices downloaded successfully!");
 })();
+

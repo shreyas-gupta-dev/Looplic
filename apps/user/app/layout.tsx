@@ -83,8 +83,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://looplic-assets.s3.ap-south-1.amazonaws.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://looplic-assets.s3.ap-south-1.amazonaws.com" />
+        <link rel="preconnect" href="https://zhoverulwcybtgrezaob.supabase.co" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://zhoverulwcybtgrezaob.supabase.co" />
         <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://res.cloudinary.com" />
         <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />

@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.looplic.app",
+      "sha256_cert_fingerprints": [
+        "3A:AE:24:60:D4:70:13:12:35:0E:7D:01:CE:F4:62:E0:DB:D1:30:39:B3:54:14:5D:6E:62:67:5E:7F:3F:69:0C"
+      ]
+    }
+  }
+]
+

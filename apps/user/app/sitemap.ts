@@ -81,6 +81,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     createEntry("/", 1, "daily"),
     createEntry("/buy", 0.9, "daily"),
     ...productRows.map((p) => createEntry(`/buy/${p.slug}`, 0.8, "daily", p.updatedAt ? new Date(p.updatedAt) : undefined)),
+    createEntry("/data-recovery", 0.9, "daily"),
     createEntry("/bangalore", 0.8, "daily"),
     ...bangaloreAreas.map((area) => createEntry(buildBangaloreAreaRoute(area.slug), 0.7, "weekly")),
     ...bangaloreAreas.flatMap((area) => [
@@ -110,6 +111,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     createEntry("/samsung-repair-bangalore", 0.9, "daily"),
     createEntry("/laptop-repair-bangalore", 0.9, "daily"),
     createEntry("/cctv-installation-bangalore", 0.9, "daily"),
+    createEntry("/service/hard-drive-data-recovery", 0.8, "weekly"),
     createEntry("/blog", 0.6, "weekly"),
     ...blogPosts.map((post) => createEntry(`/blog/${post.slug}`, 0.6, "monthly", new Date(post.updatedAt))),
     // /service-pages and /brand-pages are noindex,follow URL-index pages — they

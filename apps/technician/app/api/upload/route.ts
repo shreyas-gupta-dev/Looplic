@@ -1,29 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getServerSession } from "@/src/lib/auth/cognito-server";
+import { getAdminSupabase } from "@/src/lib/supabase/server";
 
-const REGION = process.env.NEXT_PUBLIC_S3_REGION || process.env.AWS_REGION || "ap-south-1";
 const BUCKET = process.env.NEXT_PUBLIC_S3_BUCKET || "looplic-assets";
 
-const s3 = new S3Client({
-  region: REGION,
-  credentials: {
-    accessKeyId: process.env.APP_AWS_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID || "",
-    secretAccessKey: process.env.APP_AWS_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY || "",
-  },
-});
-
-// Not exported: Next.js only allows route handlers and a fixed set of config
-// exports from a route file, and exporting this made the generated route types
-// fail to compile.
-function publicUrlFor(key: string) {
-  return `https://${BUCKET}.s3.${REGION}.amazonaws.com/${key}`;
-}
-
-// Uploads an image to S3 under <folder>/<path>. Admin/staff only.
+// Uploads an image to Supabase Storage under <folder>/<path>. Admin/staff only.
 export async function POST(req: NextRequest) {
+  let user: any = null;
   const session = await getServerSession();
-  if (!session.user) {
+  if (session.user) {
+    user = session.user;
+  } else {
+    const authHeader = req.headers.get("authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.slice(7);
+      const admin = getAdminSupabase();
+      const { data } = await admin.auth.getUser(token);
+      if (data?.user) {
+        user = data.user;
+      }
+    }
+  }
+
+  if (!user) {
     return NextResponse.json({ error: { message: "Unauthorized" } }, { status: 401 });
   }
 
@@ -40,19 +39,26 @@ export async function POST(req: NextRequest) {
     const key = `${folder}/${path}`;
     const bytes = Buffer.from(await file.arrayBuffer());
 
-    await s3.send(
-      new PutObjectCommand({
-        Bucket: BUCKET,
-        Key: key,
-        Body: bytes,
-        ContentType: file.type || "image/webp",
-        CacheControl: "public, max-age=31536000, immutable",
-      }),
-    );
+    const supabase = getAdminSupabase();
+    const { error: uploadError } = await supabase.storage
+      .from(BUCKET)
+      .upload(key, bytes, {
+        contentType: file.type || "image/webp",
+        upsert: true,
+      });
 
-    return NextResponse.json({ data: { key, publicUrl: publicUrlFor(key) }, error: null });
+    if (uploadError) {
+      console.error("Storage upload error:", uploadError);
+      return NextResponse.json({ error: { message: uploadError.message || "Upload failed" } }, { status: 500 });
+    }
+
+    const { data: publicUrlData } = supabase.storage
+      .from(BUCKET)
+      .getPublicUrl(key);
+
+    return NextResponse.json({ data: { key, publicUrl: publicUrlData.publicUrl }, error: null });
   } catch (err: any) {
-    console.error("S3 upload error:", err);
+    console.error("Storage upload error:", err);
     return NextResponse.json({ error: { message: err.message || "Upload failed" } }, { status: 500 });
   }
 }

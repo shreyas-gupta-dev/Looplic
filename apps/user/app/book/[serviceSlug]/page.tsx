@@ -16,6 +16,7 @@ export function generateStaticParams() {
     { serviceSlug: "cctv" },
     { serviceSlug: "it-support" },
     { serviceSlug: "managed-it-services" },
+    { serviceSlug: "hard-drive-data-recovery" },
   ];
 }
 
@@ -24,6 +25,7 @@ const SERVICE_LABELS: Record<string, string> = {
   cctv: "CCTV Installation",
   "it-support": "IT Support",
   "managed-it-services": "Managed IT Services",
+  "hard-drive-data-recovery": "Hard Drive Data Recovery",
 };
 
 const SERVICE_DESCRIPTIONS: Record<string, string> = {
@@ -31,6 +33,7 @@ const SERVICE_DESCRIPTIONS: Record<string, string> = {
   cctv: "Book professional CCTV camera installation, DVR setup, and surveillance configuration.",
   "it-support": "Book IT support for OS setup, software installation, and network configuration.",
   "managed-it-services": "Book recurring managed IT support, AMC planning, system maintenance, network setup, cloud support, and cybersecurity basics.",
+  "hard-drive-data-recovery": "Book professional hard drive and SSD data recovery with safe doorstep device collection in Bangalore.",
 };
 
 type PageProps = {

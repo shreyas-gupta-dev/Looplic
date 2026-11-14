@@ -2,7 +2,7 @@
 
 import { getBrowserSupabase } from "@/src/lib/supabase/browser";
 
-// Auth runs on Supabase; the application data still lives on Amazon RDS and is
+// Auth and application data run on Supabase (PostgreSQL + Auth + Storage).
 // reached through the /api/db-proxy route via DbQueryBuilder below.
 
 class DbQueryBuilder {
@@ -209,9 +209,9 @@ export function createClient() {
           }
         },
         getPublicUrl(path: string) {
-          const region = process.env.NEXT_PUBLIC_S3_REGION || "ap-south-1";
-          const s3Bucket = process.env.NEXT_PUBLIC_S3_BUCKET || "looplic-assets";
-          return { data: { publicUrl: `https://${s3Bucket}.s3.${region}.amazonaws.com/${bucket}/${path}` } };
+          const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://zhoverulwcybtgrezaob.supabase.co";
+          const subPath = bucket === "looplic-assets" ? path : (bucket + "/" + path);
+          return { data: { publicUrl: supabaseUrl + "/storage/v1/object/public/looplic-assets/" + subPath } };
         },
         remove: async (_paths: string[]) => ({ data: null, error: null }),
       }),

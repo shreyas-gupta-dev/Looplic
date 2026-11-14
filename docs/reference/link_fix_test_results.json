@@ -1,0 +1,20 @@
+{
+  "cardHrefUpdated": true,
+  "desktopNavigation": true,
+  "mobileNavigation": true,
+  "otherCardsUnchanged": true,
+  "directVisitAndRefresh": true,
+  "backButtonNavigation": true,
+  "bookingPageLoads": true,
+  "notFoundHandling": false,
+  "regressionItSupport": true,
+  "cardsCatalog": {
+    "Repair Phones": "/service/mobile-repair",
+    "Repair Laptop": "/service/laptop-repair",
+    "Sell Phone": "/sell",
+    "Sell Laptop": "/sell/laptop",
+    "Desktop Assembly": "/service/desktop-assembly",
+    "IT Support": "/service/it-support",
+    "CCTV Installation": "/service/cctv"
+  }
+}

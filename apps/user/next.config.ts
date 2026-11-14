@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
   transpilePackages: ["@looplic/db"],
   async headers() {
     const noStore = {
@@ -8,11 +9,54 @@ const nextConfig: NextConfig = {
       value: "no-store, no-cache, max-age=0, must-revalidate",
     };
     return [
+      {
+        source: "/:path*",
+        headers: [
+          {
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+          {
+            key: "X-Frame-Options",
+            value: "SAMEORIGIN",
+          },
+          {
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
+          },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
+          },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=(self)",
+          },
+        ],
+      },
       { source: "/account", headers: [noStore] },
       { source: "/thank-you", headers: [noStore] },
       { source: "/auth/:path*", headers: [noStore] },
       { source: "/book/:path*", headers: [noStore] },
       { source: "/service/:serviceType/book/:path*", headers: [noStore] },
+      {
+        source: "/(bangalore|service|sell|blog|about-us|faq|contact-us|careers|partners|privacy-policy|terms-and-conditions|warranty-policy|refund-policy)/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400",
+          },
+        ],
+      },
+      {
+        source: "/:path*(-screen-replacement|-repair-bangalore|-phones-bangalore|-iphone-bangalore|-laptop-bangalore|-mobile-phone-bangalore)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400",
+          },
+        ],
+      },
       {
         source: "/:all*(svg|jpg|jpeg|png|webp|avif|ico|woff|woff2)",
         headers: [
