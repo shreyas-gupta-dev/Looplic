@@ -1,4 +1,4 @@
-const local = 'http://localhost:3005';
+const local = process.argv[2] || 'https://looplic.com';
 
 async function check() {
   console.log('=== 1. Testing Homepage & Security Headers ===');

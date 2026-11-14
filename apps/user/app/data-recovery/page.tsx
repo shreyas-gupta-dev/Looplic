@@ -3,7 +3,8 @@ import { DataRecoveryView } from "@/src/components/data-recovery/DataRecoveryVie
 import { buildPageMetadata } from "@/src/lib/metadata";
 import { COMMON_FAQS, LAB_CONTACT } from "@/src/components/data-recovery/recovery-data";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Hard Drive Data Recovery in Bangalore | HDD & SSD Lab",
