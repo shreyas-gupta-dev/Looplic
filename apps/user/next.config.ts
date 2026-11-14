@@ -86,6 +86,21 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        source: "/service/hard-drive-data-recovery",
+        destination: "/data-recovery",
+        permanent: true,
+      },
+      {
+        source: "/service/data-recovery",
+        destination: "/data-recovery",
+        permanent: true,
+      },
+      {
+        source: "/book/hard-drive-data-recovery",
+        destination: "/data-recovery#book",
+        permanent: false,
+      },
+      {
         source: "/service/:serviceType/brands/xiaomi",
         destination: "/service/:serviceType/brands/mi",
         permanent: true,

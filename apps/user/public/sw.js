@@ -1,4 +1,5 @@
 // Minimal service worker for PWA installability + notification handling.
+// Cache Version: 2026-11-14-v3-purge-data-recovery
 //
 // IMPORTANT: do NOT intercept navigations with event.respondWith(fetch(...)).
 // A previous version proxied every GET through the service worker, which turned

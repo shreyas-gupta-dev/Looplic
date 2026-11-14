@@ -10,10 +10,9 @@ import {
   buildWebSiteSchema,
 } from "@/src/lib/schema";
 
-// ISR (not force-dynamic) so the homepage is edge-cacheable. The OAuth `/?code=`
-// return is handled entirely in middleware.ts (redirect to /auth/callback), so
-// this page never needs request-time searchParams.
-export const revalidate = 300;
+// Dynamically rendered to guarantee fresh routing, instant cache invalidation,
+// and zero stale link state across mobile, desktop, and PWA clients.
+export const revalidate = 0;
 
 export const metadata: Metadata = buildPageMetadata({
   title: "Sell Old Phones & Doorstep Repair in Bangalore | Looplic",

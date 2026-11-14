@@ -132,10 +132,11 @@ export function NewHomepageView({
             <div className="grid grid-cols-3 gap-3.5 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-6 sm:gap-5">
               {ourServices.map((svc) => {
                 const image = getServiceImage(svc.id);
+                const targetHref = svc.id === "data-recovery" ? "/data-recovery" : svc.href;
                 return (
                   <div key={svc.id}>
                     <Link
-                      href={svc.href}
+                      href={targetHref}
                       className="group flex flex-col items-center gap-2.5 text-center"
                     >
                       <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-gray-100 bg-white p-3 shadow-sm transition-all duration-200 group-hover:-translate-y-1 group-hover:border-primary/40 group-hover:shadow-md">
