@@ -15,6 +15,7 @@ import {
   AlertTriangle,
   HelpCircle,
 } from "lucide-react";
+import { supportPhoneDisplay, whatsappPhone, supportEmail, companyAddress } from "@/src/lib/company";
 
 export type StorageCategory = {
   id: string;
@@ -245,13 +246,13 @@ export const COMMON_FAQS = [
 ];
 
 export const LAB_CONTACT = {
-  phone: "+91 98458 63602",
-  phoneFormatted: "+91 98458 63602",
-  whatsapp: "919845863602",
-  email: "support@looplic.com",
-  labAddress: "1st Floor, Shawkat Building, SJP Road, Nagarathpete, Bengaluru 560002",
+  phone: supportPhoneDisplay,
+  phoneFormatted: supportPhoneDisplay,
+  whatsapp: `91${whatsappPhone}`,
+  email: supportEmail,
+  labAddress: companyAddress,
   workingHours: "Mon – Sat: 10:00 AM – 8:00 PM IST",
-  emergencyLine: "24/7 Emergency Line for Critical Business Recoveries",
+  emergencyLine: "24/7 Helpline & Emergency Pickup",
   coordinates: {
     lat: 12.9632,
     lng: 77.5784,

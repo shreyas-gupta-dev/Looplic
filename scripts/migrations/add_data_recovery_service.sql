@@ -28,7 +28,7 @@ $$;
 INSERT INTO app_settings (key, value, created_at, updated_at)
 VALUES (
   'data_recovery_config',
-  '{"pricing":{"evaluation_fee":0,"hdd_base_price":2499,"ssd_base_price":3499,"raid_base_price":8499},"turnaround":{"standard_days":"3-5 business days","priority_days":"24-48 hours","emergency_hours":"Same day / 24 hours"},"emergency_phone":"+91 98458 63602","whatsapp_number":"919845863602","active_notice":""}',
+  '{"pricing":{"evaluation_fee":0,"hdd_base_price":2499,"ssd_base_price":3499,"raid_base_price":8499},"turnaround":{"standard_days":"3-5 business days","priority_days":"24-48 hours","emergency_hours":"Same day / 24 hours"},"emergency_phone":"+91 88844 45924","whatsapp_number":"918884445924","active_notice":""}',
   NOW(),
   NOW()
 )

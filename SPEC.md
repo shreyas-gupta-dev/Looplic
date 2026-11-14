@@ -146,8 +146,8 @@ Value (JSON):
     "priority_days": "24-48 hours",
     "emergency_hours": "Same day / 24 hours"
   },
-  "emergency_phone": "+91 98458 63602",
-  "whatsapp_number": "919845863602",
+  "emergency_phone": "+91 88844 45924",
+  "whatsapp_number": "918884445924",
   "active_notice": ""
 }
 ```
