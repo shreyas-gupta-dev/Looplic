@@ -178,8 +178,11 @@ export function RecoveryLocationContact() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Topic *</label>
+                    <label htmlFor="contact-topic" className="block text-xs font-semibold text-slate-700 mb-1">Topic *</label>
                     <select
+                      id="contact-topic"
+                      name="topic"
+                      aria-label="Contact Topic"
                       value={topic}
                       onChange={(e) => setTopic(e.target.value)}
                       className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 outline-none focus:border-emerald-500"

@@ -32,6 +32,14 @@ export function RecoveryWhatsAppWidget() {
     if (e) e.preventDefault();
     const finalMsg = message.trim() || "Hi Looplic Data Recovery, I need guidance for my storage device.";
     const url = `https://wa.me/${LAB_CONTACT.whatsapp}?text=${encodeURIComponent(finalMsg)}`;
+
+    if (typeof window !== "undefined" && (window as any).gtag) {
+      (window as any).gtag("event", "contact_whatsapp_click", {
+        event_category: "Data Recovery Contact",
+        event_label: "WhatsApp Widget Send",
+      });
+    }
+
     window.open(url, "_blank", "noopener,noreferrer");
     setOpen(false);
   };

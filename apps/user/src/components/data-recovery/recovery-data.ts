@@ -230,7 +230,7 @@ export const COMMON_FAQS = [
   {
     category: "Pricing & Turnaround",
     q: "Do I have to pay if my data cannot be recovered?",
-    a: "We operate with complete transparency: [CONFIRM: No Recovery, No Fee policy]. We provide a diagnostic report detailing recoverable data, and you inspect a file tree list before paying for the final recovery.",
+    a: "We operate with complete transparency. Following our diagnostic evaluation, you receive a detailed report and file tree list of recoverable data to review and approve before proceeding with the final recovery.",
   },
   {
     category: "Logistics",

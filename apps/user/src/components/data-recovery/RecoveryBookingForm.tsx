@@ -48,6 +48,29 @@ export function RecoveryBookingForm({
   const [errorMessage, setErrorMessage] = useState("");
   const [createdCaseCode, setCreatedCaseCode] = useState<string | null>(null);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [utmParams, setUtmParams] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const sp = new URLSearchParams(window.location.search);
+      const utms: Record<string, string> = {};
+      ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "gclid"].forEach((key) => {
+        const val = sp.get(key);
+        if (val) {
+          utms[key] = val;
+          try {
+            sessionStorage.setItem(`looplic_${key}`, val);
+          } catch (e) {}
+        } else {
+          try {
+            const saved = sessionStorage.getItem(`looplic_${key}`);
+            if (saved) utms[key] = saved;
+          } catch (e) {}
+        }
+      });
+      setUtmParams(utms);
+    }
+  }, []);
 
   useEffect(() => {
     if (selectedCategory) {
@@ -83,6 +106,12 @@ export function RecoveryBookingForm({
           priority,
           details,
           website: websiteHoneypot,
+          utmSource: utmParams["utm_source"] || "",
+          utmMedium: utmParams["utm_medium"] || "",
+          utmCampaign: utmParams["utm_campaign"] || "",
+          utmContent: utmParams["utm_content"] || "",
+          utmTerm: utmParams["utm_term"] || "",
+          gclid: utmParams["gclid"] || "",
         }),
       });
 
@@ -94,6 +123,16 @@ export function RecoveryBookingForm({
       setCreatedCaseCode(result.bookingCode);
       if (onBookingSuccess) {
         onBookingSuccess(result.bookingCode);
+      }
+
+      // Track Analytics & Google Ads Conversion (privacy-safe, zero PII)
+      if (typeof window !== "undefined" && (window as any).gtag) {
+        (window as any).gtag("event", "generate_lead", {
+          event_category: "Data Recovery",
+          event_label: deviceType,
+          value: 0,
+          currency: "INR",
+        });
       }
     } catch (err: any) {
       setErrorMessage(err.message || "An unexpected error occurred. Please try again.");
@@ -194,10 +233,13 @@ export function RecoveryBookingForm({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                <label htmlFor="recovery-failure-type" className="block text-xs font-bold text-slate-700 mb-1.5">
                   Primary Failure Issue *
                 </label>
                 <select
+                  id="recovery-failure-type"
+                  name="failureType"
+                  aria-label="Primary Failure Issue"
                   value={failureType}
                   onChange={(e) => setFailureType(e.target.value)}
                   required

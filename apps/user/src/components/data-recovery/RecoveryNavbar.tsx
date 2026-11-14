@@ -28,6 +28,24 @@ export function RecoveryNavbar() {
     { label: "Lab Location", href: "#contact" },
   ];
 
+  const trackPhoneClick = (source: string) => {
+    if (typeof window !== "undefined" && (window as any).gtag) {
+      (window as any).gtag("event", "contact_phone_click", {
+        event_category: "Data Recovery Contact",
+        event_label: source,
+      });
+    }
+  };
+
+  const trackWhatsAppClick = (source: string) => {
+    if (typeof window !== "undefined" && (window as any).gtag) {
+      (window as any).gtag("event", "contact_whatsapp_click", {
+        event_category: "Data Recovery Contact",
+        event_label: source,
+      });
+    }
+  };
+
   return (
     <>
       {/* ─── Top Announcement Bar ─────────────────────────────────────────────── */}
@@ -42,6 +60,7 @@ export function RecoveryNavbar() {
           <div className="hidden items-center gap-5 sm:flex">
             <a
               href={`tel:${LAB_CONTACT.phone}`}
+              onClick={() => trackPhoneClick("Announcement Bar Phone")}
               className="flex items-center gap-1.5 transition-colors hover:text-white"
             >
               <Phone className="size-3.5 text-emerald-400" />
@@ -49,6 +68,7 @@ export function RecoveryNavbar() {
             </a>
             <a
               href={`https://wa.me/${LAB_CONTACT.whatsapp}?text=${encodeURIComponent("Hi Looplic Data Recovery, I need help recovering my storage device.")}`}
+              onClick={() => trackWhatsAppClick("Announcement Bar WhatsApp")}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1.5 text-emerald-400 transition-colors hover:text-emerald-300"
@@ -145,6 +165,7 @@ export function RecoveryNavbar() {
               <div className="mt-2 flex flex-col gap-2 border-t border-slate-100 pt-3">
                 <a
                   href={`tel:${LAB_CONTACT.phone}`}
+                  onClick={() => trackPhoneClick("Mobile Drawer Phone")}
                   className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 py-2.5 text-xs font-bold text-slate-800"
                 >
                   <Phone className="size-4 text-emerald-600" />
@@ -152,6 +173,7 @@ export function RecoveryNavbar() {
                 </a>
                 <a
                   href={`https://wa.me/${LAB_CONTACT.whatsapp}?text=${encodeURIComponent("Hi Looplic Data Recovery, I need help recovering my storage device.")}`}
+                  onClick={() => trackWhatsAppClick("Mobile Drawer WhatsApp")}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 text-xs font-bold text-white shadow-sm"

@@ -26,6 +26,12 @@ const bookingSchema = z.object({
   gstin: z.string().trim().optional().or(z.literal("")),
   ndaRequired: z.boolean().optional().default(false),
   website: z.string().optional().or(z.literal("")), // Honeypot field
+  utmSource: z.string().optional().or(z.literal("")),
+  utmMedium: z.string().optional().or(z.literal("")),
+  utmCampaign: z.string().optional().or(z.literal("")),
+  utmContent: z.string().optional().or(z.literal("")),
+  utmTerm: z.string().optional().or(z.literal("")),
+  gclid: z.string().optional().or(z.literal("")),
 });
 
 function generateRecoveryCode(): string {
@@ -75,7 +81,11 @@ export async function POST(request: Request) {
     const locationString = locationParts.join(", ");
     const cleanPhone = data.phone.replace(/\D/g, "").slice(-10);
 
-    const notesSummary = `[Data Recovery] Device: ${data.deviceType} | Model: ${data.deviceModel || "N/A"} | Issue: ${data.failureType} | Priority: ${data.priority.toUpperCase()}${data.isBusinessOnsite ? ` | Corporate: ${data.companyName} (${data.designation})` : ""}${data.details ? ` | Notes: ${data.details}` : ""}`;
+    const marketingTag = (data.utmSource || data.utmCampaign || data.gclid)
+      ? ` | Attribution: source=${data.utmSource || "none"}, medium=${data.utmMedium || "none"}, campaign=${data.utmCampaign || "none"}${data.gclid ? `, gclid=${data.gclid}` : ""}`
+      : "";
+
+    const notesSummary = `[Data Recovery] Device: ${data.deviceType} | Model: ${data.deviceModel || "N/A"} | Issue: ${data.failureType} | Priority: ${data.priority.toUpperCase()}${data.isBusinessOnsite ? ` | Corporate: ${data.companyName} (${data.designation})` : ""}${data.details ? ` | Notes: ${data.details}` : ""}${marketingTag}`;
 
     const newBookingId = crypto.randomUUID();
 

@@ -5,6 +5,7 @@ import { RecoveryNavbar } from "./RecoveryNavbar";
 import { RecoveryHero } from "./RecoveryHero";
 import { RecoveryStorageGrid } from "./RecoveryStorageGrid";
 import { RecoveryTechDeepDives } from "./RecoveryTechDeepDives";
+import { RecoveryEmergencyGuide } from "./RecoveryEmergencyGuide";
 import { RecoveryTrustPillars } from "./RecoveryTrustPillars";
 import { RecoveryProcessTimeline } from "./RecoveryProcessTimeline";
 import { RecoveryPricingTiers } from "./RecoveryPricingTiers";
@@ -42,47 +43,52 @@ export function DataRecoveryView() {
       {/* 1. Header with Announcement */}
       <RecoveryNavbar />
 
-      {/* 2. Hero Section with Quick Track Box */}
-      <RecoveryHero onTrackLookup={handleTrackLookup} />
+      <main id="main-content" className="flex-1">
+        {/* 2. Hero Section with Quick Track Box */}
+        <RecoveryHero onTrackLookup={handleTrackLookup} />
 
-      {/* 3. Storage Device Categories Grid */}
-      <RecoveryStorageGrid onSelectCategory={handleSelectCategory} />
+        {/* 3. Storage Device Categories Grid */}
+        <RecoveryStorageGrid onSelectCategory={handleSelectCategory} />
 
-      {/* 4. Technical Deep Dives (Mechanical HDD + Mac Logic Board) */}
-      <RecoveryTechDeepDives />
+        {/* 4. Technical Deep Dives (Mechanical HDD + Mac Logic Board) */}
+        <RecoveryTechDeepDives />
 
-      {/* 5. Trust & Security Pillars */}
-      <RecoveryTrustPillars />
+        {/* 5. Emergency Drive Failure Protocol: What To Do & What NOT To Do */}
+        <RecoveryEmergencyGuide />
 
-      {/* 6. Four-Step Process Timeline */}
-      <RecoveryProcessTimeline />
+        {/* 6. Trust & Security Pillars */}
+        <RecoveryTrustPillars />
 
-      {/* 7. Turnaround & Priority Tiers */}
-      <RecoveryPricingTiers onSelectPriority={handleSelectPriority} />
+        {/* 7. Four-Step Process Timeline */}
+        <RecoveryProcessTimeline />
 
-      {/* 8. Interactive Free Diagnosis Booking Form */}
-      <RecoveryBookingForm
-        selectedCategory={selectedCategory}
-        selectedPriority={selectedPriority}
-        onBookingSuccess={handleBookingSuccess}
-      />
+        {/* 8. Turnaround & Priority Tiers */}
+        <RecoveryPricingTiers onSelectPriority={handleSelectPriority} />
 
-      {/* 9. Corporate On-Site Recovery Tab / Section */}
-      <RecoveryCorporateOnsite />
+        {/* 9. Interactive Free Diagnosis Booking Form */}
+        <RecoveryBookingForm
+          selectedCategory={selectedCategory}
+          selectedPriority={selectedPriority}
+          onBookingSuccess={handleBookingSuccess}
+        />
 
-      {/* 10. Live Case Tracking Section */}
-      <RecoveryTrackingSection initialCode={activeTrackCode} />
+        {/* 10. Corporate On-Site Recovery Tab / Section */}
+        <RecoveryCorporateOnsite />
 
-      {/* 11. Comprehensive FAQ Accordion */}
-      <RecoveryFaqAccordion />
+        {/* 11. Live Case Tracking Section */}
+        <RecoveryTrackingSection initialCode={activeTrackCode} />
 
-      {/* 12. Lab Location, Map & Direct Contact */}
-      <RecoveryLocationContact />
+        {/* 12. Comprehensive FAQ Accordion */}
+        <RecoveryFaqAccordion />
 
-      {/* 13. Global Footer */}
+        {/* 13. Lab Location, Map & Direct Contact */}
+        <RecoveryLocationContact />
+      </main>
+
+      {/* 14. Global Footer */}
       <HomepageFooter />
 
-      {/* 14. Floating WhatsApp Chat Widget */}
+      {/* 15. Floating WhatsApp Chat Widget */}
       <RecoveryWhatsAppWidget />
     </div>
   );

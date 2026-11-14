@@ -6,18 +6,21 @@ import { COMMON_FAQS, LAB_CONTACT } from "@/src/components/data-recovery/recover
 export const revalidate = 3600;
 
 export const metadata: Metadata = buildPageMetadata({
-  title: "Hard Drive Data Recovery in Bengaluru | Looplic Data Recovery Lab",
+  title: "Hard Drive Data Recovery in Bangalore | HDD & SSD Lab",
   description:
-    "Professional data recovery in Bengaluru for Hard Drives, SSDs, MacBooks & RAID servers. Free diagnostic assessment, cleanroom handling & secure doorstep pickup.",
+    "Professional hard drive data recovery in Bangalore for clicking HDDs, failed SSDs, dead MacBooks & RAID servers. Free diagnosis & file list verification.",
   pathname: "/data-recovery",
+  image: "/images/services/data-recovery.webp",
   keywords: [
     "hard drive data recovery bangalore",
-    "ssd data recovery",
+    "data recovery bangalore",
+    "ssd data recovery bangalore",
+    "external hard disk recovery bangalore",
+    "clicking hard drive repair",
     "macbook data recovery bangalore",
-    "raid server recovery",
+    "raid server recovery bangalore",
     "recover deleted files",
     "cleanroom data recovery",
-    "clicking hard disk repair",
     "looplic data recovery",
   ],
 });
@@ -27,12 +30,30 @@ export default function DataRecoveryPage() {
     "@context": "https://schema.org",
     "@graph": [
       {
+        "@type": "BreadcrumbList",
+        "@id": "https://looplic.com/data-recovery#breadcrumb",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: "https://looplic.com",
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Hard Drive Data Recovery",
+            item: "https://looplic.com/data-recovery",
+          },
+        ],
+      },
+      {
         "@type": "LocalBusiness",
-        "@id": "https://www.looplic.com/data-recovery#lab",
+        "@id": "https://looplic.com/data-recovery#lab",
         name: "Looplic Data Recovery Lab",
-        url: "https://www.looplic.com/data-recovery",
-        logo: "https://www.looplic.com/looplic-logo.webp",
-        image: "https://www.looplic.com/images/services/data-recovery.webp",
+        url: "https://looplic.com/data-recovery",
+        logo: "https://looplic.com/looplic-logo.webp",
+        image: "https://looplic.com/images/services/data-recovery.webp",
         telephone: LAB_CONTACT.phone,
         email: LAB_CONTACT.email,
         priceRange: "₹₹ - Free diagnostic evaluation; fixed quote upon inspection",
@@ -60,12 +81,12 @@ export default function DataRecoveryPage() {
       },
       {
         "@type": "Service",
-        "@id": "https://www.looplic.com/data-recovery#service",
-        name: "Hard Drive & RAID Data Recovery",
+        "@id": "https://looplic.com/data-recovery#service",
+        name: "Hard Drive & SSD Data Recovery",
         provider: {
-          "@id": "https://www.looplic.com/data-recovery#lab",
+          "@id": "https://looplic.com/data-recovery#lab",
         },
-        serviceType: "Data Recovery",
+        serviceType: "Data Recovery Service",
         areaServed: {
           "@type": "AdministrativeArea",
           name: "Bengaluru, Karnataka, India",
@@ -75,13 +96,13 @@ export default function DataRecoveryPage() {
       },
       {
         "@type": "FAQPage",
-        "@id": "https://www.looplic.com/data-recovery#faq",
+        "@id": "https://looplic.com/data-recovery#faq",
         mainEntity: COMMON_FAQS.map((faq) => ({
           "@type": "Question",
           name: faq.q,
           acceptedAnswer: {
             "@type": "Answer",
-            text: faq.a,
+            text: faq.a.replace(/\[CONFIRM:[^\]]+\]\s*/g, ""),
           },
         })),
       },

@@ -212,8 +212,11 @@ export function RecoveryCorporateOnsite() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Environment / Systems *</label>
+                    <label htmlFor="corporate-environment" className="block text-xs font-semibold text-slate-700 mb-1">Environment / Systems *</label>
                     <select
+                      id="corporate-environment"
+                      name="environment"
+                      aria-label="Environment or Systems"
                       value={environment}
                       onChange={(e) => setEnvironment(e.target.value)}
                       className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 outline-none focus:border-blue-500"
@@ -228,8 +231,11 @@ export function RecoveryCorporateOnsite() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Urgency Level *</label>
+                    <label htmlFor="corporate-urgency" className="block text-xs font-semibold text-slate-700 mb-1">Urgency Level *</label>
                     <select
+                      id="corporate-urgency"
+                      name="urgency"
+                      aria-label="Urgency Level"
                       value={urgency}
                       onChange={(e) => setUrgency(e.target.value as any)}
                       className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 outline-none focus:border-blue-500"

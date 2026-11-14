@@ -40,6 +40,7 @@ const bangaloreServiceLinks = [
   { href: "/samsung-repair-bangalore", label: "Samsung Repair Bangalore" },
   { href: "/laptop-repair-bangalore", label: "Laptop Repair Bangalore" },
   { href: "/cctv-installation-bangalore", label: "CCTV Installation Bangalore" },
+  { href: "/data-recovery", label: "Hard Drive Data Recovery" },
 ];
 
 const companyLinks = [

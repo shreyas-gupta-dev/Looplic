@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   ShieldCheck,
   FileCheck2,
@@ -11,6 +12,7 @@ import {
   Search,
   Lock,
   Layers,
+  ChevronRight,
 } from "lucide-react";
 import { LAB_CONTACT } from "./recovery-data";
 
@@ -46,24 +48,37 @@ export function RecoveryHero({ onTrackLookup }: RecoveryHeroProps) {
 
       <div className="container relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
+          {/* Breadcrumb Trail */}
+          <nav aria-label="Breadcrumb" className="mb-4 inline-flex items-center gap-1.5 text-xs text-slate-400">
+            <Link href="/" className="transition-colors hover:text-emerald-300">
+              Home
+            </Link>
+            <ChevronRight className="size-3 text-slate-500" />
+            <span className="font-medium text-emerald-400" aria-current="page">
+              Hard Drive Data Recovery
+            </span>
+          </nav>
+
           {/* Eyebrow badge */}
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-950/60 px-3.5 py-1.5 text-xs font-semibold text-emerald-300 backdrop-blur-md">
-            <span className="flex size-1.5 rounded-full bg-emerald-400 animate-ping" />
-            <span>Dedicated Data Recovery Lab · Bengaluru</span>
+          <div className="mb-5 flex items-center justify-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-950/60 px-3.5 py-1.5 text-xs font-semibold text-emerald-300 backdrop-blur-md">
+              <span className="flex size-1.5 rounded-full bg-emerald-400 animate-ping" />
+              <span>Dedicated Data Recovery Lab · Bengaluru</span>
+            </div>
           </div>
 
-          {/* Headline */}
+          {/* Headline matching search & ad intent */}
           <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl md:leading-[1.15]">
-            Lost Critical Data? <br />
+            Hard Drive Data Recovery <br />
             <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
-              We Bring It Back Safely.
+              in Bangalore
             </span>
           </h1>
 
           {/* Subtitle */}
           <p className="mt-5 text-sm leading-relaxed text-slate-300 sm:text-base md:text-lg">
-            Professional cleanroom data recovery for Hard Drives, SSDs, MacBooks, and RAID servers.
-            Comprehensive diagnostics, strict NDA confidentiality, and zero data exposure.
+            Professional cleanroom recovery for clicking hard drives (HDD), failed SSDs, dead MacBooks, and RAID servers.
+            Comprehensive diagnostics, strict NDA confidentiality, and secure doorstep device collection across Bengaluru.
           </p>
 
           {/* Action CTAs */}
