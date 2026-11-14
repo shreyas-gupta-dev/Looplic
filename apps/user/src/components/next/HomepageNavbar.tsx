@@ -194,7 +194,7 @@ export function HomepageNavbar() {
           </div>
 
           {/* Direct links */}
-          <Link href="/service/mobile" className="rounded-lg px-3 py-2.5 transition-colors hover:bg-gray-50 hover:text-primary">
+          <Link href="/service/mobile-repair" className="rounded-lg px-3 py-2.5 transition-colors hover:bg-gray-50 hover:text-primary">
             Repair
           </Link>
           <Link href="/live-repair" className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2.5 font-bold text-red-600 transition-colors hover:bg-red-50 hover:text-red-700">
@@ -300,20 +300,20 @@ export function HomepageNavbar() {
 
             <div className="my-3 border-t border-gray-100" />
 
-            <Link href="/service/mobile-repair" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            <Link href="/service/mobile-repair" onClick={() => setMobileOpen(false)} className="flex min-h-[44px] items-center rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-800 hover:bg-gray-50">
               Repair
             </Link>
-            <Link href="/live-repair" onClick={() => setMobileOpen(false)} className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-bold text-red-600 hover:bg-red-50">
+            <Link href="/live-repair" onClick={() => setMobileOpen(false)} className="flex min-h-[44px] items-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-bold text-red-600 hover:bg-red-50">
               <span className="relative flex size-2">
                 <span className="absolute inline-flex size-full animate-ping rounded-full bg-red-400 opacity-75" />
                 <span className="relative inline-flex size-2 rounded-full bg-red-600" />
               </span>
               Live CCTV Cam
             </Link>
-            <Link href="/track" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            <Link href="/track" onClick={() => setMobileOpen(false)} className="flex min-h-[44px] items-center rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-800 hover:bg-gray-50">
               Track Order
             </Link>
-            <Link href="/store-locator" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            <Link href="/store-locator" onClick={() => setMobileOpen(false)} className="flex min-h-[44px] items-center rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-800 hover:bg-gray-50">
               Store Locator
             </Link>
 
@@ -324,7 +324,7 @@ export function HomepageNavbar() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
-                className="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                className="flex min-h-[44px] items-center rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-800 hover:bg-gray-50"
               >
                 {link.label}
               </Link>

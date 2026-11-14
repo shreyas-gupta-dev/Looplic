@@ -196,16 +196,13 @@ export function HomepageFooter() {
         {/* App Download */}
         <div className="mt-10 flex flex-col items-center justify-between gap-4 rounded-xl border border-gray-800 bg-gray-800/50 p-5 sm:flex-row">
           <div>
-            <p className="text-sm font-semibold text-white">Download the Looplic App</p>
-            <p className="mt-0.5 text-xs text-gray-400">Sell & buy on the go. Available on Android & iOS.</p>
+            <p className="text-sm font-semibold text-white">Looplic Progressive Web App</p>
+            <p className="mt-0.5 text-xs text-gray-400">Install Looplic directly on your home screen for instant booking access.</p>
           </div>
           <div className="flex items-center gap-3">
-            <a href="#" className="rounded-lg bg-white px-4 py-2 text-xs font-bold text-gray-900 transition-opacity hover:opacity-90">
-              Google Play
-            </a>
-            <a href="#" className="rounded-lg bg-white px-4 py-2 text-xs font-bold text-gray-900 transition-opacity hover:opacity-90">
-              App Store
-            </a>
+            <Link href="/" className="rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold text-white transition-opacity hover:bg-emerald-500">
+              Web App Ready
+            </Link>
           </div>
         </div>
       </div>
@@ -216,10 +213,14 @@ export function HomepageFooter() {
           <p className="text-xs text-gray-500">
             © {new Date().getFullYear()} {companyName}. All rights reserved.
           </p>
-          <div className="flex items-center gap-3 text-xs text-gray-500">
-            <Link href="/buyback-policy" className="hover:text-gray-400 transition-colors">Buyback Policy</Link>
+          <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-gray-500">
+            <Link href="/privacy-policy" className="hover:text-gray-300 transition-colors">Privacy Policy</Link>
             <span className="text-gray-700">•</span>
-            <Link href="/warranty-policy" className="hover:text-gray-400 transition-colors">Warranty Policy</Link>
+            <Link href="/terms-and-conditions" className="hover:text-gray-300 transition-colors">Terms &amp; Conditions</Link>
+            <span className="text-gray-700">•</span>
+            <Link href="/buyback-policy" className="hover:text-gray-300 transition-colors">Buyback Policy</Link>
+            <span className="text-gray-700">•</span>
+            <Link href="/warranty-policy" className="hover:text-gray-300 transition-colors">Warranty Policy</Link>
           </div>
         </div>
       </div>
