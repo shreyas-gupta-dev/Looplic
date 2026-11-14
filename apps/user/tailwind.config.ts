@@ -14,8 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ["var(--font-recovery-display)", "var(--font-poppins)", "Poppins", "sans-serif"],
-        body: ["var(--font-recovery-body)", "var(--font-poppins)", "Poppins", "sans-serif"],
+        display: ["var(--font-poppins)", "Poppins", "sans-serif"],
+        body: ["var(--font-poppins)", "Poppins", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",

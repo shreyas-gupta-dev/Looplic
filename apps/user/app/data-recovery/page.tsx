@@ -1,22 +1,7 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Inter } from "next/font/google";
 import { DataRecoveryView } from "@/src/components/data-recovery/DataRecoveryView";
 import { buildPageMetadata } from "@/src/lib/metadata";
 import { COMMON_FAQS, LAB_CONTACT } from "@/src/components/data-recovery/recovery-data";
-
-const recoveryDisplay = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  weight: ["600", "700", "800"],
-  variable: "--font-recovery-display",
-  display: "swap",
-});
-
-const recoveryBody = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-recovery-body",
-  display: "swap",
-});
 
 export const revalidate = 3600;
 
@@ -125,12 +110,12 @@ export default function DataRecoveryPage() {
   };
 
   return (
-    <div className={`${recoveryDisplay.variable} ${recoveryBody.variable}`}>
+    <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdGraph) }}
       />
       <DataRecoveryView />
-    </div>
+    </>
   );
 }
