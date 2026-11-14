@@ -247,6 +247,7 @@ export const COMMON_FAQS = [
 
 export const LAB_CONTACT = {
   phone: supportPhoneDisplay,
+  phoneClean: "+918884445924",
   phoneFormatted: supportPhoneDisplay,
   whatsapp: `91${whatsappPhone}`,
   email: supportEmail,

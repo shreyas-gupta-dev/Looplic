@@ -3,8 +3,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { Phone, MessageSquare, Menu, X, ShieldCheck, ArrowRight } from "lucide-react";
+import { Phone, Menu, X } from "lucide-react";
 import { LAB_CONTACT } from "./recovery-data";
+import { RecoveryButton } from "./RecoveryButton";
+import { RECOVERY_TOKENS } from "./recovery-tokens";
 
 export function RecoveryNavbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -12,20 +14,18 @@ export function RecoveryNavbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      setScrolled(window.scrollY > 15);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const navLinks = [
-    { label: "Devices & Issues", href: "#services" },
-    { label: "How It Works", href: "#process" },
-    { label: "Why Looplic", href: "#why-us" },
-    { label: "Pricing Tiers", href: "#pricing" },
-    { label: "Track Case", href: "#track" },
+    { label: "Services", href: "#services" },
+    { label: "Emergency Guide", href: "#emergency" },
+    { label: "Process & Lab", href: "#process" },
+    { label: "Pricing & SLAs", href: "#pricing" },
     { label: "FAQ", href: "#faq" },
-    { label: "Lab Location", href: "#contact" },
   ];
 
   const trackPhoneClick = (source: string) => {
@@ -37,59 +37,40 @@ export function RecoveryNavbar() {
     }
   };
 
-  const trackWhatsAppClick = (source: string) => {
-    if (typeof window !== "undefined" && (window as any).gtag) {
-      (window as any).gtag("event", "contact_whatsapp_click", {
-        event_category: "Data Recovery Contact",
-        event_label: source,
-      });
-    }
-  };
-
   return (
     <>
-      {/* ─── Top Announcement Bar ─────────────────────────────────────────────── */}
-      <div className="bg-[#0c1838] px-4 py-2 text-xs font-medium text-slate-200">
-        <div className="container mx-auto flex max-w-7xl items-center justify-between">
+      {/* ─── Top Calm Notice ─────────────────────────────────────────────────── */}
+      <div className="bg-slate-900 px-4 py-2 text-xs font-medium text-slate-300 border-b border-slate-800">
+        <div className={`${RECOVERY_TOKENS.layout.container} flex items-center justify-between`}>
           <div className="flex items-center gap-2">
-            <span className="flex size-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>
-              Looplic Data Recovery Lab · <strong className="text-white">Free Initial Diagnosis</strong> across Bengaluru
+              Looplic Data Recovery Lab · <strong className="text-white">Free Initial Diagnostics</strong> across Bengaluru
             </span>
           </div>
-          <div className="hidden items-center gap-5 sm:flex">
+          <div className="hidden sm:flex items-center gap-4">
             <a
-              href={`tel:${LAB_CONTACT.phone}`}
+              href={`tel:${LAB_CONTACT.phoneClean}`}
               onClick={() => trackPhoneClick("Announcement Bar Phone")}
-              className="flex items-center gap-1.5 transition-colors hover:text-white"
+              className="inline-flex items-center gap-1.5 text-slate-300 hover:text-white transition-colors"
             >
               <Phone className="size-3.5 text-emerald-400" />
               <span>{LAB_CONTACT.phoneFormatted}</span>
-            </a>
-            <a
-              href={`https://wa.me/${LAB_CONTACT.whatsapp}?text=${encodeURIComponent("Hi Looplic Data Recovery, I need help recovering my storage device.")}`}
-              onClick={() => trackWhatsAppClick("Announcement Bar WhatsApp")}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-emerald-400 transition-colors hover:text-emerald-300"
-            >
-              <MessageSquare className="size-3.5" />
-              <span>WhatsApp Engineer</span>
             </a>
           </div>
         </div>
       </div>
 
-      {/* ─── Main Header Navigation ───────────────────────────────────────────── */}
+      {/* ─── Main Header Navigation (5 Links Maximum) ────────────────────────── */}
       <header
-        className={`sticky top-0 z-40 w-full transition-all duration-200 ${
-          scrolled ? "bg-white/95 shadow-md backdrop-blur-md" : "bg-white border-b border-slate-100"
+        className={`sticky top-0 z-40 w-full bg-white transition-all duration-200 ${
+          scrolled ? "shadow-sm border-b border-slate-200" : "border-b border-slate-200"
         }`}
       >
-        <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          {/* Logo */}
+        <div className={`${RECOVERY_TOKENS.layout.container} flex h-20 items-center justify-between`}>
+          {/* Logo & Lab Identifier */}
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 rounded-lg">
               <Image
                 src="/looplic-logo.webp"
                 alt="Looplic Logo"
@@ -99,49 +80,47 @@ export function RecoveryNavbar() {
                 priority
               />
             </Link>
-            <span className="hidden h-5 w-px bg-slate-200 sm:inline-block" />
-            <span className="hidden rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700 sm:inline-block">
+            <span className="hidden sm:inline-block h-5 w-px bg-slate-300" />
+            <span className="hidden sm:inline-block rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-800">
               Data Recovery Lab
             </span>
           </div>
 
-          {/* Desktop Nav Links */}
-          <nav className="hidden items-center gap-6 lg:flex">
+          {/* 5 Primary Navigation Links */}
+          <nav className="hidden lg:flex items-center gap-8">
             {navLinks.map((link) => (
               <a
                 key={link.label}
                 href={link.href}
-                className="text-xs font-semibold text-slate-600 transition-colors hover:text-emerald-600 xl:text-sm"
+                className="text-sm font-semibold text-slate-800 hover:text-emerald-700 transition-colors"
               >
                 {link.label}
               </a>
             ))}
           </nav>
 
-          {/* Action CTAs */}
-          <div className="flex items-center gap-2.5">
+          {/* Action Area: Single Primary Button */}
+          <div className="flex items-center gap-4">
             <a
-              href={`tel:${LAB_CONTACT.phone}`}
-              className="hidden items-center gap-1.5 rounded-full border border-slate-200 px-3.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 md:flex"
+              href={`tel:${LAB_CONTACT.phoneClean}`}
+              onClick={() => trackPhoneClick("Header Call Link")}
+              className="hidden md:inline-flex items-center gap-1.5 text-sm font-semibold text-slate-800 hover:text-emerald-700 transition-colors"
             >
-              <Phone className="size-3.5 text-slate-500" />
-              <span>Call Lab</span>
+              <Phone className="size-4 text-emerald-600" />
+              <span>{LAB_CONTACT.phoneFormatted}</span>
             </a>
 
-            <a
-              href="#book"
-              className="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow sm:text-sm"
-            >
-              <span>Book Diagnosis</span>
-              <ArrowRight className="size-3.5" />
-            </a>
+            <RecoveryButton href="#book">
+              Book Diagnosis
+            </RecoveryButton>
 
             {/* Mobile menu toggle */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="flex size-9 items-center justify-center rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 lg:hidden"
+              className="flex size-11 items-center justify-center rounded-xl border border-slate-300 text-slate-800 hover:bg-slate-50 lg:hidden"
               aria-label="Toggle navigation menu"
+              aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
             </button>
@@ -150,37 +129,33 @@ export function RecoveryNavbar() {
 
         {/* ─── Mobile Drawer Menu ─────────────────────────────────────────────── */}
         {mobileMenuOpen && (
-          <div className="border-b border-slate-200 bg-white px-4 py-4 lg:hidden">
-            <div className="flex flex-col gap-3">
+          <div className="border-b border-slate-200 bg-white px-4 py-6 lg:hidden animate-in fade-in duration-150">
+            <div className="flex flex-col gap-2">
               {navLinks.map((link) => (
                 <a
                   key={link.label}
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+                  className="flex items-center min-h-[44px] rounded-lg px-3 text-base font-semibold text-slate-900 hover:bg-slate-50"
                 >
                   {link.label}
                 </a>
               ))}
-              <div className="mt-2 flex flex-col gap-2 border-t border-slate-100 pt-3">
+              <div className="mt-4 pt-4 border-t border-slate-200 flex flex-col gap-3">
                 <a
-                  href={`tel:${LAB_CONTACT.phone}`}
-                  onClick={() => trackPhoneClick("Mobile Drawer Phone")}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 py-2.5 text-xs font-bold text-slate-800"
+                  href={`tel:${LAB_CONTACT.phoneClean}`}
+                  onClick={() => {
+                    trackPhoneClick("Mobile Drawer Phone");
+                    setMobileMenuOpen(false);
+                  }}
+                  className="flex items-center justify-center gap-2 min-h-[48px] rounded-xl border border-slate-300 font-semibold text-slate-900"
                 >
                   <Phone className="size-4 text-emerald-600" />
                   <span>Call Lab ({LAB_CONTACT.phoneFormatted})</span>
                 </a>
-                <a
-                  href={`https://wa.me/${LAB_CONTACT.whatsapp}?text=${encodeURIComponent("Hi Looplic Data Recovery, I need help recovering my storage device.")}`}
-                  onClick={() => trackWhatsAppClick("Mobile Drawer WhatsApp")}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 py-2.5 text-xs font-bold text-white shadow-sm"
-                >
-                  <MessageSquare className="size-4" />
-                  <span>Chat on WhatsApp</span>
-                </a>
+                <RecoveryButton href="#book" onClick={() => setMobileMenuOpen(false)}>
+                  Book Free Diagnosis
+                </RecoveryButton>
               </div>
             </div>
           </div>

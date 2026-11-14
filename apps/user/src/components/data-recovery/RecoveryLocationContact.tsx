@@ -79,7 +79,7 @@ export function RecoveryLocationContact() {
                   <Phone className="size-5 shrink-0 text-emerald-600 mt-0.5" />
                   <div>
                     <strong className="block text-slate-900 font-bold">Phone Hotline:</strong>
-                    <a href={`tel:${LAB_CONTACT.phone}`} className="hover:underline font-semibold text-slate-900">
+                    <a href={`tel:${LAB_CONTACT.phoneClean}`} className="hover:underline font-semibold text-slate-900">
                       {LAB_CONTACT.phoneFormatted}
                     </a>
                   </div>

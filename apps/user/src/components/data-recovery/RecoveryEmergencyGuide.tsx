@@ -1,84 +1,85 @@
 "use client";
 
-import { AlertOctagon, CheckCircle2, XCircle, ShieldAlert } from "lucide-react";
+import { AlertOctagon, CheckCircle2, XCircle } from "lucide-react";
+import { RecoveryButton } from "./RecoveryButton";
 
 export function RecoveryEmergencyGuide() {
   const donts = [
     {
-      title: "Never Power On a Clicking or Grinding Drive",
-      desc: "Clicking sounds indicate the read/write head assembly is physically colliding with spinning platters (5,400 to 7,200 RPM). Every second the drive runs can scrape off the magnetic substrate where your data lives.",
+      title: "Never power on a clicking or grinding drive",
+      desc: "Clicking means heads are hitting spinning platters at 7,200 RPM. Running it scrapes off the magnetic layer holding your data.",
     },
     {
-      title: "Never Run CHKDSK, fsck, or Generic 'Repair' Tools",
-      desc: "Windows CHKDSK and disk utility tools assume hardware is healthy. On drives with failing heads or bad sectors, they aggressively re-write corrupted blocks, permanently destroying original file tables.",
+      title: "Never run CHKDSK or generic 'repair' utilities",
+      desc: "Windows disk check assumes healthy hardware. On failing media, it forces writes that overwrite original file directory tables.",
     },
     {
-      title: "Never Open the Hard Drive Cover at Home",
-      desc: "Modern drive heads fly less than 3 nanometers above platters. A single airborne dust particle is 100x larger than this gap. Opening a drive outside an ISO-standard laminar flow clean bench destroys platters instantly.",
+      title: "Never open the drive enclosure at home",
+      desc: "Read heads fly nanometers above platters. A single airborne dust speck is 100x larger than this gap and damages platters instantly.",
     },
     {
-      title: "Never Try Internet Myths (Freezer Trick, Tapping, Shaking)",
-      desc: "Freezing a drive introduces internal moisture condensation that shorts controller circuits and oxidizes magnetic platters. Shaking or tapping bends spindle bearings and head suspensions.",
+      title: "Avoid internet myths (freezer, tapping, shaking)",
+      desc: "Freezing causes internal condensation that shorts circuits. Tapping bends spindle bearings and head suspensions.",
     },
   ];
 
   const dos = [
     {
-      title: "Safely Disconnect and Power Off Immediately",
-      desc: "Shut down your operating system immediately or safely disconnect the external USB cable. Preserving the exact state of magnetic platters or SSD NAND chips is your highest priority.",
+      title: "Disconnect and power off immediately",
+      desc: "Safely unplug power or external USB cable immediately to freeze the physical state of your platters or NAND chips.",
     },
     {
-      title: "Note Down Symptoms and Circumstances",
-      desc: "Record whether you heard beeping, clicking, smelled burning electronics, experienced a liquid spill, or suffered a power surge. This diagnostic context speeds up lab triage.",
+      title: "Note down symptoms and failure context",
+      desc: "Record whether you heard clicking, smelled burning, or had a power surge. This diagnostic context speeds up triage.",
     },
     {
-      title: "Package in Cushioning and Anti-Static Protection",
-      desc: "Wrap the storage device in bubble wrap (at least 2–3 inches thick) inside a rigid cardboard box to prevent vibration damage during doorstep transport or courier shipping.",
+      title: "Package in anti-static cushioning",
+      desc: "Wrap the device in 2–3 inches of bubble wrap inside a rigid box to prevent shock during doorstep pickup or courier transit.",
     },
     {
-      title: "Consult a Specialized Cleanroom Recovery Lab",
-      desc: "Arrange a professional diagnostic inspection where certified hardware imagers clone unstable sectors at the hardware level without stressing damaged drive assemblies.",
+      title: "Book a certified cleanroom inspection",
+      desc: "Our lab creates sector-by-sector clones on hardware imagers without stressing unstable read heads.",
     },
   ];
 
   return (
-    <section className="bg-slate-900 py-16 text-white md:py-24">
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section id="emergency" className="bg-slate-50 py-16 text-slate-900 sm:py-24">
+      <div className="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-950/60 px-3.5 py-1.5 text-xs font-semibold text-amber-300">
-            <AlertOctagon className="size-3.5 text-amber-400" />
-            <span>Emergency Drive Failure Protocol</span>
+          <div className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3.5 py-1.5 text-xs font-bold text-rose-800">
+            <AlertOctagon className="size-3.5 text-rose-600" />
+            <span>Emergency Storage Protocol</span>
           </div>
-          <h2 className="mt-3 text-2xl font-bold tracking-tight text-white sm:text-4xl">
-            What to Do (and What NOT to Do) When Your Drive Fails
+          <h2 className="mt-4 font-display text-2xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+            Critical Steps When Your Drive Fails
           </h2>
-          <p className="mt-3 text-sm text-slate-300 sm:text-base">
-            The immediate steps you take in the first 15 minutes of storage failure often decide whether 100% of your critical data can be rescued.
+          <p className="mt-3 text-sm leading-relaxed text-slate-700 sm:text-base">
+            Actions taken in the first 15 minutes decide whether your files are safely recoverable.
           </p>
         </div>
 
-        <div className="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-2">
+        <div className="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-2">
           {/* Critical DON'Ts */}
-          <div className="rounded-2xl border border-rose-500/30 bg-rose-950/20 p-6 sm:p-8 backdrop-blur-sm">
-            <div className="flex items-center gap-3 border-b border-rose-500/20 pb-4">
-              <div className="flex size-10 items-center justify-center rounded-xl bg-rose-500/20 text-rose-400">
+          <div className="rounded-2xl border border-rose-200 bg-white p-6 shadow-sm sm:p-8">
+            <div className="flex items-center gap-3 border-b border-rose-100 pb-4">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-rose-100 text-rose-700">
                 <XCircle className="size-6" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">Critical DON&apos;Ts</h3>
-                <p className="text-xs text-rose-300">Actions that lead to irreversible platter and NAND data loss</p>
+                <h3 className="font-display text-lg font-bold text-slate-900">What NOT to Do</h3>
+                <p className="text-xs font-medium text-rose-700">Actions causing irreversible platter and NAND loss</p>
               </div>
             </div>
 
-            <div className="mt-6 space-y-5">
+            <div className="mt-6 space-y-4">
               {donts.map((item, i) => (
-                <div key={i} className="flex items-start gap-3.5">
-                  <span className="mt-1 flex size-5 shrink-0 items-center justify-center rounded-full bg-rose-950 text-xs font-bold text-rose-400 border border-rose-500/40">
+                <div key={i} className="flex items-start gap-3">
+                  <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-rose-50 text-xs font-bold text-rose-700 border border-rose-200">
                     ✕
                   </span>
                   <div>
-                    <h4 className="text-sm font-bold text-slate-100">{item.title}</h4>
-                    <p className="mt-1 text-xs leading-relaxed text-slate-300">{item.desc}</p>
+                    <h4 className="text-sm font-bold text-slate-900">{item.title}</h4>
+                    <p className="mt-0.5 text-xs leading-relaxed text-slate-600">{item.desc}</p>
                   </div>
                 </div>
               ))}
@@ -86,31 +87,38 @@ export function RecoveryEmergencyGuide() {
           </div>
 
           {/* Critical DOs */}
-          <div className="rounded-2xl border border-emerald-500/30 bg-emerald-950/20 p-6 sm:p-8 backdrop-blur-sm">
-            <div className="flex items-center gap-3 border-b border-emerald-500/20 pb-4">
-              <div className="flex size-10 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400">
+          <div className="rounded-2xl border border-emerald-200 bg-white p-6 shadow-sm sm:p-8">
+            <div className="flex items-center gap-3 border-b border-emerald-100 pb-4">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
                 <CheckCircle2 className="size-6" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">Immediate DOs</h3>
-                <p className="text-xs text-emerald-300">Safe steps to maximize recoverable file percentage</p>
+                <h3 className="font-display text-lg font-bold text-slate-900">What to Do Immediately</h3>
+                <p className="text-xs font-medium text-emerald-700">Safe steps to protect your data recovery odds</p>
               </div>
             </div>
 
-            <div className="mt-6 space-y-5">
+            <div className="mt-6 space-y-4">
               {dos.map((item, i) => (
-                <div key={i} className="flex items-start gap-3.5">
-                  <span className="mt-1 flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-950 text-xs font-bold text-emerald-400 border border-emerald-500/40">
+                <div key={i} className="flex items-start gap-3">
+                  <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-xs font-bold text-emerald-700 border border-emerald-200">
                     ✓
                   </span>
                   <div>
-                    <h4 className="text-sm font-bold text-slate-100">{item.title}</h4>
-                    <p className="mt-1 text-xs leading-relaxed text-slate-300">{item.desc}</p>
+                    <h4 className="text-sm font-bold text-slate-900">{item.title}</h4>
+                    <p className="mt-0.5 text-xs leading-relaxed text-slate-600">{item.desc}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
+        </div>
+
+        {/* Single section primary CTA */}
+        <div className="mt-10 text-center">
+          <RecoveryButton href="#book" variant="primary">
+            Request Cleanroom Diagnostics →
+          </RecoveryButton>
         </div>
       </div>
     </section>

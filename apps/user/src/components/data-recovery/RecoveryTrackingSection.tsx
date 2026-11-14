@@ -156,7 +156,7 @@ export function RecoveryTrackingSection({ initialCode = "" }: RecoveryTrackingSe
                   <p className="font-semibold">{error}</p>
                   <p className="text-red-700">
                     Need immediate assistance? Call our lab at{" "}
-                    <a href={`tel:${LAB_CONTACT.phone}`} className="font-bold underline">
+                    <a href={`tel:${LAB_CONTACT.phoneClean}`} className="font-bold underline">
                       {LAB_CONTACT.phoneFormatted}
                     </a>{" "}
                     or{" "}
