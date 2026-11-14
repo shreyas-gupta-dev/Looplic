@@ -53,6 +53,12 @@ function cleanLeadPayload(input: any): LeadPayload {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+
+    // Anti-spam honeypot defense: silently accept and drop bot submissions
+    if (body?.website_hp || body?.metadata?.hp) {
+      return NextResponse.json({ ok: true });
+    }
+
     const payload = cleanLeadPayload(body);
 
     if (!payload.customer?.phone && !payload.customer?.email) {
