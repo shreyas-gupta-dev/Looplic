@@ -14,9 +14,8 @@ import {
 export const revalidate = 300;
 
 export function generateStaticParams() {
-  return bangaloreAreas.slice(0, 50).map((area) => ({
-    areaSlug: area.slug,
-  }));
+  // Pre-generate top area, rest generated on-demand and cached via ISR revalidate: 300
+  return [{ areaSlug: "koramangala" }];
 }
 
 type PageProps = {
