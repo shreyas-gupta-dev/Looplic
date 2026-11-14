@@ -44,8 +44,8 @@ export function RecoveryEmergencyGuide() {
 
   return (
     <section id="emergency" className="bg-slate-50 py-16 text-slate-900 sm:py-24">
-      <div className="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl text-center">
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 xl:px-12">
+        <div className="mx-auto max-w-3xl lg:max-w-4xl text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3.5 py-1.5 text-xs font-bold text-rose-800">
             <AlertOctagon className="size-3.5 text-rose-600" />
             <span>Emergency Storage Protocol</span>

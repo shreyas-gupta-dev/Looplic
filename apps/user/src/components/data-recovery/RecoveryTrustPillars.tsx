@@ -6,8 +6,8 @@ import { RecoveryButton } from "./RecoveryButton";
 export function RecoveryTrustPillars() {
   return (
     <section id="why-us" className="scroll-mt-16 bg-slate-50 py-16 sm:py-24">
-      <div className="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl text-center">
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 xl:px-12">
+        <div className="mx-auto max-w-3xl lg:max-w-4xl text-center">
           <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">
             Security & Compliance
           </span>

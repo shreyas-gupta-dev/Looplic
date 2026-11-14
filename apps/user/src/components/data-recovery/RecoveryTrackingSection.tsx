@@ -77,8 +77,8 @@ export function RecoveryTrackingSection({ initialCode = "" }: RecoveryTrackingSe
 
   return (
     <section id="track" className="scroll-mt-16 bg-slate-100/70 py-16 md:py-24">
-      <div className="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl text-center">
+      <div className="container mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 xl:px-12">
+        <div className="mx-auto max-w-2xl sm:max-w-3xl text-center">
           <div className="mx-auto mb-3 flex size-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
             <PackageSearch className="size-6" />
           </div>

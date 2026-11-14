@@ -42,8 +42,8 @@ export function RecoveryHero({ onTrackLookup }: RecoveryHeroProps) {
       {/* Subtle calm ambient lighting */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(5,150,105,0.15),transparent)]" />
 
-      <div className={`${RECOVERY_TOKENS.layout.container} relative py-16 sm:py-24 lg:py-32`}>
-        <div className="mx-auto max-w-3xl text-center">
+      <div className={`${RECOVERY_TOKENS.layout.wideContainer} relative py-16 sm:py-24 lg:py-28`}>
+        <div className="mx-auto max-w-4xl lg:max-w-5xl text-center">
           {/* Breadcrumb Trail with Back to Home Action */}
           <nav aria-label="Breadcrumb" className="mb-6 inline-flex items-center gap-2 text-xs font-medium text-slate-300">
             <Link
@@ -79,18 +79,18 @@ export function RecoveryHero({ onTrackLookup }: RecoveryHeroProps) {
           </div>
 
           {/* Single H1 Primary Heading */}
-          <h1 className="font-display text-4xl sm:text-5xl lg:text-[56px] font-bold tracking-tight text-white leading-[1.1]">
+          <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl xl:text-[62px] font-bold tracking-tight text-white leading-[1.12]">
             Hard Drive Data Recovery in Bangalore
           </h1>
 
-          {/* Concise, calming subtitle (50% word reduction) */}
-          <p className="mt-6 text-base sm:text-lg text-slate-300 leading-relaxed max-w-2xl mx-auto">
+          {/* Concise, calming subtitle */}
+          <p className="mt-6 text-base sm:text-lg lg:text-xl text-slate-300 leading-relaxed max-w-3xl mx-auto">
             Cleanroom recovery for clicking hard drives, failed SSDs, dead MacBooks, and RAID servers. Free diagnostic evaluation, file list verification before payment, and secure doorstep pickup.
           </p>
 
           {/* Exactly ONE primary button per section + calm inline text link */}
           <div className="mt-10 flex flex-col items-center gap-4">
-            <RecoveryButton href="#book" className="min-w-[240px]">
+            <RecoveryButton href="#book" className="min-w-[240px] text-sm sm:text-base py-3 px-7 sm:py-3.5 sm:px-8">
               Request Free Lab Diagnosis
             </RecoveryButton>
 
@@ -106,7 +106,7 @@ export function RecoveryHero({ onTrackLookup }: RecoveryHeroProps) {
           </div>
 
           {/* Quick Case Tracking Input */}
-          <div className="mt-12 mx-auto max-w-md">
+          <div className="mt-10 sm:mt-12 mx-auto max-w-md sm:max-w-lg">
             <form onSubmit={handleQuickTrack} className="flex items-center rounded-xl border border-slate-700 bg-slate-800/80 p-1.5 shadow-lg">
               <div className="relative flex-1">
                 <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
@@ -127,46 +127,48 @@ export function RecoveryHero({ onTrackLookup }: RecoveryHeroProps) {
               </button>
             </form>
           </div>
+        </div>
 
-          {/* 4 Trust Pillars */}
-          <div className="mt-16 grid grid-cols-2 gap-4 pt-8 border-t border-slate-800 sm:grid-cols-4 text-left">
-            <div className="flex items-start gap-3">
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-emerald-400">
+        {/* 4 Trust Pillars (Full-Width Responsive 4-Column Grid) */}
+        <div className="mt-16 pt-8 border-t border-slate-800/80 mx-auto max-w-6xl lg:max-w-7xl">
+          <div className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4 text-left">
+            <div className="flex items-start gap-3 rounded-xl border border-slate-800/60 bg-slate-800/30 p-3 sm:p-4">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-emerald-400">
                 <Lock className="size-4" />
               </div>
-              <div>
-                <strong className="block text-xs font-semibold text-white">Strict NDA & Privacy</strong>
-                <span className="text-[11px] text-slate-300">Offline diagnostic labs</span>
+              <div className="min-w-0">
+                <strong className="block text-xs sm:text-sm font-semibold text-white truncate">Strict NDA & Privacy</strong>
+                <span className="text-[11px] sm:text-xs text-slate-300">Offline diagnostic labs</span>
               </div>
             </div>
 
-            <div className="flex items-start gap-3">
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-emerald-400">
+            <div className="flex items-start gap-3 rounded-xl border border-slate-800/60 bg-slate-800/30 p-3 sm:p-4">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-emerald-400">
                 <FileCheck2 className="size-4" />
               </div>
-              <div>
-                <strong className="block text-xs font-semibold text-white">Review File List</strong>
-                <span className="text-[11px] text-slate-300">Verify data before paying</span>
+              <div className="min-w-0">
+                <strong className="block text-xs sm:text-sm font-semibold text-white truncate">Review File List</strong>
+                <span className="text-[11px] sm:text-xs text-slate-300">Verify data before paying</span>
               </div>
             </div>
 
-            <div className="flex items-start gap-3">
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-emerald-400">
+            <div className="flex items-start gap-3 rounded-xl border border-slate-800/60 bg-slate-800/30 p-3 sm:p-4">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-emerald-400">
                 <Layers className="size-4" />
               </div>
-              <div>
-                <strong className="block text-xs font-semibold text-white">Clean Workstations</strong>
-                <span className="text-[11px] text-slate-300">Laminar flow benches</span>
+              <div className="min-w-0">
+                <strong className="block text-xs sm:text-sm font-semibold text-white truncate">Clean Workstations</strong>
+                <span className="text-[11px] sm:text-xs text-slate-300">Laminar flow benches</span>
               </div>
             </div>
 
-            <div className="flex items-start gap-3">
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-emerald-400">
+            <div className="flex items-start gap-3 rounded-xl border border-slate-800/60 bg-slate-800/30 p-3 sm:p-4">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-slate-800 text-emerald-400">
                 <Truck className="size-4" />
               </div>
-              <div>
-                <strong className="block text-xs font-semibold text-white">Doorstep Pickup</strong>
-                <span className="text-[11px] text-slate-300">Free across Bengaluru</span>
+              <div className="min-w-0">
+                <strong className="block text-xs sm:text-sm font-semibold text-white truncate">Doorstep Pickup</strong>
+                <span className="text-[11px] sm:text-xs text-slate-300">Free across Bengaluru</span>
               </div>
             </div>
           </div>

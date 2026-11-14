@@ -53,7 +53,7 @@ export function RecoveryNavbar() {
     <>
       {/* ─── Top Calm Notice ─────────────────────────────────────────────────── */}
       <div className="bg-slate-900 px-4 py-2 text-xs font-medium text-slate-300 border-b border-slate-800">
-        <div className={`${RECOVERY_TOKENS.layout.container} flex items-center justify-between`}>
+        <div className={`${RECOVERY_TOKENS.layout.wideContainer} flex items-center justify-between`}>
           <div className="flex items-center gap-2">
             <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>
@@ -79,7 +79,7 @@ export function RecoveryNavbar() {
           scrolled ? "shadow-sm border-b border-slate-200" : "border-b border-slate-200"
         }`}
       >
-        <div className={`${RECOVERY_TOKENS.layout.container} flex h-20 items-center justify-between`}>
+        <div className={`${RECOVERY_TOKENS.layout.wideContainer} flex h-20 items-center justify-between`}>
           {/* Back Button, Logo & Lab Identifier */}
           <div className="flex items-center gap-2 sm:gap-3">
             <Link
@@ -110,7 +110,7 @@ export function RecoveryNavbar() {
           </div>
 
           {/* 5 Primary Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-8">
+          <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
             {navLinks.map((link) => (
               <a
                 key={link.label}
@@ -123,7 +123,7 @@ export function RecoveryNavbar() {
           </nav>
 
           {/* Action Area: Single Primary Button */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <a
               href={`tel:${LAB_CONTACT.phoneClean}`}
               onClick={() => trackPhoneClick("Header Call Link")}
@@ -133,7 +133,7 @@ export function RecoveryNavbar() {
               <span>{LAB_CONTACT.phoneFormatted}</span>
             </a>
 
-            <RecoveryButton href="#book">
+            <RecoveryButton href="#book" className="hidden sm:inline-flex text-xs px-3.5 py-2 sm:text-sm sm:px-5 sm:py-2.5">
               Book Diagnosis
             </RecoveryButton>
 

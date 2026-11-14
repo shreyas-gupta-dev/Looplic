@@ -76,7 +76,7 @@ export function RecoveryCorporateOnsite() {
 
   return (
     <section id="corporate" className="scroll-mt-16 bg-white py-16 text-slate-900 sm:py-24 border-t border-slate-100">
-      <div className="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 xl:px-12">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:items-center">
           {/* Left Column: Explainer */}
           <div className="lg:col-span-5">

@@ -1,11 +1,13 @@
 /**
  * Design Tokens for Looplic Data Recovery Experience
- * Enforces single container width (1152px), calm emerald/slate palette, and strict typography.
+ * Enforces standardized wide container (max-w-7xl / 1280px-1400px), calm emerald/slate palette, and responsive typography.
  */
 export const RECOVERY_TOKENS = {
   layout: {
-    container: "mx-auto max-w-6xl px-4 sm:px-6 lg:px-8",
-    sectionPadding: "py-16 sm:py-20 lg:py-24",
+    container: "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 xl:px-12",
+    wideContainer: "mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 xl:px-12",
+    proseContainer: "mx-auto max-w-3xl px-4 sm:px-6",
+    sectionPadding: "py-14 sm:py-20 lg:py-24",
   },
   colors: {
     primary: "#059669", // Emerald-600

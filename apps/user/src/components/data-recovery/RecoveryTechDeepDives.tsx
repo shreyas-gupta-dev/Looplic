@@ -8,7 +8,7 @@ export function RecoveryTechDeepDives() {
     <section className={`bg-slate-50 ${RECOVERY_TOKENS.layout.sectionPadding} border-b border-slate-200`}>
       <div className={RECOVERY_TOKENS.layout.container}>
         {/* Section Header */}
-        <div className="max-w-3xl">
+        <div className="max-w-3xl lg:max-w-4xl">
           <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">
             Laboratory Engineering
           </span>
