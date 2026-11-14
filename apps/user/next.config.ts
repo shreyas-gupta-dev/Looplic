@@ -100,6 +100,56 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        source: "/services/data-recovery",
+        destination: "/data-recovery",
+        permanent: true,
+      },
+      {
+        source: "/services/hard-drive-data-recovery",
+        destination: "/data-recovery",
+        permanent: true,
+      },
+      {
+        source: "/hard-drive-data-recovery",
+        destination: "/data-recovery",
+        permanent: true,
+      },
+      {
+        source: "/hard-drive-recovery",
+        destination: "/data-recovery",
+        permanent: true,
+      },
+      {
+        source: "/data-recovery-bangalore",
+        destination: "/data-recovery",
+        permanent: true,
+      },
+      {
+        source: "/bangalore/data-recovery",
+        destination: "/data-recovery",
+        permanent: true,
+      },
+      {
+        source: "/services",
+        destination: "/service-pages",
+        permanent: true,
+      },
+      {
+        source: "/service",
+        destination: "/service-pages",
+        permanent: true,
+      },
+      {
+        source: "/repair",
+        destination: "/service/mobile-repair",
+        permanent: true,
+      },
+      {
+        source: "/repairs",
+        destination: "/service-pages",
+        permanent: true,
+      },
+      {
         source: "/book/hard-drive-data-recovery",
         destination: "/data-recovery#book",
         permanent: false,

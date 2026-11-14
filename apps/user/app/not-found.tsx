@@ -4,7 +4,7 @@ import { supportPhoneDisplay, whatsappUrl } from "@/src/lib/company";
 
 export default function NotFound() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-16 text-slate-900">
+    <main id="not-found-page" data-page="404" className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-16 text-slate-900">
       <div className="w-full max-w-lg rounded-3xl border border-slate-200/80 bg-white p-8 text-center shadow-xl sm:p-10">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-50 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-emerald-800">
           Page Not Found · Error 404

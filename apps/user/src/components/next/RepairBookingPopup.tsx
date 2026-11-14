@@ -10,7 +10,8 @@ import { buildWhatsappLink } from "@/src/lib/whatsapp-links";
 const popupSeenKey = "looplic-repair-popup-shown";
 
 function shouldShowOnPath(pathname: string | null) {
-  if (!pathname) return false;
+  if (!pathname || pathname === "/404") return false;
+  if (typeof document !== "undefined" && document.getElementById("not-found-page")) return false;
   if (pathname === "/bangalore" || pathname === "/brand-pages" || pathname === "/service/cctv") return true;
 
   const segments = pathname.split("/").filter(Boolean);
@@ -30,11 +31,18 @@ export function RepairBookingPopup() {
       return;
     }
 
+    if (typeof document !== "undefined" && document.getElementById("not-found-page")) {
+      return;
+    }
+
     if (window.sessionStorage.getItem(popupStorageKey) === "true") {
       return;
     }
 
     const timeout = window.setTimeout(() => {
+      if (typeof document !== "undefined" && document.getElementById("not-found-page")) {
+        return;
+      }
       window.sessionStorage.setItem(popupStorageKey, "true");
       setOpen(true);
     }, 3000);
@@ -48,7 +56,7 @@ export function RepairBookingPopup() {
     setOpen(false);
   }
 
-  if (!open || !showOnPath) {
+  if (!open || !showOnPath || (typeof document !== "undefined" && document.getElementById("not-found-page"))) {
     return null;
   }
 
