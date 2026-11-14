@@ -83,6 +83,13 @@ const sections = [
       "We may update these Terms and Conditions from time to time to reflect business, legal, technical, or operational changes. Continued use of the platform after updated terms are posted indicates acceptance of the revised version.",
     ],
   },
+  {
+    title: "11. Governing law and jurisdiction",
+    body: [
+      "These Terms and Conditions, all platform bookings, and any legal disputes or claims arising out of or related to our services shall be governed by and construed in accordance with the laws of India.",
+      "The competent courts situated in Bengaluru, Karnataka, India shall have exclusive jurisdiction over all matters and disputes arising out of or in connection with Looplic services and platform transactions.",
+    ],
+  },
 ] as const;
 
 const customerTerms = [

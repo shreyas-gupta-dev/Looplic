@@ -5,6 +5,7 @@ import Script from "next/script";
 import "@/app/globals.css";
 import { AppProviders } from "@/components/Providers";
 import { LazyOverlays } from "@/components/LazyOverlays";
+import { CookieConsentBanner } from "@/src/components/CookieConsentBanner";
 import { GOOGLE_ADS_ID, GTAG_IDS } from "@/src/lib/gtag";
 import { siteConfig } from "@/src/lib/site";
 
@@ -92,6 +93,25 @@ export default function RootLayout({
       </head>
       <body className={poppins.variable} suppressHydrationWarning>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }} />
+        <Script id="looplic-consent-mode" strategy="beforeInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            var initialConsent = 'denied';
+            try {
+              if (localStorage.getItem('looplic_cookie_consent') === 'granted') {
+                initialConsent = 'granted';
+              }
+            } catch(e) {}
+            gtag('consent', 'default', {
+              'analytics_storage': initialConsent,
+              'ad_storage': initialConsent,
+              'ad_user_data': initialConsent,
+              'ad_personalization': initialConsent,
+              'wait_for_update': 500
+            });
+          `}
+        </Script>
         <Script async src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ADS_ID}`} strategy="lazyOnload" />
         <Script id="looplic-google-ads" strategy="lazyOnload">
           {`
@@ -136,6 +156,7 @@ export default function RootLayout({
         </Script>
         {children}
         <LazyOverlays />
+        <CookieConsentBanner />
         <AppProviders />
       </body>
     </html>

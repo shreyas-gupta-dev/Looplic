@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "@/src/lib/auth/cognito-server";
 import { getAdminSupabase } from "@/src/lib/supabase/server";
 
-const BUCKET = process.env.NEXT_PUBLIC_S3_BUCKET || "looplic-assets";
+const BUCKET = process.env.AWS_S3_BUCKET || process.env.S3_BUCKET || process.env.NEXT_PUBLIC_S3_BUCKET || "looplic-assets";
 
 // Uploads an image to Supabase Storage under <folder>/<path>. Admin/staff only.
 export async function POST(req: NextRequest) {

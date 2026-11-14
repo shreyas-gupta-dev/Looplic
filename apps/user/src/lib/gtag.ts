@@ -14,7 +14,7 @@ export const GTAG_IDS: readonly string[] = GA4_MEASUREMENT_ID
 // The gtag.js loader script is shared across accounts, so the URL only needs one ID.
 export const GOOGLE_ADS_ID = GOOGLE_ADS_IDS[0];
 
-type GtagCommand = "js" | "config" | "event";
+type GtagCommand = "js" | "config" | "event" | "consent";
 type GtagParams = Record<string, string | number | boolean | null | undefined | readonly string[]>;
 
 declare global {

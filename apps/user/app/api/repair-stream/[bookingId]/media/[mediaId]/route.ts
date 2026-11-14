@@ -20,8 +20,8 @@ import { verifyGrant } from "@/src/lib/repair-stream/grant";
  * route is reachable directly, so it cannot rely on the listing route's checks.
  */
 
-const REGION = process.env.NEXT_PUBLIC_S3_REGION || process.env.AWS_REGION || "ap-south-1";
-const BUCKET = process.env.NEXT_PUBLIC_S3_BUCKET || "looplic-assets";
+const REGION = process.env.AWS_REGION || process.env.S3_REGION || process.env.NEXT_PUBLIC_S3_REGION || "ap-south-1";
+const BUCKET = process.env.AWS_S3_BUCKET || process.env.S3_BUCKET || process.env.NEXT_PUBLIC_S3_BUCKET || "looplic-assets";
 
 
 

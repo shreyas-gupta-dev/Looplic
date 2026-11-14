@@ -32,6 +32,10 @@ const nextConfig: NextConfig = {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=(self)",
           },
+          {
+            key: "Content-Security-Policy-Report-Only",
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://maps.googleapis.com https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https://* http://localhost:*; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://* http://localhost:* wss://*; frame-src 'self' https://www.google.com https://maps.google.com; object-src 'none'; base-uri 'self';",
+          },
         ],
       },
       { source: "/account", headers: [noStore] },

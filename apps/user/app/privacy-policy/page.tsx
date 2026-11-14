@@ -61,7 +61,14 @@ const sections = [
     ],
   },
   {
-    title: "8. Policy updates",
+    title: "8. Cookies, Local Storage, and Analytics",
+    body: [
+      "We use necessary cookies and browser storage to maintain session state, secure account access, and remember user preferences. We also use analytics tools (such as Google Analytics and Google Ads conversion measurement) to evaluate site traffic and marketing effectiveness without collecting personally identifiable information (PII).",
+      "You have full control over analytics and advertising cookies. You can manage or decline non-essential cookies at any time via our Cookie Consent banner or through your browser settings. Declining analytics cookies will not restrict your access to core platform features or booking capabilities.",
+    ],
+  },
+  {
+    title: "9. Policy updates",
     body: [
       "We may update this Privacy Policy from time to time to reflect changes in our services, legal requirements, business operations, or platform features. Updated versions become effective when posted unless stated otherwise.",
     ],
