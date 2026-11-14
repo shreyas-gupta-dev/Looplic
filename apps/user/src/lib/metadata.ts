@@ -16,7 +16,7 @@ export function buildPageMetadata({ title, description, pathname, keywords = [],
   const url = new URL(path, siteConfig.url).toString();
   const imageUrl = image
     ? (image.startsWith("http") ? image : new URL(image, siteConfig.url).toString())
-    : new URL("/looplic-app-icon-512.png", siteConfig.url).toString();
+    : new URL("/og-image.png", siteConfig.url).toString();
 
   return {
     title,
