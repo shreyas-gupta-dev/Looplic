@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { Phone, Menu, X } from "lucide-react";
+import { Phone, Menu, X, ArrowLeft } from "lucide-react";
 import { LAB_CONTACT } from "./recovery-data";
 import { RecoveryButton } from "./RecoveryButton";
 import { RECOVERY_TOKENS } from "./recovery-tokens";
@@ -34,6 +34,18 @@ export function RecoveryNavbar() {
         event_category: "Data Recovery Contact",
         event_label: source,
       });
+    }
+  };
+
+  const handleBackNavigation = (e: React.MouseEvent) => {
+    if (
+      typeof window !== "undefined" &&
+      window.history.length > 1 &&
+      document.referrer &&
+      document.referrer.includes(window.location.host)
+    ) {
+      e.preventDefault();
+      window.history.back();
     }
   };
 
@@ -68,8 +80,19 @@ export function RecoveryNavbar() {
         }`}
       >
         <div className={`${RECOVERY_TOKENS.layout.container} flex h-20 items-center justify-between`}>
-          {/* Logo & Lab Identifier */}
-          <div className="flex items-center gap-3">
+          {/* Back Button, Logo & Lab Identifier */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link
+              href="/"
+              onClick={handleBackNavigation}
+              aria-label="Back to Homepage"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:border-emerald-600/30 hover:bg-slate-100 hover:text-emerald-700"
+            >
+              <ArrowLeft className="size-3.5 text-emerald-600" />
+              <span className="hidden sm:inline">Back to Home</span>
+              <span className="sm:hidden">Back</span>
+            </Link>
+
             <Link href="/" className="flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 rounded-lg">
               <Image
                 src="/looplic-logo.webp"
@@ -131,6 +154,17 @@ export function RecoveryNavbar() {
         {mobileMenuOpen && (
           <div className="border-b border-slate-200 bg-white px-4 py-6 lg:hidden animate-in fade-in duration-150">
             <div className="flex flex-col gap-2">
+              <Link
+                href="/"
+                onClick={(e) => {
+                  setMobileMenuOpen(false);
+                  handleBackNavigation(e);
+                }}
+                className="flex items-center gap-2 min-h-[44px] rounded-lg px-3 text-sm font-semibold text-emerald-800 bg-emerald-50 mb-1 border border-emerald-200/60"
+              >
+                <ArrowLeft className="size-4 text-emerald-600" />
+                <span>← Back to Looplic Home</span>
+              </Link>
               {navLinks.map((link) => (
                 <a
                   key={link.label}

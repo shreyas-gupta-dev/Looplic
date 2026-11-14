@@ -8,6 +8,7 @@ import {
   Lock,
   Layers,
   ChevronRight,
+  ArrowLeft,
   Search,
   MessageSquare,
 } from "lucide-react";
@@ -43,12 +44,27 @@ export function RecoveryHero({ onTrackLookup }: RecoveryHeroProps) {
 
       <div className={`${RECOVERY_TOKENS.layout.container} relative py-16 sm:py-24 lg:py-32`}>
         <div className="mx-auto max-w-3xl text-center">
-          {/* Breadcrumb Trail */}
+          {/* Breadcrumb Trail with Back to Home Action */}
           <nav aria-label="Breadcrumb" className="mb-6 inline-flex items-center gap-2 text-xs font-medium text-slate-300">
-            <Link href="/" className="hover:text-white transition-colors">
-              Home
+            <Link
+              href="/"
+              onClick={(e) => {
+                if (
+                  typeof window !== "undefined" &&
+                  window.history.length > 1 &&
+                  document.referrer &&
+                  document.referrer.includes(window.location.host)
+                ) {
+                  e.preventDefault();
+                  window.history.back();
+                }
+              }}
+              className="inline-flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-800/90 px-3 py-1 text-slate-300 transition-colors hover:border-emerald-500/60 hover:bg-slate-700 hover:text-white"
+            >
+              <ArrowLeft className="size-3 text-emerald-400" />
+              <span>Back to Home</span>
             </Link>
-            <ChevronRight className="size-3 text-slate-400" />
+            <ChevronRight className="size-3 text-slate-500" />
             <span className="text-emerald-400 font-semibold" aria-current="page">
               Hard Drive Data Recovery
             </span>
