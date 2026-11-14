@@ -55,7 +55,7 @@ const PUBLIC_INSERT_TABLES = new Set(["bookings", "technician_applications"]);
  * this proxy did. Closed by default now: an allowlist, so a settings key added
  * later stays private unless someone deliberately publishes it.
  */
-const PUBLIC_APP_SETTING_KEYS = new Set(["repair_subcategory_prices"]);
+const PUBLIC_APP_SETTING_KEYS = new Set(["repair_subcategory_prices", "data_recovery_config"]);
 
 // Deleting records is an admin-only action. Operators (and the operation desk)
 // share the "operation" role and get full create/edit access but must never

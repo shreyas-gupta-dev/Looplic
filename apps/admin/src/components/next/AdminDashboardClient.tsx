@@ -1,12 +1,13 @@
 "use client";
 
-import { BarChart3, CalendarCheck, CreditCard, Laptop, LogOut, Newspaper, Package, Recycle, Smartphone, UserRoundCheck, Video } from "lucide-react";
+import { BarChart3, CalendarCheck, CreditCard, HardDrive, Laptop, LogOut, Newspaper, Package, Recycle, Smartphone, UserRoundCheck, Video } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import BlogTab from "@/src/components/admin/BlogTab";
 import BookingsTab from "@/src/components/admin/BookingsTab";
 import BuybackTab from "@/src/components/admin/BuybackTab";
+import DataRecoverySettingsTab from "@/src/components/admin/DataRecoverySettingsTab";
 import LiveViewTab from "@/src/components/admin/LiveViewTab";
 import PaymentsTab from "@/src/components/admin/PaymentsTab";
 import ProductsTab from "@/src/components/admin/ProductsTab";
@@ -349,6 +350,11 @@ export function AdminDashboardClient() {
               <span className="hidden sm:inline">Live View</span>
               <span className="sm:hidden">Live</span>
             </TabsTrigger>
+            <TabsTrigger value="data-recovery" className="min-w-[104px] flex-shrink-0 gap-1.5 px-3 py-2.5 text-xs sm:min-w-0">
+              <HardDrive className="size-3.5" />
+              <span className="hidden sm:inline">Data Recovery</span>
+              <span className="sm:hidden">Recovery</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="analytics">
@@ -389,6 +395,10 @@ export function AdminDashboardClient() {
 
           <TabsContent value="live-view">
             {activeTab === "live-view" ? <LiveViewTab /> : null}
+          </TabsContent>
+
+          <TabsContent value="data-recovery">
+            {activeTab === "data-recovery" ? <DataRecoverySettingsTab /> : null}
           </TabsContent>
         </Tabs>
       </div>

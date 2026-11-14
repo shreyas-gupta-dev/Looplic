@@ -11,7 +11,7 @@
 export const ourServices = [
   { id: "repair-phone", label: "Repair Phones", href: "/service/mobile-repair" },
   { id: "repair-laptop", label: "Repair Laptop", href: "/service/laptop-repair" },
-  { id: "data-recovery", label: "Hard Drive Data Recovery", href: "/service/it-support" },
+  { id: "data-recovery", label: "Hard Drive Data Recovery", href: "/data-recovery" },
   { id: "sell-phone", label: "Sell Phone", href: "/sell" },
   { id: "sell-laptop", label: "Sell Laptop", href: "/sell/laptop" },
   { id: "desktop", label: "Desktop Assembly", href: "/service/desktop-assembly" },

@@ -81,6 +81,7 @@ const SERVICE_LABELS: Record<string, string> = {
   it_support: "IT Support",
   managed_it: "Managed IT Services",
   screen_guard: "Screen Guard",
+  data_recovery: "Data Recovery",
 };
 
 export function serviceLabelFor(serviceType: string): string {

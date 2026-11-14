@@ -1,0 +1,91 @@
+{
+  "homepageServiceCardImage": {
+    "src": "/_next/image?url=%2Fimages%2Fservices%2Fdata-recovery.webp&w=3840&q=75",
+    "naturalWidth": 230,
+    "complete": true,
+    "valid": true
+  },
+  "totalSvgsFound": 131,
+  "validSvgsCount": 130,
+  "zeroDimensionSvgs": [],
+  "imagesAudited": [
+    {
+      "src": "/_next/image?url=%2Flooplic-logo.webp&w=256&q=75",
+      "naturalWidth": 128,
+      "complete": true,
+      "isVisible": true,
+      "valid": true
+    },
+    {
+      "src": "/_next/image?url=%2Flooplic-logo.webp&w=384&q=75",
+      "naturalWidth": 0,
+      "complete": false,
+      "isVisible": true,
+      "valid": false
+    },
+    {
+      "src": "/favicon.ico",
+      "naturalWidth": 48,
+      "complete": true,
+      "isVisible": true,
+      "valid": true
+    }
+  ],
+  "interactions": {
+    "faqChevronToggle": true,
+    "storageCategorySwitching": true,
+    "whatsappDrawerOpenClose": true,
+    "mobileMenuToggle": true,
+    "caseModalIcons": true
+  },
+  "sectionsAudited": {
+    "Navbar": {
+      "svgCount": 3,
+      "status": "PASS"
+    },
+    "Hero": {
+      "svgCount": 8,
+      "status": "PASS"
+    },
+    "Storage Grid": {
+      "svgCount": 42,
+      "status": "PASS"
+    },
+    "Tech Deep Dives": {
+      "svgCount": 4,
+      "status": "PASS"
+    },
+    "Trust Pillars": {
+      "svgCount": 6,
+      "status": "PASS"
+    },
+    "Process Timeline": {
+      "svgCount": 4,
+      "status": "PASS"
+    },
+    "Pricing Tiers": {
+      "svgCount": 21,
+      "status": "PASS"
+    },
+    "Booking Form": {
+      "svgCount": 8,
+      "status": "PASS"
+    },
+    "Corporate Onsite": {
+      "svgCount": 5,
+      "status": "PASS"
+    },
+    "Order Tracking": {
+      "svgCount": 2,
+      "status": "PASS"
+    },
+    "FAQ Accordion": {
+      "svgCount": 10,
+      "status": "PASS"
+    },
+    "Location & Contact": {
+      "svgCount": 6,
+      "status": "PASS"
+    }
+  }
+}

@@ -619,6 +619,7 @@ const BookingsTab = ({ role = "operation", canDelete }: BookingsTabProps) => {
               <option value="cctv">CCTV Installation</option>
               <option value="it_support">IT Support</option>
               <option value="managed_it_services">Managed IT Services</option>
+              <option value="data_recovery">Data Recovery</option>
             </select>
             <select value={dateFilter} onChange={(event) => setDateFilter(event.target.value)} className="h-10 rounded-md border border-input bg-background px-3 text-sm text-foreground">
               <option value="all">All dates</option>

@@ -81,6 +81,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     createEntry("/", 1, "daily"),
     createEntry("/buy", 0.9, "daily"),
     ...productRows.map((p) => createEntry(`/buy/${p.slug}`, 0.8, "daily", p.updatedAt ? new Date(p.updatedAt) : undefined)),
+    createEntry("/data-recovery", 0.9, "daily"),
     createEntry("/bangalore", 0.8, "daily"),
     ...bangaloreAreas.map((area) => createEntry(buildBangaloreAreaRoute(area.slug), 0.7, "weekly")),
     ...bangaloreAreas.flatMap((area) => [
