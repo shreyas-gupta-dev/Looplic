@@ -94,7 +94,7 @@
   }
 
   html {
-    zoom: 0.8;
+    @apply overflow-x-hidden max-w-full;
   }
 
   body {
